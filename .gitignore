@@ -30,6 +30,10 @@ $RECYCLE.BIN/
 # Linux
 *~
 
+# Vim
+*.swp
+*.swo
+
 # KDE directory preferences
 .directory
 
