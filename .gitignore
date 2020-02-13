@@ -66,6 +66,9 @@ writable/uploads/*
 
 writable/debugbar/*
 
+writeale/verification/*
+!writeable/verification/index.html
+
 php_errors.log
 
 #-------------------------

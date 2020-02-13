@@ -22,6 +22,17 @@ $routes->setTranslateURIDashes(false);
 $routes->set404Override();
 $routes->setAutoRoute(true);
 
+// API
+$routes->group('api', ['namespace' => 'App\Controllers\API'], function($routes) {
+	// Verification
+	$routes->get('verification', 'Verification::index');
+	$routes->post('verification/create', 'Verification::create');
+	$routes->post('verification/create_from_pdf', 'Verification::create_from_pdf');
+
+	// Account
+	$routes->post('account/fill', 'Account::fill');
+});
+
 /**
  * --------------------------------------------------------------------
  * Route Definitions
