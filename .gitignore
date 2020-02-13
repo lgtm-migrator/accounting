@@ -52,6 +52,8 @@ Vagrantfile
 #-------------------------
 # Temporary Files
 #-------------------------
+writeable/*
+
 writable/cache/*
 !writable/cache/index.html
 
@@ -66,8 +68,6 @@ writable/uploads/*
 
 writable/debugbar/*
 
-writeale/verification/*
-!writeable/verification/index.html
 
 php_errors.log
 
