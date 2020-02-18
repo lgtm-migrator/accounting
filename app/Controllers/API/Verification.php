@@ -46,7 +46,7 @@ class Verification extends ApiController {
 			saveVerificationFile($filepath, $filename, $verification);
 
 			// Save verification
-			$verificationModel->save($verification);
+			$verification->id = $verificationModel->insert($verification);
 			
 			// Bind transactions to the created verifications
 			$verification->updateIdForTransactions();

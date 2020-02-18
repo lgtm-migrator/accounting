@@ -13,6 +13,6 @@ class TransactionModel extends Model {
 		'credit',
 		'currency',
 		'original_amount',
-		'exchange_rate'
+		'exchange_rate',
 	];
 }

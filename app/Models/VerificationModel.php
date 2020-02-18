@@ -11,8 +11,11 @@ class VerificationModel extends Model {
 		'internal_name',
 		'name',
 		'description',
+		'total',
+		'type',
 		'file',
-		'invoice_id'
+		'invoice_id',
+		'require_confirmation',
 	];
 
 	public function isDuplicate($verification) {
@@ -21,7 +24,6 @@ class VerificationModel extends Model {
 			where('internal_name', $verification->internal_name)->
 			first();
 		
-		var_dump($result);
 		return $result !== null;
 	}
 }
