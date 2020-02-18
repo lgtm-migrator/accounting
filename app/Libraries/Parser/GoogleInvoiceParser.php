@@ -59,9 +59,7 @@ class GoogleInvoiceParser extends BaseParser {
 		$this->verification->date = $date_time->format('Y-m-d');
 	}
 
-	public function createTransactions() {
-		$transactions = [];
-
+	public function createTransactions(&$verification) {
 		$converted_amount = $this->getConvertedTotal();
 		$verification = $this->verification;
 
@@ -72,19 +70,19 @@ class GoogleInvoiceParser extends BaseParser {
 		$transaction->credit = $converted_amount;
 		$transaction->original_amount = $verification->total;
 		$transaction->currency = $this->currency;
-		$transactions[] = $transaction;
+		$verification->transactions[] = $transaction;
 
 		// 2614 Utgående moms utl.
 		$transaction = new Transaction($verification);
 		$transaction->account_id = 2614;
 		$transaction->credit = $converted_amount * 0.25;
-		$transactions[] = $transaction;
+		$verification->transactions[] = $transaction;
 
 		// 2645 Ingående moms utl.
 		$transaction = new Transaction($verification);
 		$transaction->account_id = 2645;
 		$transaction->debit = $converted_amount * 0.25;
-		$transactions[] = $transaction;
+		$verification->transactions[] = $transaction;
 
 		// 4646 EU / 4661 US
 		$transaction = new Transaction($verification);
@@ -93,8 +91,6 @@ class GoogleInvoiceParser extends BaseParser {
 		$transaction->debit = $converted_amount;
 		$transaction->original_amount = $verification->total;
 		$transaction->currency = $this->currency;
-		$transactions[] = $transaction;		
-
-		return $transactions;
+		$verification->transactions[] = $transaction;		
 	}
 }

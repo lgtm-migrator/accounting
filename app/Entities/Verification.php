@@ -3,6 +3,8 @@
 use CodeIgniter\Entity;
 
 class Verification extends Entity {
+	public $transactions = [];
+
 	// All verification types
 	public const TYPE_INVOICE = 'INVOICE';
 	public const TYPE_PAYMENT = 'PAYMENT';

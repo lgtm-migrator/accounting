@@ -29,7 +29,8 @@ class Verification extends ApiController {
 		$filepath = $file->getPathName();
 
 		$text = Pdf::getText($filepath);
-		$verifications = ParserFactory::create($text);
+		$text_layout = Pdf::getText($filepath, null, ['layout']);
+		$verifications = ParserFactory::create($text, $text_layout);
 
 
 		// Save Verifications and transactions

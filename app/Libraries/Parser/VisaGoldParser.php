@@ -8,6 +8,7 @@ use RuntimeException;
 
 class VisaGoldParser extends BaseParser {
 	private const REGEX_PATTERN = '/(20\d{2}-\d{2}-\d{2})\n(.+\n{0,1}\D*)\n([0-9,]+)\n.*\n([0-9,]+)\n(\w+)\n/m';
+	
 	public function __construct(string &$text) {
 		parent::__construct();
 		$this->verification->type = Verification::TYPE_PAYMENT;
@@ -24,17 +25,17 @@ class VisaGoldParser extends BaseParser {
 		$found = preg_match(VisaGoldParser::REGEX_PATTERN, $text, $matches);
 
 		if ($found !== 1) {
-			throw new RuntimeException("Could not parse the pdf as VisaGoldParser.");
+			throw new RuntimeException("Could not parse the PDF as VisaGoldParser.");
 		}
 		if (count($matches) != 6) {
-			throw new RuntimeException("Could not parse the pdf as VisaGoldParser; invalid number of matches.");
+			throw new RuntimeException("Could not parse the PDF as VisaGoldParser; invalid number of matches.");
 		}
 
 		$verification = $this->verification;
 		$verification->date = $matches[1];
 		$verification->name = $matches[2];
-		$this->payed = BaseParser::convertFromCommaToDot($matches[3]);
-		$verification->total = BaseParser::convertFromCommaToDot($matches[4]);
+		$this->payed = BaseParser::convertToValidAmount($matches[3]);
+		$verification->total = BaseParser::convertToValidAmount($matches[4]);
 		$this->currency = $matches[5];
 	}
 
@@ -70,24 +71,21 @@ class VisaGoldParser extends BaseParser {
 		}
 	}
 
-	public function createTransactions() {
-		$transactions = [];
-
+	public function createTransactions(&$verification) {
 		$this->fetchInvoiceAmounts();
 		$this->calculateBankAndRateExpenses();
-		$verification = $this->verification;
 
 		// 2440 Leverantörsskulder
 		$transaction = new Transaction($verification);
 		$transaction->account_id = 2440;
 		$transaction->debit = $this->invoice_sek;
-		$transactions[] = $transaction;
+		$verification->transactions[] = $transaction;
 
 		// 2499 Andra övriga kortfristiga skulder
 		$transaction = new Transaction($verification);
 		$transaction->account_id = 2449;
 		$transaction->credit = $this->payed;
-		$transactions[] = $transaction;
+		$verification->transactions[] = $transaction;
 
 		// Different currency, do other things
 		if ($this->currency != 'SEK') {
@@ -95,7 +93,7 @@ class VisaGoldParser extends BaseParser {
 			$transaction = new Transaction($verification);
 			$transaction->account_id = 6570;
 			$transaction->debit = $this->bank_expenses;
-			$transactions[] = $transaction;
+			$verification->transactions[] = $transaction;
 
 			// 7960 Valutaförluster / 3960 Valutavinster
 			if ($this->currency_gain_loss != 0) {
@@ -107,12 +105,9 @@ class VisaGoldParser extends BaseParser {
 				} else {
 					$transaction->credit = $this->currency_gain_loss;
 				}
-				$transactions[] = $transaction;
+				$verification->transactions[] = $transaction;
 			}
 		}
-		
-
-		return $transactions;
 	}
 
 	private function fetchInvoiceAmounts() {
@@ -125,13 +120,11 @@ class VisaGoldParser extends BaseParser {
 
 		// Get amount
 		if ($invoice_sek_row !== null) {
-			echo 'Get from invoice credit';
 			$this->invoice_sek = $invoice_sek_row->credit;
 			$this->invoice_exchange_rate = $invoice_sek_row->exchange_rate;
 		}
 		// Just return this verification payed amount
 		else {
-			echo 'Get from payed';
 			$this->invoice_sek = $this->payed;
 			$this->invoice_exchange_rate = 1;
 		}
