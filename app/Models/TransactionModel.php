@@ -6,13 +6,13 @@ class TransactionModel extends Model {
 	protected $table = 'transaction';
 	protected $returnType = 'App\Entities\Transaction';
 	protected $allowedFields = [
-		'verification_number',
+		'verification_id',
 		'account_id',
 		'date',
 		'debit',
 		'credit',
 		'currency',
-		'exchange_rate',
-		'invoice_id'
+		'original_amount',
+		'exchange_rate'
 	];
 }

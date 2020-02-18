@@ -1,6 +1,5 @@
 <?php namespace App\Libraries\Parser;
 
-use App\Libraries\Parser\BaseParser;
 use App\Entities\Transaction;
 use DateTime;
 
@@ -43,7 +42,7 @@ class GoogleInvoiceParser extends BaseParser {
 		$found = preg_match('/[$€](\d{1,2}\.\d{2})/', $text, $matches);
 
 		if ($found === 1) {
-			return $matches[1];
+			return doubleval($matches[1]);
 		} else {
 			return null;
 		}
@@ -58,14 +57,15 @@ class GoogleInvoiceParser extends BaseParser {
 	public function createTransactions() {
 		$transactions = [];
 
-		$converted_amount = $this->amount * $this->exchange_rate;
+		$converted_amount = round($this->amount * $this->exchange_rate, 2);
 
 		// 2440 Leverantörsskulder
 		$transaction = new Transaction();
 		$transaction->account_id = 2440;
 		$transaction->date = $this->date;
 		$transaction->exchange_rate = $this->exchange_rate;
-		$transaction->credit = $this->amount;
+		$transaction->credit = $converted_amount;
+		$transaction->original_amount = $this->amount;
 		$transaction->currency = $this->currency;
 		$transactions[] = $transaction;
 
@@ -73,14 +73,14 @@ class GoogleInvoiceParser extends BaseParser {
 		$transaction = new Transaction();
 		$transaction->account_id = 2614;
 		$transaction->date = $this->date;
-		$transaction->credit = $converted_amount;
+		$transaction->credit = $converted_amount * 0.25;
 		$transactions[] = $transaction;
 
 		// 2645 Ingående moms utl.
 		$transaction = new Transaction();
 		$transaction->account_id = 2645;
 		$transaction->date = $this->date;
-		$transaction->debit = $converted_amount;
+		$transaction->debit = $converted_amount * 0.25;
 		$transactions[] = $transaction;
 
 		// 4646 EU / 4661 US
@@ -88,7 +88,8 @@ class GoogleInvoiceParser extends BaseParser {
 		$transaction->account_id = $transaction->currency == 'EUR' ? 4646 : 4661;
 		$transaction->date = $this->date;
 		$transaction->exchange_rate = $this->exchange_rate;
-		$transaction->debit = $this->amount;
+		$transaction->debit = $converted_amount;
+		$transaction->original_amount = $this->amount;
 		$transaction->currency = $this->currency;
 		$transactions[] = $transaction;		
 

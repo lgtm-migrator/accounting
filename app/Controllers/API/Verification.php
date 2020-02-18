@@ -4,6 +4,7 @@ use Spatie\PdfToText\Pdf;
 use App\Libraries\Parser\ParserFactory;
 use App\Models\TransactionModel;
 use App\Models\VerificationModel;
+use RuntimeException;
 
 class Verification extends ApiController {
 	public function index() {
@@ -16,12 +17,16 @@ class Verification extends ApiController {
 
 	public function create_from_pdf() {
 		// Get file information
-		if ($files = $this->request->getFiles()) {
-			foreach ($files as $file) {
-				$filename = $file->getName();
-				$filepath = $file->getPathName();
-			}
+		$file = $this->request->getFile('file');
+
+		if ($file == null) {
+			throw new RuntimeException("No file supplied for parameter 'file'.");
+		} elseif (!$file->isValid()) {
+			throw new RuntimeException($file->getErrorString().'('.$file->getError().')');
 		}
+		
+		$filename = $file->getName();
+		$filepath = $file->getPathName();
 
 		$text = Pdf::getText($filepath);
 		$verifications = ParserFactory::create($text);
@@ -52,6 +57,6 @@ class Verification extends ApiController {
 			}
 		}
 
-		return ":)";
+		return ApiController::STATUS_OK;
 	}
 }

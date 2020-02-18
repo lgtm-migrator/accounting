@@ -3,6 +3,8 @@
 use CodeIgniter\Controller;
 
 class ApiController extends Controller {
+	protected const STATUS_OK = '{"status": "OK"}';
+
 	public function initController(\CodeIgniter\HTTP\RequestInterface $request, \CodeIgniter\HTTP\ResponseInterface $response, \Psr\Log\LoggerInterface $logger)
 	{
 		// Do Not Edit This Line

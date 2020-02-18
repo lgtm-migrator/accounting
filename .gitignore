@@ -52,7 +52,7 @@ Vagrantfile
 #-------------------------
 # Temporary Files
 #-------------------------
-writeable/*
+writable/*
 
 writable/cache/*
 !writable/cache/index.html

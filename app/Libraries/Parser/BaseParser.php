@@ -6,7 +6,7 @@ abstract class BaseParser {
 	public $name;
 	public $description = '';
 	public $currency = null;
-	public $exchange_rate = 9.52; // TODO remove
+	public $exchange_rate = 10.35306300;
 	public $amount;
 	public $date;
 	public $invoice_id = null;
@@ -26,7 +26,7 @@ abstract class BaseParser {
 		$verification->invoice_id = $this->invoice_id;
 
 		if ($this->currency != null) {
-// 			$this->exchange_rate = exchangeRateToSek($parsed_object->currency, $parsed_object->date);
+// 			$this->exchange_rate = exchangeRateToSek($this->currency, $this->date);
 		}
 
 		$verification->transactions = $this->createTransactions();
