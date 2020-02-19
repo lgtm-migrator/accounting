@@ -2,6 +2,8 @@
 
 use CodeIgniter\Config\Services as CoreServices;
 use CodeIgniter\Config\BaseConfig;
+use App\Services\Auth;
+use App\Services\Parser\ParserFactory;
 
 require_once SYSTEMPATH . 'Config/Services.php';
 
@@ -20,6 +22,21 @@ require_once SYSTEMPATH . 'Config/Services.php';
  */
 class Services extends CoreServices
 {
+	public static function auth($getShared = true) {
+		if ($getShared) {
+			return static::getSharedInstance('auth');
+		}
+
+		return new Auth();
+	}
+
+	public static function parser($getShared = true) {
+		if ($getShared) {
+			return static::getSharedInstance('auth');
+		}
+
+		return new ParserFactory();
+	}
 
 	//    public static function example($getShared = true)
 	//    {

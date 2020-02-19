@@ -16,17 +16,20 @@ if (file_exists(SYSTEMPATH . 'Config/Routes.php'))
  * --------------------------------------------------------------------
  */
 $routes->setDefaultNamespace('App\Controllers');
-$routes->setDefaultController('Home');
+$routes->setDefaultController('Login');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 $routes->set404Override();
 $routes->setAutoRoute(true);
 
+// Website
+$routes->get('login', 'Login::index');
+$routes->post('login', 'Login::login');
+
 // API
 $routes->group('api', ['namespace' => 'App\Controllers\API'], function($routes) {
 	// Verification
 	$routes->get('verification', 'Verification::index');
-	$routes->post('verification/create', 'Verification::create');
 	$routes->post('verification/create_from_pdf', 'Verification::create_from_pdf');
 
 	// Account
@@ -41,7 +44,7 @@ $routes->group('api', ['namespace' => 'App\Controllers\API'], function($routes) 
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/', 'Home::index');
+$routes->get('/', 'Login::index');
 
 /**
  * --------------------------------------------------------------------

@@ -1,4 +1,4 @@
-<?php namespace App\Libraries\Parser;
+<?php namespace App\Services\Parser;
 
 use RuntimeException;
 

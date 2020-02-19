@@ -11,10 +11,6 @@ class Verification extends ApiController {
 		return 'Test';
 	}
 
-	public function create() {
-		
-	}
-
 	public function create_from_pdf() {
 		// Get file information
 		$file = $this->request->getFile('file');
