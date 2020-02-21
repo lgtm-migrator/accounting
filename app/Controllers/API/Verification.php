@@ -1,7 +1,5 @@
 <?php namespace App\Controllers\API;
 
-use Spatie\PdfToText\Pdf;
-use App\Libraries\Parser\ParserFactory;
 use App\Models\TransactionModel;
 use App\Models\VerificationModel;
 use RuntimeException;
@@ -24,9 +22,8 @@ class Verification extends ApiController {
 		$filename = $file->getName();
 		$filepath = $file->getPathName();
 
-		$text = Pdf::getText($filepath);
-		$text_layout = Pdf::getText($filepath, null, ['layout']);
-		$verifications = ParserFactory::create($text, $text_layout);
+		$parser = service('parser');
+		$verifications = $parser->parse($filepath);
 
 
 		// Save Verifications and transactions

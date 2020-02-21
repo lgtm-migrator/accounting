@@ -32,19 +32,9 @@ class Services extends CoreServices
 
 	public static function parser($getShared = true) {
 		if ($getShared) {
-			return static::getSharedInstance('auth');
+			return static::getSharedInstance('parser');
 		}
 
 		return new ParserFactory();
 	}
-
-	//    public static function example($getShared = true)
-	//    {
-	//        if ($getShared)
-	//        {
-	//            return static::getSharedInstance('example');
-	//        }
-	//
-	//        return new \CodeIgniter\Example();
-	//    }
 }

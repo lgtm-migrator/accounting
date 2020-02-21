@@ -1,9 +1,14 @@
 <?php namespace App\Services\Parser;
 
+use Spatie\PdfToText\Pdf;
 use RuntimeException;
 
 class ParserFactory {
-	public static function create(string &$text, string &$text_layout) {
+	public function parse(string &$filepath) {
+		// Read text
+		$text = Pdf::getText($filepath);
+		$text_layout = Pdf::getText($filepath, null, ['layout']);
+
 		// Google USD
 		if (strpos($text, '5345-5088-6911') !== FALSE) {
 			$parser = new GoogleInvoiceParser($text);

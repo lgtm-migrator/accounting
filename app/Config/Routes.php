@@ -16,14 +16,14 @@ if (file_exists(SYSTEMPATH . 'Config/Routes.php'))
  * --------------------------------------------------------------------
  */
 $routes->setDefaultNamespace('App\Controllers');
-$routes->setDefaultController('Login');
+$routes->setDefaultController('BaseController');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 $routes->set404Override();
 $routes->setAutoRoute(true);
 
 // Website
-$routes->get('login', 'Login::index');
+$routes->get('login', 'BaseController::index');
 $routes->post('login', 'Login::login');
 
 // API
