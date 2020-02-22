@@ -1,7 +1,5 @@
 <?php namespace App\Entities;
 
-use CodeIgniter\Entity;
-
 class Transaction extends Entity {
 	public function __construct($verification = null) {
 		parent::__construct();

@@ -30,7 +30,7 @@ class Services extends CoreServices
 		return new Auth();
 	}
 
-	public static function parser($getShared = true) {
+	public static function pdfParser($getShared = true) {
 		if ($getShared) {
 			return static::getSharedInstance('parser');
 		}

@@ -1,7 +1,5 @@
 <?php namespace App\Entities;
 
-use CodeIgniter\Entity;
-
 class Verification extends Entity {
 	public $transactions = [];
 

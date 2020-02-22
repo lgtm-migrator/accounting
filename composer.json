@@ -7,7 +7,8 @@
     "require": {
         "php": ">=7.2",
         "codeigniter4/framework": "^4@rc",
-        "spatie/pdf-to-text": "^1.2"
+        "spatie/pdf-to-text": "^1.2",
+        "paragonie/random-lib": "^2.0"
     },
     "require-dev": {
         "mikey179/vfsstream": "1.6.*",
