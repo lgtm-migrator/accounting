@@ -8,9 +8,11 @@ class Auth {
 	private $userModel = null;
 	private $loggedIn = false;
 	private $apiKey = null;
+	private $userId = null;
 
 	public function __construct() {
 		$this->userModel = new UserModel();
+		$this->readFromSession();
 	}
 
 	public function register($email, $password) {
@@ -21,6 +23,7 @@ class Auth {
 		$this->apiKey = $user->api_key;
 		$id = $this->userModel->insert($user);
 		$user->id = $id;
+		$this->userId = $id;
 		unset($user->password);
 		$this->loggedIn = true;
 		$this->saveToSession();
@@ -29,9 +32,7 @@ class Auth {
 
 	public function login($email, $password) {
 
-		$user = $this->userModel
-			->where('email', $email)
-			->first();
+		$user = $this->userModel->getByEmail($email);
 
 		if ($user && $user->verifyPassword($password)) {
 			unset($user->password);
@@ -48,20 +49,23 @@ class Auth {
 		return $this->userModel->countAll() > 0;
 	}
 
-	public function verifyApiKey($key) {
+	public function verifyApiKey($apiKey) {
+		log_message('debug', "Auth::verifyApiKey()");
 		$valid = false;
 		 if ($this->apiKey != null) {
-			 $valid = $this->apiKey == $key;
+			 $valid = $this->apiKey == $apiKey;
 		 }
 
 		 // Check against database
 		 if (!$valid) {
-			$user = $this->userModel->where('api_key', $key)->first();
+			$user = $this->userModel->getByApiKey($apiKey);
 
 			if ($user) {
+				log_message('debug', "Auth::verifyApiKey() Found user with apiKey: $apiKey");
 				$valid = true;
 				unset($user->password);
-				$this->apiKey = $key;
+				$this->apiKey = $apiKey;
+				$this->userId = $user->id;
 				$this->saveToSession();
 			}
 		 }
@@ -79,6 +83,10 @@ class Auth {
 		$this->saveToSession();
 	}
 
+	public function getUserId() {
+		return $this->userId;
+	}
+
 	private static function generateApiKey(): string {
 		$factory = new Factory();
 		$generator = $factory->getMediumStrengthGenerator();
@@ -86,21 +94,27 @@ class Auth {
 	}
 
 	private function saveToSession() {
-		$data = [
-			'Auth::loggedIn' => $this->loggedIn,
-			'Auth::apiKey' => $this->apiKey,
-		];
+		// $data = [
+		// 	'Auth::loggedIn' => $this->loggedIn,
+		// 	'Auth::apiKey' => $this->apiKey,
+		// 	'Auth::userId' => $this->userId,
+		// ];
 
-		$session = session();
-		$session->set($data);
+		// $session = session();
+		// $session->set($data);
+		// $session->destroy();
+		// log_message('debug', 'Auth::saveToSession() Saving auth to session');
 	}
 
 	private function readFromSession() {
-		$session = session();
+		// $session = session();
 
-		if ($session->has('Auth::loggedIn')) {
-			$this->loggedIn = $session->get('Auth::loggedIn');
-			$this->apiKey = $session->get('Auth::apiKey');
-		}
+		// if ($session->has('Auth::loggedIn')) {
+		// 	$this->loggedIn = $session->get('Auth::loggedIn');
+		// 	$this->apiKey = $session->get('Auth::apiKey');
+		// 	$this->userId = $session->get('Auth::userId');
+		// 	log_message('debug', 'Auth::readFromSession() Found session variables');
+		// }
+		// $session->destroy();
 	}
 } 

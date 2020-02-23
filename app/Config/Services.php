@@ -32,7 +32,7 @@ class Services extends CoreServices
 
 	public static function pdfParser($getShared = true) {
 		if ($getShared) {
-			return static::getSharedInstance('parser');
+			return static::getSharedInstance('pdfParser');
 		}
 
 		return new ParserFactory();

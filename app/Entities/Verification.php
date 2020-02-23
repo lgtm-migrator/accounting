@@ -20,4 +20,9 @@ class Verification extends Entity {
 	public function getYear() {
 		return substr($this->date, 0, 4);
 	}
+
+	public function jsonSerialize() {
+		$this->attributes['transactions'] = $this->transactions;
+		return parent::jsonSerialize();
+	}
 }

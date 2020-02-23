@@ -1,6 +1,7 @@
 <?php namespace App\Services\Parser;
 
 use App\Entities\Verification;
+use Config\Services;
 use RuntimeException;
 
 abstract class BaseParser {
@@ -35,6 +36,7 @@ abstract class BaseParser {
 	public function createVerifications() {
 		if (isset($this->currency) && $this->currency != 'SEK') {
 			helper('currency');
+			// TODO use the exchange rate
 // 			$this->exchange_rate = exchangeRateToSek($this->currency, $this->verification->date);
 		}
 
@@ -43,10 +45,14 @@ abstract class BaseParser {
 			$this->verifications = [$this->verification];
 		}
 
-		// Remove verifications that are labeled as SKIP
+		$auth = Services::auth();
 		$verification_count = count($this->verifications);
 		for ($i = 0; $i < $verification_count; ++$i) {
 			$verification = $this->verifications[$i];
+			// Set user_id for the verification
+			$verification->user_id = $auth->getUserId();
+
+			// Remove verifications that are labeled as SKIP
 			if ($verification->internal_name == BaseParser::SKIP) {
 				unset($this->verifications[$i]);
 			}

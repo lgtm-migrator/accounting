@@ -4,7 +4,7 @@ export const PageFunctionContext = createContext();
 
 class PageFunctionContextProvider extends React.Component {
   state = {
-    history: null
+    history: null,
   }
 
   render() {

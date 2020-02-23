@@ -20,7 +20,7 @@ $routes->setDefaultController('Home');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 $routes->set404Override();
-$routes->setAutoRoute(false);
+$routes->setAutoRoute(true);
 
 /**
  * --------------------------------------------------------------------
@@ -38,6 +38,7 @@ $routes->post('user/login', 'User::login');
 
 // Verification
 $routes->get('verifications', 'Verification::getAll');
+$routes->post('verification/create', 'Verification::create');
 $routes->post('verification/create_from_pdf', 'Verification::createFromPdf');
 
 // Account

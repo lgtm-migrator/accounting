@@ -8,6 +8,8 @@ import {
 } from 'react-router-dom';
 import Verifications from './pages/Verifications';
 import { PageFunctionContext } from './contexts/PageFunctions';
+import Menu from './pages/Menu';
+import PaymentNew from './pages/PaymentNew';
 
 class App extends React.Component {
   static contextType = PageFunctionContext;
@@ -21,21 +23,39 @@ class App extends React.Component {
   render() {
     this.context.history = this.props.history;
 
-    return (
+    let menu = '';
+    if (this.isLoggedIn) {
+      menu = (
+        <Menu />
+      );
+    }
 
-      <Switch>
-        <Route exact path="/verifications">
-          <Verifications />
-        </Route>
-        <Route exact path="/">
-          <Login />
-        </Route>
-      </Switch>
+    return (
+      <div id="flex">
+        {menu}
+        <div id="content">
+          <Switch>
+            <Route exact path="/verifications">
+              <Verifications />
+            </Route>
+            <Route exact path="/verification/paymentAdd">
+              <PaymentNew />
+            </Route>
+            <Route exact path="/">
+              <Login />
+            </Route>
+          </Switch>
+        </div>
+      </div>
     );
   }
 
+  isLoggedIn() {
+    return localStorage.getItem('apiKey') !== null;
+  }
+
   checkForRedirects() {
-    let loggedIn = sessionStorage.getItem('logged_in') !== null;
+    let loggedIn = this.isLoggedIn()
     let onLoginPage = this.props.location.pathname === '/';
 
     // Redirect to login page

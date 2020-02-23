@@ -15,4 +15,8 @@ class TransactionModel extends Model {
 		'original_amount',
 		'exchange_rate',
 	];
+
+	public function getByVerificationId($verificationId) {
+		return $this->where('verification_id', $verificationId)->findAll();
+	}
 }

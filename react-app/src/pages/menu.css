@@ -1,0 +1,26 @@
+#menu {
+	flex: 0 0 250px;
+	padding: var(--padding-default);
+	background-color: var(--outer-background-color);
+	border: var(--border-width) solid var(--border-color);
+	border-radius: var(--border-radius);
+}
+
+#menu .category {
+	background-color: var(--inner-background-color);
+	padding: var(--padding-small);
+	margin-bottom: 20px;
+}
+
+#menu .name {
+	font-size: large;
+	border-bottom: var(--border-width) solid var(--border-color);
+	padding-bottom: var(--padding-small);
+}
+
+#menu a {
+	display: block;
+	font-size: medium;
+	margin-top: var(--padding-small);
+	margin-bottom: var(--padding-small);
+}

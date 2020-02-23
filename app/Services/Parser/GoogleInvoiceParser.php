@@ -84,9 +84,9 @@ class GoogleInvoiceParser extends BaseParser {
 		$transaction->debit = $converted_amount * 0.25;
 		$verification->transactions[] = $transaction;
 
-		// 4646 EU / 4661 US
+		// 5421 EU / 5422 US
 		$transaction = new Transaction($verification);
-		$transaction->account_id = $this->currency == 'EUR' ? 4646 : 4661;
+		$transaction->account_id = $this->currency == 'EUR' ? 5421 : 5422;
 		$transaction->exchange_rate = $this->exchange_rate;
 		$transaction->debit = $converted_amount;
 		$transaction->original_amount = $verification->total;

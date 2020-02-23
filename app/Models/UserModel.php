@@ -11,4 +11,12 @@ class UserModel extends Model {
 		"name",
 		"api_key"
 	];
+
+	public function getByApiKey($apiKey) {
+		return $this->where('api_key', $apiKey)->first();
+	}
+
+	public function getByEmail($email) {
+		return $this->where('email', $email)->first();
+	}
 }

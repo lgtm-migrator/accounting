@@ -54,7 +54,9 @@ class LoginForm extends React.Component {
     ).then(response => {
       console.log(response);
       if (typeof response.data !== 'undefined') {
-        sessionStorage.setItem('logged_in', true);
+        const apiKey = response.data.api_key;
+        localStorage.setItem('apiKey', apiKey);
+        console.log('ApiKey: ' + apiKey);
         this.context.history.push('/verifications')
       } else {
         console.log('Failed to log in');

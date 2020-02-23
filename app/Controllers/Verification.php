@@ -1,12 +1,42 @@
 <?php namespace App\Controllers;
 
+use App\Models\AccountModel;
 use App\Models\TransactionModel;
 use App\Models\VerificationModel;
 use RuntimeException;
 
 class Verification extends ApiController {
-	public function getAll() {
-		return 'Test';
+	public function getAll($fiscalId = null) {
+		$verificationModel = new VerificationModel();
+		$transactionModel = new TransactionModel();
+		$accountModel = new AccountModel();
+
+		$userId = \Config\Services::auth()->getUserId();
+		if ($userId === null) {
+			return $this->fail('Failed to get user');
+		}
+
+		$verifications = $verificationModel->getAll($userId, $fiscalId);
+
+		// Get all transactions
+		foreach ($verifications as $verification) {
+			$verification->transactions = $transactionModel->getByVerificationId($verification->id);
+
+			// Get all account names for the transactions
+			foreach ($verification->transactions as $transaction) {
+				$account = $accountModel->find($transaction->account_id);
+
+				if ($account) {
+					$transaction->account_name = $account->name;
+				}
+			}
+		}
+
+		return $this->respond($verifications);
+	}
+
+	public function create() {
+		
 	}
 
 	public function createFromPdf() {
