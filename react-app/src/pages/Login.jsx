@@ -3,6 +3,7 @@ import TextInput from '../ui/TextInput'
 import Button from '../ui/Button'
 import { PageFunctionContext } from '../contexts/PageFunctions'
 import Axios from 'axios';
+import config from '../config';
 
 class Login extends React.Component {
   render() {
@@ -49,7 +50,7 @@ class LoginForm extends React.Component {
     event.preventDefault();
 
     Axios.post(
-      'https://accounting-dev.senth.org/user/login',
+      config.apiUrl('/user/login'),
       this.state
     ).then(response => {
       console.log(response);

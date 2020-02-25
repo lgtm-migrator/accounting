@@ -3,6 +3,7 @@
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\Filters\FilterInterface;
+use Config\Services;
 
 class AuthFilter implements FilterInterface {
 	public function before(RequestInterface $request) {
@@ -29,16 +30,23 @@ class AuthFilter implements FilterInterface {
 		}
 
 		// Verify API key
+		$errorMessage = '';
 		if ($apiKey) {
 			if ($auth->verifyApiKey($apiKey)) {
 				log_message('debug', 'AuthFilter::before() Authorized through api_key');
 				return;
+			} else {
+				$errorMessage = 'Invalid API key.';
 			}
+		} else {
+			$errorMessage = 'Missing API key.';
 		}
-		
-		// TODO redirect to login page '/';
+
+		// Access denied
 		log_message('debug', 'AuthFilter::before() Not authorized, redirecting to /');
-		return redirect('/');
+		$response = Services::response();
+		$response->setStatusCode(401, $errorMessage);
+		return $response;
 	}
 
 	public function after(RequestInterface $request, ResponseInterface $response) {

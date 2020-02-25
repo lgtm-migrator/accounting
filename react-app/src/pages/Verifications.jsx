@@ -2,6 +2,7 @@ import React from 'react';
 import { PageFunctionContext } from '../contexts/PageFunctions';
 import Axios from 'axios';
 import './verifications.css'
+import config from '../config';
 
 class Verifications extends React.Component {
   static contextType = PageFunctionContext;
@@ -32,9 +33,8 @@ class Verifications extends React.Component {
   }
 
   async componentDidMount() {
-    const apiKey = localStorage.getItem('apiKey');
     Axios.get(
-      "https://accounting-dev.senth.org/verifications?apiKey=" + apiKey
+      config.apiUrl("/verifications")
     ).then(response => {
       if (typeof response.data !== 'undefined') {
         this.setState({ verifications: response.data });
@@ -74,8 +74,7 @@ class Transactions extends React.Component {
         date={transaction.date}
         accountId={transaction.account_id}
         accountName={transaction.account_name}
-        debit={transaction.debit}
-        credit={transaction.credit}
+        amount={transaction.amount}
         currency={transaction.currency}
         originalAmount={transaction.original_amount}
       />
@@ -98,8 +97,16 @@ class Transactions extends React.Component {
 class Transaction extends React.Component {
   render() {
     // Format the amount
-    const debit = this.formatAmount(this.props.debit);
-    const credit = this.formatAmount(this.props.credit);
+    let credit = this.props.credit;
+    let debit = this.props.debit;
+    // Debit
+    if (this.props.amount > 0) {
+      debit = this.formatAmount(this.props.amount);
+      credit = this.formatAmount(0);
+    } else if (this.props.amount < 0) {
+      debit = this.formatAmount(0);
+      credit = this.formatAmount(-this.props.amount);
+    }
 
     // Add extra currency information
     let renderCurrency = '';
@@ -134,7 +141,7 @@ class Transaction extends React.Component {
 
   formatAmount(amount) {
     if (amount) {
-      return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return parseFloat(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     } else {
       return this.formatAmount("0.00");
     }

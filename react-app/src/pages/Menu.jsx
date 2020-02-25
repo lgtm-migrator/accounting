@@ -10,6 +10,9 @@ class Menu extends React.Component {
 					<NavLink to="/verification/paymentAdd">
 						Payment
 					</NavLink>
+					<NavLink to="/verification/transactionAdd">
+						Transaction
+					</NavLink>
 
 				</MenuCategory>
 				<MenuCategory name="Info">

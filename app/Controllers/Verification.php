@@ -1,5 +1,6 @@
 <?php namespace App\Controllers;
 
+use App\Libraries\VerificationFactory;
 use App\Models\AccountModel;
 use App\Models\TransactionModel;
 use App\Models\VerificationModel;
@@ -36,50 +37,71 @@ class Verification extends ApiController {
 	}
 
 	public function create() {
-		
+		$json = $this->request->getPost('json');
+		log_message('debug', "JSON:\n$json");
+		$input = json_decode($json, true);
+		$file = $this->getFile();
+
+		$verificationFactory = new VerificationFactory($input);
+		$verificationFactory->setInternalName('MANUAL');
+		$verification = $verificationFactory->create();
+
+		$this->saveVerification($verification, $file);
+
+		return $this->respondCreated(null, 'Verification successfully created');
 	}
 
 	public function createFromPdf() {
 		// Get file information
-		$file = $this->request->getFile('file');
-
-		if ($file == null) {
-			throw new RuntimeException("No file supplied for parameter 'file'.");
-		} elseif (!$file->isValid()) {
-			throw new RuntimeException($file->getErrorString().'('.$file->getError().')');
-		}
-		
-		$filename = $file->getName();
+		$file = $this->getFile();
 		$filepath = $file->getPathName();
 
 		$parser = \Config\Services::pdfParser();
 		$verifications = $parser->parse($filepath);
 
-		// Save Verifications and transactions
+		$this->saveVerifications($verifications, $file);
+
+		return ApiController::STATUS_OK;
+	}
+
+	private function getFile() {
+		return $this->request->getFile('file');
+	}
+
+	private function saveVerifications(&$verifications, &$file) {
+		foreach ($verifications as $verification) {
+			$this->saveVerification($verification, $file);
+		}
+	}
+
+	private function saveVerification(&$verification, &$file) {
+
+
 		helper('verification_file');
 		$verificationModel = new VerificationModel();
 		$transactionModel = new TransactionModel();
-		foreach ($verifications as $verification) {
-			// Check for duplicates
-			if ($verificationModel->isDuplicate($verification)) {
-				continue;
-			}
-
-			// Copy (save) PDF to verifications for the correct year
-			saveVerificationFile($filepath, $filename, $verification);
-
-			// Save verification
-			$verification->id = $verificationModel->insert($verification);
-			
-			// Bind transactions to the created verifications
-			$verification->updateIdForTransactions();
-
-			// Save transactions
-			foreach ($verification->transactions as $transaction) {
-				$transactionModel->save($transaction);
-			}
+		
+		// Check for duplicates
+		if ($verificationModel->isDuplicate($verification)) {
+			return;
 		}
 
-		return ApiController::STATUS_OK;
+		// Copy (save) PDF to verifications for the correct year
+		if ($file) {
+			$filename = $file->getName();
+			$filepath = $file->getPathName();
+			saveVerificationFile($filepath, $filename, $verification);
+		}
+
+		// Save verification
+		$verification->id = $verificationModel->insert($verification);
+		
+		// Bind transactions to the created verifications
+		$verification->updateIdForTransactions();
+
+		// Save transactions
+		foreach ($verification->transactions as $transaction) {
+			$transactionModel->save($transaction);
+		}
 	}
 }

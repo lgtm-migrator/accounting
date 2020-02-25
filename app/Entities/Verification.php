@@ -4,8 +4,11 @@ class Verification extends Entity {
 	public $transactions = [];
 
 	// All verification types
-	public const TYPE_INVOICE = 'INVOICE';
-	public const TYPE_PAYMENT = 'PAYMENT';
+	public const TYPE_INVOICE_IN = 'INVOICE_IN';
+	public const TYPE_INVOICE_IN_PAYMENT = 'INVOICE_IN_PAYMENT';
+	public const TYPE_INVOICE_OUT = 'INVOICE_OUT';
+	public const TYPE_INVOICE_OUT_PAYMENT = 'INVOICE_OUT_PAYMENT';
+	public const TYPE_PAYMENT_DIRECT = 'PAYMENT_DIRECT';
 	public const TYPE_TRANSACTION = 'TRANSACTION';
 
 

@@ -2,6 +2,7 @@
 
 use App\Entities\Verification;
 use App\Entities\Transaction;
+use Config\Services;
 use RuntimeException;
 
 class TaxAccountParser extends BaseParser {
@@ -9,8 +10,12 @@ class TaxAccountParser extends BaseParser {
 
 	public function __construct(string &$text_layout) {
 		$this->verifications = [];
-		$this->parse($text_layout);
-		$this->createInternalNames();
+		$this->text_layout = $text_layout;
+	}
+
+	public function createVerifications()	{
+		$this->parse($this->text_layout);
+		return $this->verifications;
 	}
 
 	private function parse(string &$text_layout) {
@@ -20,12 +25,20 @@ class TaxAccountParser extends BaseParser {
 			throw new RuntimeException("Could not parse the PDF as TaxAccountParser");
 		}
 
+		$user_id = Services::auth()->getUserId();
+
 		foreach ($matches_arr as $matches) {
 			$verification = new Verification();
-			$verification->date = TaxAccountParser::parseDate($matches[1]);
+			$verification->user_id = $user_id;
+			$verification->date = static::parseDate($matches[1]);
+			$verification->type = Verification::TYPE_TRANSACTION;
 			$verification->name = "Skattekonto - $matches[2]";
-			$verification->total = BaseParser::convertToValidAmount($matches[3]);
-			$this->verifications[] = $verification;
+			$this->createInternalName($verification);
+			if ($verification->internal_name !== BaseParser::SKIP) {
+				$verification->total = static::convertToValidAmount($matches[3]);
+				$this->createTransactions($verification);
+				$this->verifications[] = $verification;
+			}
 		}
 	}
 
@@ -33,38 +46,36 @@ class TaxAccountParser extends BaseParser {
 		return '20' . substr($date, 0, 2) . '-' . substr($date, 2, 2) . '-' . substr($date, 4);
 	}
 
-	private function createInternalNames() {
-		foreach ($this->verifications as $verification) {
-			$name = $verification->name;
+	private function createInternalName($verification) {
+		$name = $verification->name;
 
-			// Preliminärskatt
-			if (strpos($name, 'preliminärskatt') !== FALSE) {
-				$verification->internal_name = BaseParser::TAX_ACCOUNT_PRELIMINARY_TAX;
-			}
-			// Inbetalning (SKIP)
-			elseif (strpos($name, 'Inbetalning') !== FALSE) {
-				$verification->internal_name = BaseParser::SKIP;
-			}
-			// Utbetalning
-			elseif (strpos($name, 'Utbetalning') !== FALSE) {
-				$verification->internal_name = BaseParser::TAX_ACCOUNT_PAYOUT;
-			}
-			// Moms
-			elseif (strpos($name, 'Moms') !== FALSE) {
-				$verification->internal_name = BaseParser::TAX_ACCOUNT_TAX_COLLECT;
-			}
-			// Intäktsränta
-			elseif (strpos($name, 'Intäktsränta') !== FALSE) {
-				$verification->internal_name = BaseParser::TAX_ACCOUNT_INTEREST_INCOME;
-			}
-			// Kostnadsränta
-			elseif (strpos($name, 'ostnadsränta') !== FALSE) {
-				$verification->internal_name = BaseParser::TAX_ACCOUNT_INTEREST_EXPENSE;
-			}
-			// Invalid parse
-			else {
-				throw new RuntimeException("Couldn't parse Tax Account row: $name, unknown type");
-			}
+		// Preliminärskatt
+		if (strpos($name, 'preliminärskatt') !== FALSE) {
+			$verification->internal_name = BaseParser::TAX_ACCOUNT_PRELIMINARY_TAX;
+		}
+		// Inbetalning (SKIP)
+		elseif (strpos($name, 'Inbetalning') !== FALSE) {
+			$verification->internal_name = BaseParser::SKIP;
+		}
+		// Utbetalning
+		elseif (strpos($name, 'Utbetalning') !== FALSE) {
+			$verification->internal_name = BaseParser::TAX_ACCOUNT_PAYOUT;
+		}
+		// Moms
+		elseif (strpos($name, 'Moms') !== FALSE) {
+			$verification->internal_name = BaseParser::TAX_ACCOUNT_TAX_COLLECT;
+		}
+		// Intäktsränta
+		elseif (strpos($name, 'Intäktsränta') !== FALSE) {
+			$verification->internal_name = BaseParser::TAX_ACCOUNT_INTEREST_INCOME;
+		}
+		// Kostnadsränta
+		elseif (strpos($name, 'ostnadsränta') !== FALSE) {
+			$verification->internal_name = BaseParser::TAX_ACCOUNT_INTEREST_EXPENSE;
+		}
+		// Invalid parse
+		else {
+			throw new RuntimeException("Couldn't parse Tax Account row: $name, unknown type");
 		}
 	}
 

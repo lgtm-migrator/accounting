@@ -4,6 +4,7 @@ use CodeIgniter\Config\Services as CoreServices;
 use CodeIgniter\Config\BaseConfig;
 use App\Services\Auth;
 use App\Services\Parser\ParserFactory;
+use App\Services\VerificationFactory;
 
 require_once SYSTEMPATH . 'Config/Services.php';
 

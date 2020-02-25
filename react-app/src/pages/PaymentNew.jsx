@@ -1,32 +1,50 @@
 import React from 'react';
-import Select from '../ui/Select';
-import TextInput from '../ui/TextInput';
+import './payment_new.css';
+import AccountSelect, { getAllAccountsAsOptions } from '../helpers/AccountInfo';
+import Axios from 'axios';
+import config from '../config';
+import VerificationInfo from '../ui/VerificationEdit';
+
+const INVOICE_IN = 'INVOICE_IN';
+const INVOICE_IN_PAYMENT = 'INVOICE_IN_PAYMENT';
+const PAYMENT_DIRECT = 'PAYMENT_DIRECT';
 
 class PaymentNew extends React.Component {
 	constructor(props) {
 		super(props);
 
+		this.fileRef = React.createRef();
+
 		this.onSubmit = this.onSubmit.bind(this);
 		this.onChange = this.onChange.bind(this);
 		this.onTypeChange = this.onTypeChange.bind(this);
+		this.onAccountToChange = this.onAccountToChange.bind(this);
+		this.onAccountFromChange = this.onAccountFromChange.bind(this);
+		this.onGetAllAccounts = this.onGetAllAccounts.bind(this);
 	}
 
 	state = {
 		header: '',
-		date: '',
-		type: '',
-		name: '',
-		file: '',
-		amount: '',
-		originalAmount: '',
-		currency: 'SEK',
-		accountCost: '',
-		accountFrom: 2440,
-		reverseVat: true,
+		input: {
+			date: '',
+			type: '',
+			name: '',
+			invoice_amount: '',
+			payed_in_sek: '',
+			currency: 'SEK',
+			account_to: null,
+			account_from: null,
+		},
+		accounts: {},
 	}
 
 	componentDidMount() {
-		this.onTypeChange('INVOICE_IN');
+		getAllAccountsAsOptions(this.onGetAllAccounts);
+	}
+
+	onGetAllAccounts(accounts) {
+		this.setState({ accounts: accounts });
+		this.onTypeChange(INVOICE_IN);
 	}
 
 	render() {
@@ -34,36 +52,36 @@ class PaymentNew extends React.Component {
 			<div id="paymentNew">
 				<h1>{this.state.header}</h1>
 				<form onSubmit={this.onSubmit}>
-					<div className="verification">
-						<input type="text" name="date" placeholder="Date" value={this.state.date} onChange={this.onChange} />
-						{this.renderSelectType()}
-						<input type="text" name="name" placeholder="Name" value={this.state.name} onChange={this.onChange} />
-					</div>
+					<VerificationInfo
+						date={this.state.input.date}
+						name={this.state.input.name}
+						options={this.getSelectOptions()}
+						fileRef={this.fileRef}
+						onChange={this.onChange}
+						onTypeChange={this.onTypeChange}
+					/>
 					<div className="info">
-						<p>
-							<span className="label">Payed</span>
-							<input type="text" name="amount" placeholder="Amount" value={this.state.amount} onChange={this.onChange} />
-							<input type="text" className="currency" name="currency" placeholder="Currency" value={this.state.currency} onChange={this.onChange} />
-						</p>
-						<p className={this.state.currency === 'SEK' ? 'hidden' : ''}>
-							<span className="label">Original amount</span>
-							<input type="text" name="originalAmount" value={this.state.originalAmount} onChange={this.onChange} />
-						</p>
-						<p>
-							<span className="label">Cost Account</span>
-							<input type="text" name="accountCost" placeholder="Cost Account" value={this.state.accountCost} onChange={this.onChange} />
-						</p>
-						<p className={this.state.currency === 'SEK' ? 'hidden' : ''}>
-							<span className="label">Reverse VAT?</span>
-							<input type="checkbox" name="reverseVat" checked={this.state.reverseVat} onChange={this.onChange} />
-						</p>
-						<p>
-							<span className="label">From Account</span>
-							<input type="text" name="accountFrom" placeholder="Payed from account" value={this.state.accountFrom} onChange={this.onChange} />
-						</p>
+						<div>
+							<span className="label">{this.state.type === PAYMENT_DIRECT ? 'Payed' : 'Invoice'} amount</span>
+							<input type="text" name="invoice_amount" placeholder="Amount" value={this.state.input.invoice_amount} onChange={this.onChange} />
+							<input type="text" className="currency" name="currency" placeholder="Currency" value={this.state.input.currency} onChange={this.onChange} />
+						</div>
+						<div className={this.state.input.currency === 'SEK' || this.state.input.type === INVOICE_IN ? 'hidden' : ''}>
+							<span className="label">Payed in SEK</span>
+							<input type="text" name="payed_in_sek" placeholder="Amount" value={this.state.input.payed_in_sek} onChange={this.onChange} />
+						</div>
+						<div className={this.state.input.type === INVOICE_IN_PAYMENT ? 'hidden' : ''}>
+							<span className="label">Cost account (credit)</span>
+							<AccountSelect name="account_to" placeholder="Cost account" options={this.state.accounts} value={this.state.input.account_to} onChange={this.onAccountToChange} />
+						</div>
+						<div className={this.state.input.type === INVOICE_IN ? 'hidden' : ''}>
+							<span className="label">From account (debit)</span>
+							<AccountSelect name="account_from" placeholder="Payed from account" options={this.state.accounts} value={this.state.input.account_from} onChange={this.onAccountFromChange} />
+						</div>
 					</div>
+					<input type="submit" value="Add" />
 				</form>
-			</div>
+			</div >
 		);
 	}
 
@@ -75,27 +93,90 @@ class PaymentNew extends React.Component {
 		}
 	}
 
-	renderSelectType() {
-		const options = [
-			{ value: 'INVOICE_IN', label: 'Invoice' },
-			{ value: 'INVOICE_IN_PAYMENT', label: 'Payed invoice' },
-			{ value: 'PAYMENT_DIRECT', label: 'Payed directly' }
-		];
-		return (
-			<Select options={options} default="INVOICE_IN" onChange={this.onTypeChange} />
-		);
+	getSelectOptions() {
+		return [
+			{ value: INVOICE_IN, label: 'Invoice' },
+			{ value: INVOICE_IN_PAYMENT, label: 'Payed invoice' },
+			{ value: PAYMENT_DIRECT, label: 'Payed directly' }
+		]
 	}
 
-	onSubmit(event) {
+	async onSubmit(event) {
 		event.preventDefault();
+
+		let accountData = {}
+		// Account From
+		if (this.state.input.account_from !== null) {
+			accountData = {
+				account_from: this.state.input.account_from.value
+			}
+		}
+		// Account to
+		if (this.state.input.account_to !== null) {
+			accountData = {
+				...accountData,
+				account_to: this.state.input.account_to.value
+			}
+		}
+
+		let toJson = {
+			...this.state.input,
+			...accountData,
+		}
+		const formData = new FormData();
+		formData.append('json', JSON.stringify(toJson));
+		formData.append('file', this.fileRef.current.files[0]);
+
+		Axios.post(
+			config.apiUrl('/verification/create'),
+			formData, {
+			headers: {
+				'Content-Type': 'multipart/form-data'
+			}
+		}).then(response => {
+			if (typeof response.data !== 'undefined') {
+
+			}
+		}).catch(error => {
+			console.log(error);
+		});
 	}
 
 	onChange(event) {
-		this.setState({ [event.target.name]: event.target.value });
+		this.setState({
+			input: {
+				...this.state.input,
+				[event.target.name]: event.target.value
+			}
+		});
+	}
+
+	onAccountToChange(selectedOption) {
+		this.setState({
+			input: {
+				...this.state.input,
+				account_to: selectedOption
+			}
+		});
+	}
+
+	onAccountFromChange(selectedOption) {
+		console.log(selectedOption);
+		this.setState({
+			input: {
+				...this.state.input,
+				account_from: selectedOption
+			}
+		});
 	}
 
 	onTypeChange(type) {
-		this.setState({ type: type });
+		this.setState(prevState => ({
+			input: {
+				...prevState.input,
+				type: type
+			}
+		}));
 		switch (type) {
 			case 'INVOICE_IN':
 				this.setState({ header: 'New Invoice Received' });

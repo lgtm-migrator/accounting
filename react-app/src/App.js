@@ -10,6 +10,7 @@ import Verifications from './pages/Verifications';
 import { PageFunctionContext } from './contexts/PageFunctions';
 import Menu from './pages/Menu';
 import PaymentNew from './pages/PaymentNew';
+import TransactionNew from './pages/TransactionNew';
 
 class App extends React.Component {
   static contextType = PageFunctionContext;
@@ -40,6 +41,9 @@ class App extends React.Component {
             </Route>
             <Route exact path="/verification/paymentAdd">
               <PaymentNew />
+            </Route>
+            <Route exact path="/verification/transactionAdd">
+              <TransactionNew />
             </Route>
             <Route exact path="/">
               <Login />

@@ -6,6 +6,12 @@ use RuntimeException;
 class Account extends ApiController {
 	private $accountModel;
 
+	public function getAll() {
+		$accountModel = new AccountModel();
+		$accounts = $accountModel->orderBy('id', 'ASC')->findAll();
+		return $this->respond($accounts);
+	}
+
 	public function fill() {
 		$file = $this->request->getFile('file');
 

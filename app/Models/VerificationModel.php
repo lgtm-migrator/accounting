@@ -7,7 +7,6 @@ class VerificationModel extends Model {
 	protected $returnType = 'App\Entities\Verification';
 	protected $allowedFields = [
 		'user_id',
-		'fiscal_id',
 		'verification_number',
 		'date',
 		'commit_date',
@@ -33,10 +32,11 @@ class VerificationModel extends Model {
 
 	public function getAll(int $userId, $fiscalId = null) {
 		$builder = $this->where('user_id', $userId);
-		
-		if ($fiscalId) {
-			$builder = $builder->where('fiscal_id', $fiscalId);
-		}
+
+		// TODO fiscal ID
+		// if ($fiscalId) {
+		// 	$builder = $builder->where('fiscal_id', $fiscalId);
+		// }
 		
 		$builder = $builder->orderBy('date', 'ASC');
 		

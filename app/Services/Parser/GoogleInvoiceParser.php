@@ -1,29 +1,38 @@
 <?php namespace App\Services\Parser;
 
-use App\Entities\Transaction;
 use App\Entities\Verification;
+use App\Libraries\VerificationFactory;
 use DateTime;
 
 class GoogleInvoiceParser extends BaseParser {
 	public function __construct(string &$text) {
-		parent::__construct();
-		$verification = $this->verification;
-		$verification->type = Verification::TYPE_INVOICE;;
-
-		$this->currency = $this->findCurrency($text);
-		$verification->total = $this->findTotal($text);
-		$this->setDate($this->findDate($text));
-
-		if ($this->currency == 'EUR') {
-			$verification->name = 'Google G Suite (faktura)';
-			$verification->internal_name = BaseParser::GOOGLE_INVOICE_G_SUITE_EUR;
-		} elseif ($this->currency == 'USD') {
-			$verification->name = 'Google Cloud Platform (faktura)';
-			$verification->internal_name = BaseParser::GOOGLE_INVOICE_CLOUD_PLATFORM_USD;
-		}
+		$this->text = $text;
 	}
 
-	private function findDate(string &$text) {
+	protected function createVerifications() {
+		$verificationFactory = new VerificationFactory();
+		$verificationFactory
+			->setType(Verification::TYPE_INVOICE_IN)
+			->setCurrency(static::findCurrency($this->text))
+			->setInvoiceAmount(static::findTotal($this->text))
+			->setDate(static::convertDate(static::findDate($this->text)))
+			->setReverseVat(true);
+
+		if ($verificationFactory->getCurrency() === 'EUR') {
+			$verificationFactory
+				->setName('Google G Suite (faktura)')
+				->setInternalName(BaseParser::GOOGLE_INVOICE_G_SUITE_EUR)
+				->setAccountTo(5421);
+		} elseif ($verificationFactory->getCurrency() === 'USD') {
+			$verificationFactory
+				->setName('Google Cloud Platform (faktura)')
+				->setInternalName(BaseParser::GOOGLE_INVOICE_CLOUD_PLATFORM_USD)
+				->setAccountTo(5422);
+		}
+		return $verificationFactory->create();
+	}
+
+	private static function findDate(string &$text) {
 		$found = preg_match('/[JFMASOND][aepuco][nbrylgptvc]\ \d{2},\ 20\d{2}/', $text, $matches);
 
 		if ($found === 1) {
@@ -33,7 +42,7 @@ class GoogleInvoiceParser extends BaseParser {
 		}
 	}
 
-	private function findCurrency(string &$text) {
+	private static function findCurrency(string &$text) {
 		if (strpos($text, 'EUR') !== FALSE) {
 			return 'EUR';
 		} elseif (strpos($text, 'USD') !== FALSE) {
@@ -43,7 +52,7 @@ class GoogleInvoiceParser extends BaseParser {
 		}
 	}
 
-	private function findTotal(string &$text) {
+	private static function findTotal(string &$text) {
 		$found = preg_match('/[$€](\d{1,2}\.\d{2})/', $text, $matches);
 
 		if ($found === 1) {
@@ -54,43 +63,8 @@ class GoogleInvoiceParser extends BaseParser {
 	}
 
 	// Convert date from Jan 31, 2019 --> 2019-01-31
-	private function setDate($date) {
+	private static function convertDate($date) {
 		$date_time = DateTime::createFromFormat('M d, Y', $date);
-		$this->verification->date = $date_time->format('Y-m-d');
-	}
-
-	public function createTransactions(&$verification) {
-		$converted_amount = $this->getConvertedTotal();
-		$verification = $this->verification;
-
-		// 2440 Leverantörsskulder
-		$transaction = new Transaction($verification);
-		$transaction->account_id = 2440;
-		$transaction->exchange_rate = $this->exchange_rate;
-		$transaction->credit = $converted_amount;
-		$transaction->original_amount = $verification->total;
-		$transaction->currency = $this->currency;
-		$verification->transactions[] = $transaction;
-
-		// 2614 Utgående moms utl.
-		$transaction = new Transaction($verification);
-		$transaction->account_id = 2614;
-		$transaction->credit = $converted_amount * 0.25;
-		$verification->transactions[] = $transaction;
-
-		// 2645 Ingående moms utl.
-		$transaction = new Transaction($verification);
-		$transaction->account_id = 2645;
-		$transaction->debit = $converted_amount * 0.25;
-		$verification->transactions[] = $transaction;
-
-		// 5421 EU / 5422 US
-		$transaction = new Transaction($verification);
-		$transaction->account_id = $this->currency == 'EUR' ? 5421 : 5422;
-		$transaction->exchange_rate = $this->exchange_rate;
-		$transaction->debit = $converted_amount;
-		$transaction->original_amount = $verification->total;
-		$transaction->currency = $this->currency;
-		$verification->transactions[] = $transaction;		
+		return $date_time->format('Y-m-d');
 	}
 }

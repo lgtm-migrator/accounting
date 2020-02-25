@@ -42,6 +42,7 @@ $routes->post('verification/create', 'Verification::create');
 $routes->post('verification/create_from_pdf', 'Verification::createFromPdf');
 
 // Account
+$routes->get('accounts', 'Account::getAll');
 $routes->post('account/fill', 'Account::fill');
 
 /**

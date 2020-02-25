@@ -30,6 +30,6 @@ class ParserFactory {
 			throw new RuntimeException('No parser defined for PDF');
 		}
 
-		return $parser->createVerifications();
+		return $parser->getVerifications();
 	}
 }

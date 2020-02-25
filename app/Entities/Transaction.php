@@ -8,17 +8,20 @@ class Transaction extends Entity {
 		}
 	}
 
-	public function setDebit($amount) {
-		$this->attributes['debit'] = $amount;
+	public function setAmount($amount) {
+		$this->attributes['amount'] = static::getRoundedValue($amount);
 		$this->setOriginalAmountIfNotSet($amount);
+	}
+
+	public function setDebit($amount) {
+		$this->setAmount($amount);
 	}
 
 	public function setCredit($amount) {
-		$this->attributes['credit'] = $amount;
-		$this->setOriginalAmountIfNotSet($amount);
+		$this->setAmount(-$amount);
 	}
 
-	private function getRoundedValue($amount) {
+	private static function getRoundedValue($amount) {
 		return round($amount, 2);
 	}
 
