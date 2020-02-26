@@ -1,18 +1,15 @@
-import React from 'react';
-import { PageFunctionContext } from '../contexts/PageFunctions';
-import Axios from 'axios';
+import React from 'react'
+import Axios from 'axios'
 import './verifications.css'
-import config from '../config';
+import config from '../config'
 
 class Verifications extends React.Component {
-  static contextType = PageFunctionContext;
-
   state = {
     verifications: []
   }
 
   render() {
-    const verifications = this.state.verifications;
+    const verifications = this.state.verifications
     const listVerifications = verifications.map((verification) =>
       <Verification
         key={verification.id}
@@ -21,7 +18,7 @@ class Verifications extends React.Component {
         date={verification.date}
         transactions={verification.transactions}
       />
-    );
+    )
     return (
       <React.Fragment>
         <h1>Verifications</h1>
@@ -29,7 +26,7 @@ class Verifications extends React.Component {
           {listVerifications}
         </div>
       </React.Fragment>
-    );
+    )
   }
 
   async componentDidMount() {
@@ -37,11 +34,11 @@ class Verifications extends React.Component {
       config.apiUrl("/verifications")
     ).then(response => {
       if (typeof response.data !== 'undefined') {
-        this.setState({ verifications: response.data });
+        this.setState({ verifications: response.data })
       }
     }).catch(error =>
       console.log(error)
-    );
+    )
   }
 }
 
@@ -49,7 +46,7 @@ class Verification extends React.Component {
   render() {
     let number = '#???'
     if (this.props.number !== null) {
-      number = '#' + this.props.number;
+      number = '#' + this.props.number
     }
 
     return (
@@ -61,13 +58,13 @@ class Verification extends React.Component {
         </div>
         <Transactions transactions={this.props.transactions} />
       </div>
-    );
+    )
   }
 }
 
 class Transactions extends React.Component {
   render() {
-    const transactions = this.props.transactions;
+    const transactions = this.props.transactions
     const listTransactions = transactions.map((transaction) =>
       <Transaction
         key={transaction.id}
@@ -78,7 +75,7 @@ class Transactions extends React.Component {
         currency={transaction.currency}
         originalAmount={transaction.original_amount}
       />
-    );
+    )
     return (
       <div className="transactions">
         <Transaction
@@ -90,31 +87,31 @@ class Transactions extends React.Component {
         />
         {listTransactions}
       </div>
-    );
+    )
   }
 }
 
 class Transaction extends React.Component {
   render() {
     // Format the amount
-    let credit = this.props.credit;
-    let debit = this.props.debit;
+    let credit = this.props.credit
+    let debit = this.props.debit
     // Debit
     if (this.props.amount > 0) {
-      debit = this.formatAmount(this.props.amount);
-      credit = this.formatAmount(0);
+      debit = this.formatAmount(this.props.amount)
+      credit = this.formatAmount(0)
     } else if (this.props.amount < 0) {
-      debit = this.formatAmount(0);
-      credit = this.formatAmount(-this.props.amount);
+      debit = this.formatAmount(0)
+      credit = this.formatAmount(-this.props.amount)
     }
 
     // Add extra currency information
-    let renderCurrency = '';
+    let renderCurrency = ''
     if (typeof this.props.currency !== 'undefined' && this.props.currency !== 'SEK') {
-      const originalAmount = this.addCurrencySymbol(this.formatAmount(this.props.originalAmount));
+      const originalAmount = this.addCurrencySymbol(this.formatAmount(this.props.originalAmount))
       renderCurrency = (
         <span className="amount originalAmount">{originalAmount}</span>
-      );
+      )
     }
 
     return (
@@ -125,27 +122,27 @@ class Transaction extends React.Component {
         <span className="amount credit">{credit}</span>
         {renderCurrency}
       </div>
-    );
+    )
   }
 
   addCurrencySymbol(amount) {
     switch (this.props.currency) {
       case 'USD':
-        return '$' + amount;
+        return '$' + amount
       case 'EUR':
-        return '€' + amount;
+        return '€' + amount
       default:
-        return amount;
+        return amount
     }
   }
 
   formatAmount(amount) {
     if (amount) {
-      return parseFloat(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return parseFloat(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
     } else {
-      return this.formatAmount("0.00");
+      return this.formatAmount("0.00")
     }
   }
 }
 
-export default Verifications;
+export default Verifications

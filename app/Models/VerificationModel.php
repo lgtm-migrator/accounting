@@ -14,20 +14,30 @@ class VerificationModel extends Model {
 		'name',
 		'description',
 		'total',
+		'total_sek',
 		'type',
-		'file',
+		'file_count',
 		'invoice_id',
 		'require_confirmation',
 	];
 
-	public function isDuplicate($verification) {
-		$result = $this->
-			where('user_id', $verification->user_id)->
-			where('date', $verification->date)->
-			where('total', $verification->total)->
-			first();
+	public function getDuplicate($verification) {
+		$result = $this
+			->where('user_id', $verification->user_id)
+			->where('date', $verification->date)
+			->where('type', $verification->type)
+			->where('total', $verification->total)
+			->first();
 		
-		return $result !== null;
+		if (!$result) {
+			$result = $this
+				->where('user_id', $verification->user_id)
+				->where('date', $verification->date)
+				->where('total_sek', $verification->total_sek)
+				->first();
+		}
+
+		return $result;
 	}
 
 	public function getAll(int $userId) {

@@ -21,15 +21,15 @@ class VisaGoldParser extends BaseParser {
 			throw new RuntimeException("Could not parse the PDF as VisaGoldParser; invalid number of matches.");
 		}
 
-		$this->name = $matches[2];
+		$this->name = static::convertToValidName($matches[2]);
 
 		$verificationFactory = new VerificationFactory();
 		$verificationFactory
 			->setDate($matches[1])
 			->setType(Verification::TYPE_INVOICE_IN_PAYMENT)
 			->setAccountFrom(2499)
-			->setPayedInSek(BaseParser::convertToValidAmount($matches[3]))
-			->setInvoiceAmount(BaseParser::convertToValidAmount($matches[4]))
+			->setPayedInSek(static::convertToValidAmount($matches[3]))
+			->setInvoiceAmount(static::convertToValidAmount($matches[4]))
 			->setCurrency($matches[5]);
 
 		$this->figureOutName($verificationFactory);
@@ -40,13 +40,14 @@ class VisaGoldParser extends BaseParser {
 	private function figureOutName(VerificationFactory $verificationFactory) {
 		if (strpos($this->name, 'GSUITE') !== FALSE) {
 			$verificationFactory
-				->setInternalName(BaseParser::VISA_GOLD_GOOGLE_G_SUITE_PAYMENT)
-				->setName('Google G Suite (betalning) - Visa Gold')
-				->setInvoiceName(BaseParser::GOOGLE_INVOICE_G_SUITE_EUR);
+				->setInternalName(static::VISA_GOLD_GOOGLE_G_SUITE_PAYMENT)
+				->setName('Google G Suite (betalning) - VISA')
+				->setInvoiceName(static::GOOGLE_INVOICE_G_SUITE_EUR);
 		} else {
 			$verificationFactory
-				->setInternalName(BaseParser)
-				->setInvoiceName(BaseParser::GENERIC)
+				->setInternalName(static::GENERIC)
+				->setInvoiceName(static::GENERIC)
+				->setName($this->name . ' (betalning) - VISA')
 				->setRequireConfirmation(true);
 		}
 	}

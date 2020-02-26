@@ -15,15 +15,14 @@ class GoogleInvoiceParser extends BaseParser {
 			->setType(Verification::TYPE_INVOICE_IN)
 			->setCurrency(static::findCurrency($this->text))
 			->setInvoiceAmount(static::findTotal($this->text))
-			->setDate(static::convertDate(static::findDate($this->text)))
-			->setReverseVat(true);
+			->setDate(static::convertDate(static::findDate($this->text)));
 
-		if ($verificationFactory->getCurrency() === 'EUR') {
+		if ($verificationFactory->currency === 'EUR') {
 			$verificationFactory
 				->setName('Google G Suite (faktura)')
 				->setInternalName(BaseParser::GOOGLE_INVOICE_G_SUITE_EUR)
 				->setAccountTo(5421);
-		} elseif ($verificationFactory->getCurrency() === 'USD') {
+		} elseif ($verificationFactory->currency === 'USD') {
 			$verificationFactory
 				->setName('Google Cloud Platform (faktura)')
 				->setInternalName(BaseParser::GOOGLE_INVOICE_CLOUD_PLATFORM_USD)

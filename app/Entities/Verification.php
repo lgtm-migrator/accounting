@@ -20,6 +20,14 @@ class Verification extends Entity {
 		}
 	}
 
+	public function setTotal($total) {
+		$this->attributes['total'] = abs($total);
+	}
+
+	public function setTotalSek($total) {
+		$this->attributes['total_sek'] = abs($total);
+	}
+
 	public function getYear() {
 		return substr($this->date, 0, 4);
 	}

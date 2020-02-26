@@ -71,11 +71,11 @@ class PaymentNew extends React.Component {
 							<input type="text" name="payed_in_sek" placeholder="Amount" value={this.state.input.payed_in_sek} onChange={this.onChange} />
 						</div>
 						<div className={this.state.input.type === INVOICE_IN_PAYMENT ? 'hidden' : ''}>
-							<span className="label">Cost account (credit)</span>
+							<span className="label">Cost account (debit)</span>
 							<AccountSelect options={this.state.accounts} value={this.state.input.account_to} onChange={this.onAccountToChange} />
 						</div>
 						<div className={this.state.input.type === INVOICE_IN ? 'hidden' : ''}>
-							<span className="label">From account (debit)</span>
+							<span className="label">From account (credit)</span>
 							<AccountSelect options={this.state.accounts} value={this.state.input.account_from} onChange={this.onAccountFromChange} />
 						</div>
 					</div>

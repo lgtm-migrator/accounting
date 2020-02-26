@@ -6,15 +6,16 @@ use App\Models\AccountModel;
 use App\Models\TransactionModel;
 use App\Models\VerificationModel;
 use Config\Services;
+use RuntimeException;
 
 const VALID_PROPERTIES = [
 	'date' => true,
 	'type' => true,
 	'name' => true,
-	'file' => true,
 	'internal_name' => true,
 	'invoice_name' => true,
 	'invoice_amount' => true,
+	'amount' => true,
 	'payed_in_sek' => true,
 	'currency' => true,
 	'account_from' => true,
@@ -27,13 +28,22 @@ class VerificationFactory {
 	private $exchange_rate = 1;
 	private $invoice_sek = null;
 	private $invoice_exchange_rate = 1;
-	private $currency_gain_loss = 0;
-	private $bank_expenses = 0;
 	private $vat_code = null;
 
 	public function __construct($data = null)	{
 		if ($data) {
 			$this->properties = $data;
+
+			// Set correct amounts
+			if (
+				(isset($this->payed_in_sek) && $this->payed_in_sek == '') || 
+				(isset($this->type) && $this->type == Verification::TYPE_INVOICE_IN)
+			) {
+				unset($this->properties['payed_in_sek']);
+			}
+			if (isset($this->invoice_amount)) {
+				$this->setInvoiceAmount(floatval($this->invoice_amount));
+			}
 		}
 		if (!isset($this->transactions)) {
 			$this->properties['transactions'] = [];
@@ -63,11 +73,6 @@ class VerificationFactory {
 		return $this;
 	}
 
-	public function setFile($file) {
-		$this->properties['file'] = $file;
-		return $this;
-	}
-
 	public function setInternalName($internal_name) {
 		$this->properties['internal_name'] = $internal_name;
 		return $this;
@@ -88,6 +93,9 @@ class VerificationFactory {
 
 	public function setAmount($amount) {
 		$this->properties['amount'] = $amount;
+		if (!isset($this->payed_in_sek)) {
+			$this->setPayedInSek($amount);
+		}
 		return $this;
 	}
 
@@ -125,11 +133,12 @@ class VerificationFactory {
 	 * @return void 
 	 */
 	public function addTransaction(int $account_id, float $amount, $currency = 'SEK') {
-		$this->transactions[] = [
+		$this->properties['transactions'][] = [
 			'account_id' => $account_id,
 			'amount' => $amount,
 			'currency' => $currency
 		];
+		return $this;
 	}
 
 	private function validate() {
@@ -164,8 +173,11 @@ class VerificationFactory {
 	public function create() {
 		$this->validate();
 
+		// log_message('debug', "create() Properties:\n" . var_export($this->properties, true));
+
 		$verification = new Verification();
 		$verification->user_id = Services::auth()->getUserId();
+		$verification->type = $this->type;
 		$verification->date = $this->date;
 		$verification->name = $this->name;
 		$verification->internal_name = $this->internal_name;
@@ -175,6 +187,7 @@ class VerificationFactory {
 			$this->setAmount($this->calculateAmountFromTransactions());
 		}
 		$verification->total = $this->amount;
+		$verification->total_sek = $this->payed_in_sek;
 		
 		if (isset($this->setRequireConfirmation)) {
 			$verification->require_confirmation = $this->require_confirmation ? 1 : 0;
@@ -183,7 +196,17 @@ class VerificationFactory {
 		if (isset($this->currency) && $this->currency != 'SEK') {
 			helper('currency');
 			$this->exchange_rate = exchangeRateToSek($this->currency, $this->date);
+
+			// Only set payed in sek if we didn't set it already
+			if ($this->payed_in_sek == $this->amount) {
+				// log_message('debug', "creat() Setting payed_in_sek");
+				$this->setPayedInSek($this->exchange_rate * $this->amount);
+				$verification->total_sek = $this->payed_in_sek;
+			}
+			// log_message('debug', "create() Properties:\n" . var_export($this->properties, true));
+			// log_message('debug', "create() Verification:\n" . var_export($verification, true));
 		}
+
 		$this->createTransactions($verification);
 		static::validateTransactionSum($verification);
 		return $verification;
@@ -193,24 +216,49 @@ class VerificationFactory {
 		return round($this->invoice_amount * $this->exchange_rate, 2);
 	}
 
-	private function findAndBindInvoiceId($verification) {
+	private function findAndBindInvoiceId(Verification $payment) {
 		$verificationModel = new VerificationModel();
 
+		$earliest_date = date_create("$this->date -1 month")->format('Y-m-d');
+
 		$invoiceVerification = $verificationModel->
-			where('user_id', $verification->user_id)->
+			where('user_id', $payment->user_id)->
 			where('type', Verification::TYPE_INVOICE_IN)->
-			where('total', $verification->total)->
-			where('internal_name', $this->invoice_name)->
-			where("date < '" . $this->date . "'")->
+			where('total', $payment->total)->
+			where("date <= '$this->date'")->
+			where("date >= '$earliest_date'")->
 			orderBy('date', 'DESC')->
 			first();
 
 		// Found
 		if ($invoiceVerification !== null) {
-			$verification->invoice_id = $invoiceVerification->id;
+			$payment->invoice_id = $invoiceVerification->id;
 		} else {
-			$verification->require_confirmation = 1;
+			$payment->require_confirmation = 1;
 		}
+	}
+
+	private static function findPaymentForInvoice(Verification $invoice) {
+		$verificationModel = new VerificationModel();
+
+		$latest_date = date_create("$invoice->date +1 month")->format('Y-m-d');
+
+		$payment = $verificationModel
+			->where('user_id', $invoice->user_id)
+			->where('type', Verification::TYPE_INVOICE_IN_PAYMENT)
+			->where('total', $invoice->total)
+			->where("date >= '$invoice->date'")
+			->where("date <= '$latest_date'")
+			->orderBy('date', 'ASC')
+			->first();
+
+		// Fetch payment transactions
+		if ($payment) {
+			$transactionModel = new TransactionModel();
+			$payment->transactions = $transactionModel->getByVerificationId($payment->id);
+		}
+
+		return $payment;
 	}
 
 	private function fetchInvoiceAmounts($verification) {
@@ -223,7 +271,7 @@ class VerificationFactory {
 
 		// Get amount
 		if ($invoice_sek_row !== null) {
-			$this->invoice_sek = $invoice_sek_row->credit;
+			$this->invoice_sek = abs($invoice_sek_row->amount);
 			$this->invoice_exchange_rate = $invoice_sek_row->exchange_rate;
 		}
 		// Just return this verification payed amount
@@ -233,10 +281,29 @@ class VerificationFactory {
 		}
 	}
 
-	private function calculateBankAndRateExpenses() {
-		$this->currency_gain_loss = round(($this->invoice_exchange_rate - $this->exchange_rate) * $this->invoice_amount, 2);
+	private static function calculateCurrencyGainLoss($invoice_exchange_rate, $payment_exchange_rate, $amount) {
+		return round(($payment_exchange_rate - $invoice_exchange_rate) * $amount, 2);
+	}
 
-		$this->bank_expenses = round($this->payed_in_sek - $this->invoice_sek + $this->currency_gain_loss, 2);
+	private static function createBankExpensesTransaction($verification, $invoice_amount, $payment_amount, $currency_gain_loss) {
+		$amount = round($payment_amount - $invoice_amount - $currency_gain_loss, 2);
+		
+		if ($amount == 0) {
+			return null;
+		}
+
+		$transaction = new Transaction($verification);
+		$transaction->account_id = 6570;
+		$transaction->amount = $amount;
+		return $transaction;
+	}
+
+	private static function createGainLossTransaction($verification, $currency_gain_loss) {
+		$loss = $currency_gain_loss > 0;
+		$transaction = new Transaction($verification);
+		$transaction->account_id = $loss ? 7960 : 3960;
+		$transaction->amount = $currency_gain_loss;
+		return $transaction;
 	}
 
 	private function setDefaults() {
@@ -244,16 +311,16 @@ class VerificationFactory {
 		if ($this->type == Verification::TYPE_INVOICE_IN) {
 			$this->setPayedInSek($this->getConvertedTotal());
 			$this->setAccountFrom(2440);
-
-			// Get VAT code from the 'to' account
-			$accountModel = new AccountModel();
-			$account = $accountModel->find($this->account_to);
-			$this->vat_code = $account->vat_code;
 		}
 		// INVOICE_IN_PAYMENT
 		elseif($this->type == Verification::TYPE_INVOICE_IN_PAYMENT) {
 			$this->setAccountTo(2440);
 		}
+
+		// Get VAT code from the 'to' account
+		$accountModel = new AccountModel();
+		$account = $accountModel->find($this->account_to);
+		$this->vat_code = $account->vat_code;
 	}
 
 	private function createTransactions($verification) {
@@ -278,12 +345,21 @@ class VerificationFactory {
 		$account_to_payed = $this->payed_in_sek;
 		$account_to_exchange_rate = $this->exchange_rate;
 
-		// TODO INVOICE_IN -> SEK VAT
-
 		// INVOICE_IN
 		if ($this->type == Verification::TYPE_INVOICE_IN) {
+			// Add Swedish VAT 25%
+			if ($this->vat_code == 1025) {
+				$account_to_payed = round($this->payed_in_sek / 1.25, 2);
+				$vat_amount = $this->payed_in_sek - $account_to_payed;
+
+				// 2640 Ingåenge moms
+				$transaction = new Transaction($verification);
+				$transaction->account_id = 2640;
+				$transaction->debit = $vat_amount;
+				$verification->transactions[] = $transaction;
+			}
 			// Reverse VAT
-			if ($this->vat_code == 21 || $this->vat_code == 22) {
+			elseif ($this->vat_code == 21 || $this->vat_code == 22) {
 				// 2614 Utgående moms utl.
 				$transaction = new Transaction($verification);
 				$transaction->account_id = 2614;
@@ -300,32 +376,32 @@ class VerificationFactory {
 		// INVOICE_IN_PAYMENT -> Exchange rate win/loss + bank expenses
 		elseif ($this->type == Verification::TYPE_INVOICE_IN_PAYMENT) {
 			$this->findAndBindInvoiceId($verification);
-		  if ($this->currency !== 'SEK') {
+		  if (isset($verification->invoice_id) && $this->currency !== 'SEK') {
 				$this->fetchInvoiceAmounts($verification);
-				$this->calculateBankAndRateExpenses();
-				
+				$currency_gain_loss = static::calculateCurrencyGainLoss($this->invoice_exchange_rate, $this->exchange_rate, $this->invoice_amount);
+
 				if ($this->invoice_sek) {
 					$account_to_payed = $this->invoice_sek;
 					$account_to_exchange_rate = $this->invoice_exchange_rate;
 				}
 
 				// 6570 Bankutgifter
-				$transaction = new Transaction($verification);
-				$transaction->account_id = 6570;
-				$transaction->debit = $this->bank_expenses;
-				$verification->transactions[] = $transaction;
+				$transaction = static::createBankExpensesTransaction(
+					$verification,
+					$this->invoice_sek,
+					$this->payed_in_sek,
+					$currency_gain_loss
+				);
+				if ($transaction) {
+					$verification->transactions[] = $transaction;
+				}
 
 				// 7960 Valutaförluster / 3960 Valutavinster
-				if ($this->currency_gain_loss != 0) {
-					$loss = $this->currency_gain_loss < 0;
-					$transaction = new Transaction($verification);
-					$transaction->account_id = $loss ? 7960 : 3960;
-					if ($loss) {
-						$transaction->debit = -$this->currency_gain_loss;
-					} else {
-						$transaction->credit = $this->currency_gain_loss;
-					}
-					$verification->transactions[] = $transaction;
+				if ($currency_gain_loss != 0) {
+					$verification->transactions[] = static::createGainLossTransaction(
+						$verification,
+						$currency_gain_loss
+					);
 				}
 			}
 		}
@@ -347,5 +423,79 @@ class VerificationFactory {
 		$transaction->original_amount = $this->invoice_amount;
 		$transaction->currency = $this->currency;
 		$verification->transactions[] = $transaction;
+	}
+
+	public static function updatePaymentInfoFromInvoice(Verification $invoice) {
+		$payment = static::findPaymentForInvoice($invoice);
+
+		// No payment found
+		if (!$payment) {
+			return;
+		}
+
+		// Bind payment to invoice
+		$payment->invoice_id = $invoice->id;
+		$payment->require_confirmation = 0;
+		
+		// Add bank expenses and currency exchange loss/win
+		if ($invoice->total != $invoice->total_in_sek) {
+			$transactionModel = new TransactionModel();
+			$invoice_sek = $invoice->total_sek;
+			$payment_sek = $payment->total_sek;
+
+			// Get info from invoice
+			$invoice_exchange_rate = 0;
+			foreach ($invoice->transactions as $transaction) {
+				if ($transaction->account_id == 2440) {
+					$invoice_exchange_rate = $transaction->exchange_rate;
+					break;
+				}
+			}
+
+			// Get info from payment
+			$payment_exchange_rate = 0;
+			foreach($payment->transactions as $transaction) {
+				if ($transaction->account_id == 2440) {
+					$payment_exchange_rate = $transaction->exchange_rate;
+
+					// Update 2440 and set the amount to the invoice
+					$transaction->amount = $invoice_sek;
+					$transaction->exchange_rate = $invoice_exchange_rate;
+
+					
+					$transactionModel->save($transaction);
+				}
+			}
+
+			$currency_gain_loss = static::calculateCurrencyGainLoss(
+				$invoice_exchange_rate,
+				$payment_exchange_rate,
+				$invoice->total
+			);
+			
+			// 6570 Bankutgifter
+			$transaction = static::createBankExpensesTransaction(
+				$payment,
+				$invoice_sek,
+				$payment_sek,
+				$currency_gain_loss
+			);
+			if ($transaction) {
+				$transactionModel->save($transaction);
+			}
+
+			// 7960 Valutaförluster / 3960 Valutavinster
+			if ($currency_gain_loss != 0) {
+				$transaction = static::createGainLossTransaction(
+					$payment,
+					$currency_gain_loss
+				);
+				$transactionModel->save($transaction);
+			}
+		}
+
+		// Save payment
+		$VerificationModel = new VerificationModel();
+		$VerificationModel->save($payment);
 	}
 }

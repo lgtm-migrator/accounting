@@ -13,12 +13,12 @@ class TaxAccountParser extends BaseParser {
 	}
 
 	public function createVerifications()	{
-		$this->parse($this->text_layout);
+		$this->parse();
 		return $this->verifications;
 	}
 
-	private function parse(string &$text_layout) {
-		$found = preg_match_all(TaxAccountParser::REGEX_PATTERN, $text_layout, $matches_arr, PREG_SET_ORDER);
+	private function parse() {
+		$found = preg_match_all(static::REGEX_PATTERN, $this->text_layout, $matches_arr, PREG_SET_ORDER);
 
 		if ($found == 0) {
 			throw new RuntimeException("Could not parse the PDF as TaxAccountParser");
@@ -31,7 +31,7 @@ class TaxAccountParser extends BaseParser {
 				->setType(Verification::TYPE_TRANSACTION)
 				->setName("Skattekonto - $matches[2]")
 				->setInternalName(static::getInternalName($verificationFactory->name));
-			if ($verificationFactory->internal_name !== BaseParser::SKIP) {
+			if ($verificationFactory->internal_name !== static::SKIP) {
 				$verificationFactory->
 					setAmount(static::convertToValidAmount($matches[3]));
 				static::createTransactions($verificationFactory);
@@ -47,27 +47,27 @@ class TaxAccountParser extends BaseParser {
 	private static function getInternalName($name) {
 		// Preliminärskatt
 		if (strpos($name, 'preliminärskatt') !== FALSE) {
-			return BaseParser::TAX_ACCOUNT_PRELIMINARY_TAX;
+			return static::TAX_ACCOUNT_PRELIMINARY_TAX;
 		}
 		// Inbetalning (SKIP)
 		elseif (strpos($name, 'Inbetalning') !== FALSE) {
-			return BaseParser::SKIP;
+			return static::SKIP;
 		}
 		// Utbetalning
 		elseif (strpos($name, 'Utbetalning') !== FALSE) {
-			return BaseParser::TAX_ACCOUNT_PAYOUT;
+			return static::TAX_ACCOUNT_PAYOUT;
 		}
 		// Moms
 		elseif (strpos($name, 'Moms') !== FALSE) {
-			return BaseParser::TAX_ACCOUNT_TAX_COLLECT;
+			return static::TAX_ACCOUNT_TAX_COLLECT;
 		}
 		// Intäktsränta
 		elseif (strpos($name, 'Intäktsränta') !== FALSE) {
-			return BaseParser::TAX_ACCOUNT_INTEREST_INCOME;
+			return static::TAX_ACCOUNT_INTEREST_INCOME;
 		}
 		// Kostnadsränta
 		elseif (strpos($name, 'ostnadsränta') !== FALSE) {
-			return BaseParser::TAX_ACCOUNT_INTEREST_EXPENSE;
+			return static::TAX_ACCOUNT_INTEREST_EXPENSE;
 		}
 		// Invalid parse
 		else {
@@ -83,23 +83,23 @@ class TaxAccountParser extends BaseParser {
 
 		$account_id = 0;
 		// 2518 Debiterad Preliminärskatt (F-skatt)
-		if ($verificationFactory->internal_name == BaseParser::TAX_ACCOUNT_PRELIMINARY_TAX) {
+		if ($verificationFactory->internal_name == static::TAX_ACCOUNT_PRELIMINARY_TAX) {
 			$account_id = 2518;
 		}
 		// 1650 Momsfodran
-		elseif ($verificationFactory->internal_name == BaseParser::TAX_ACCOUNT_TAX_COLLECT) {
+		elseif ($verificationFactory->internal_name == static::TAX_ACCOUNT_TAX_COLLECT) {
 			$account_id = 1650;
 		}
 		// 8423 Kostnadsränta
-		elseif ($verificationFactory->internal_name == BaseParser::TAX_ACCOUNT_INTEREST_EXPENSE) {
+		elseif ($verificationFactory->internal_name == static::TAX_ACCOUNT_INTEREST_EXPENSE) {
 			$account_id = 8423;
 		}
 		// 8314 Intäktsränta
-		elseif ($verificationFactory->internal_name == BaseParser::TAX_ACCOUNT_INTEREST_INCOME) {
+		elseif ($verificationFactory->internal_name == static::TAX_ACCOUNT_INTEREST_INCOME) {
 			$account_id = 8314;
 		}
 		// 1920 Utbetalning till Plusgiro
-		elseif ($verificationFactory->internal_name == BaseParser::TAX_ACCOUNT_PAYOUT) {
+		elseif ($verificationFactory->internal_name == static::TAX_ACCOUNT_PAYOUT) {
 			$account_id = 1920;
 		}
 		$verificationFactory->addTransaction($account_id, -$amount);

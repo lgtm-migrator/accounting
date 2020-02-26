@@ -1,6 +1,6 @@
 <?php namespace App\Controllers;
 
-use App\Entities\Verification as EntitiesVerification;
+use App\Entities\Verification as VerificationEntity;
 use App\Libraries\VerificationFactory;
 use App\Models\AccountModel;
 use App\Models\TransactionModel;
@@ -57,7 +57,7 @@ class Verification extends ApiController {
 
 		$verificationFactory = new VerificationFactory($input);
 		$verificationFactory->setInternalName('MANUAL');
-		$verificationFactory->setType(EntitiesVerification::TYPE_TRANSACTION);
+		$verificationFactory->setType(VerificationEntity::TYPE_TRANSACTION);
 		$verification = $verificationFactory->create();
 
 		$this->saveVerification($verification, $file);
@@ -75,7 +75,7 @@ class Verification extends ApiController {
 
 		$this->saveVerifications($verifications, $file);
 
-		return ApiController::STATUS_OK;
+		return $this->respondCreated(null, 'Verification successfully created from PDF');
 	}
 
 	private function getFile() {
@@ -93,16 +93,30 @@ class Verification extends ApiController {
 		$verificationModel = new VerificationModel();
 		$transactionModel = new TransactionModel();
 		
-		// Check for duplicates
-		if ($verificationModel->isDuplicate($verification)) {
+		// Check for duplicates (but save additional PDFs)
+		$duplicate = $verificationModel->getDuplicate($verification);
+		if ($duplicate) {
+			// Try to save additional PDFs
+			if ($file) {
+				$duplicate->file_count += 1;
+				
+				// Save additional PDF
+				$filepath = $file->getPathName();
+				$saved = saveVerificationFile($filepath, $duplicate);
+
+				// Update file count for the duplicate
+				if ($saved) {
+					$verificationModel->save($duplicate);
+				}
+			}
 			return;
 		}
 
 		// Copy (save) PDF to verifications for the correct year
 		if ($file) {
-			$filename = $file->getName();
+			$verification->file_count = 1;
 			$filepath = $file->getPathName();
-			saveVerificationFile($filepath, $filename, $verification);
+			saveVerificationFile($filepath, $verification);
 		}
 
 		// Save verification
@@ -114,6 +128,11 @@ class Verification extends ApiController {
 		// Save transactions
 		foreach ($verification->transactions as $transaction) {
 			$transactionModel->save($transaction);
+		}
+
+		// Update payment for invoice
+		if ($verification->type === VerificationEntity::TYPE_INVOICE_IN) {
+			VerificationFactory::updatePaymentInfoFromInvoice($verification);
 		}
 	}
 }

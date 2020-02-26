@@ -1,16 +1,17 @@
-import React from 'react';
+import React from 'react'
 import Login from './pages/Login'
-import './App.css';
+import './App.css'
 import {
   Switch,
   Route,
   withRouter
-} from 'react-router-dom';
-import Verifications from './pages/Verifications';
-import { PageFunctionContext } from './contexts/PageFunctions';
-import Menu from './pages/Menu';
-import PaymentNew from './pages/PaymentNew';
-import TransactionNew from './pages/TransactionNew';
+} from 'react-router-dom'
+import Verifications from './pages/Verifications'
+import { PageFunctionContext } from './contexts/PageFunctions'
+import Menu from './pages/Menu'
+import PaymentNew from './pages/PaymentNew'
+import TransactionNew from './pages/TransactionNew'
+import VatExport from './pages/VatExport'
 
 class App extends React.Component {
   static contextType = PageFunctionContext;
@@ -18,17 +19,17 @@ class App extends React.Component {
   constructor(props) {
     super(props)
 
-    this.checkForRedirects();
+    this.checkForRedirects()
   }
 
   render() {
-    this.context.history = this.props.history;
+    this.context.history = this.props.history
 
-    let menu = '';
+    let menu = ''
     if (this.isLoggedIn) {
       menu = (
         <Menu />
-      );
+      )
     }
 
     return (
@@ -45,34 +46,37 @@ class App extends React.Component {
             <Route exact path="/verification/transactionAdd">
               <TransactionNew />
             </Route>
+            <Route exact path="/helper/vat-export">
+              <VatExport />
+            </Route>
             <Route exact path="/">
               <Login />
             </Route>
           </Switch>
         </div>
       </div>
-    );
+    )
   }
 
   isLoggedIn() {
-    return localStorage.getItem('apiKey') !== null;
+    return localStorage.getItem('apiKey') !== null
   }
 
   checkForRedirects() {
     let loggedIn = this.isLoggedIn()
-    let onLoginPage = this.props.location.pathname === '/';
+    let onLoginPage = this.props.location.pathname === '/'
 
     // Redirect to login page
     if (!loggedIn && !onLoginPage) {
-      this.props.history.push('/');
+      this.props.history.push('/')
     }
     // Redirect to verifications once we've logged in
     else if (loggedIn && onLoginPage) {
-      this.props.history.push('/verifications');
+      this.props.history.push('/verifications')
     }
   }
 }
 
 
 
-export default withRouter(App);
+export default withRouter(App)

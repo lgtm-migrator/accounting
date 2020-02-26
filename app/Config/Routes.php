@@ -44,6 +44,7 @@ $routes->post('verification/create-from-pdf', 'Verification::createFromPdf');
 
 // Account
 $routes->get('accounts', 'Account::getAll');
+$routes->get('account/get-vat-info', 'Account::getVatInfo');
 $routes->post('account/fill', 'Account::fill');
 
 /**

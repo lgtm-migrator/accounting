@@ -5,6 +5,10 @@ class Transaction extends Entity {
 		parent::__construct();
 		if ($verification != null) {
 			$this->date = $verification->date;
+
+			if (isset($verification->id)) {
+				$this->verification_id = $verification->id;
+			}
 		}
 	}
 

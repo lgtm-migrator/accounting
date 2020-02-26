@@ -21,6 +21,9 @@ class ParserFactory {
 		elseif (strpos($text, 'Löpnummer:') !== FALSE && strpos($text, 'Inköpsställe:') !== FALSE) {
 			$parser = new VisaGoldParser($text);
 		}
+		elseif (strpos($text, 'E-FAKTURA BUSINESS GOLD') !== FALSE) {
+			$parser = new VisaInvoiceParser($text_layout);
+		}
 		// Skattekonto
 		elseif (strpos($text, 'Skattekonto') !== FALSE && strpos($text, 'Omfattar transaktionstyp:') !== FALSE) {
 			$parser = new TaxAccountParser($text_layout);

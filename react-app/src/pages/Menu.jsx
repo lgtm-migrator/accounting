@@ -1,6 +1,6 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import './menu.css';
+import React from 'react'
+import { NavLink } from 'react-router-dom'
+import './menu.css'
 
 class Menu extends React.Component {
 	render() {
@@ -21,9 +21,12 @@ class Menu extends React.Component {
 					</NavLink>
 				</MenuCategory>
 				<MenuCategory name="Helpers">
+					<NavLink to="/helper/vat-export">
+						VAT Export
+					</NavLink>
 				</MenuCategory>
 			</div>
-		);
+		)
 	}
 }
 
@@ -36,8 +39,8 @@ class MenuCategory extends React.Component {
 				</div>
 				{this.props.children}
 			</div>
-		);
+		)
 	}
 }
 
-export default Menu;
+export default Menu
