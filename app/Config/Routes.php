@@ -38,8 +38,9 @@ $routes->post('user/login', 'User::login');
 
 // Verification
 $routes->get('verifications', 'Verification::getAll');
-$routes->post('verification/create', 'Verification::create');
-$routes->post('verification/create_from_pdf', 'Verification::createFromPdf');
+$routes->post('verification/create-payment', 'Verification::createPayment');
+$routes->post('verification/create-transaction', 'Verification::createTransaction');
+$routes->post('verification/create-from-pdf', 'Verification::createFromPdf');
 
 // Account
 $routes->get('accounts', 'Account::getAll');

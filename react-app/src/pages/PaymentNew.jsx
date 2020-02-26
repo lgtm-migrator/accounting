@@ -1,26 +1,26 @@
-import React from 'react';
-import './payment_new.css';
-import AccountSelect, { getAllAccountsAsOptions } from '../helpers/AccountInfo';
-import Axios from 'axios';
-import config from '../config';
-import VerificationInfo from '../ui/VerificationEdit';
+import React from 'react'
+import './payment_new.css'
+import AccountSelect, { getAllAccountsAsOptions } from '../helpers/AccountInfo'
+import Axios from 'axios'
+import config from '../config'
+import VerificationInfo from '../ui/VerificationEdit'
 
-const INVOICE_IN = 'INVOICE_IN';
-const INVOICE_IN_PAYMENT = 'INVOICE_IN_PAYMENT';
-const PAYMENT_DIRECT = 'PAYMENT_DIRECT';
+const INVOICE_IN = 'INVOICE_IN'
+const INVOICE_IN_PAYMENT = 'INVOICE_IN_PAYMENT'
+const PAYMENT_DIRECT = 'PAYMENT_DIRECT'
 
 class PaymentNew extends React.Component {
 	constructor(props) {
-		super(props);
+		super(props)
 
-		this.fileRef = React.createRef();
+		this.fileRef = React.createRef()
 
-		this.onSubmit = this.onSubmit.bind(this);
-		this.onChange = this.onChange.bind(this);
-		this.onTypeChange = this.onTypeChange.bind(this);
-		this.onAccountToChange = this.onAccountToChange.bind(this);
-		this.onAccountFromChange = this.onAccountFromChange.bind(this);
-		this.onGetAllAccounts = this.onGetAllAccounts.bind(this);
+		this.onSubmit = this.onSubmit.bind(this)
+		this.onChange = this.onChange.bind(this)
+		this.onTypeChange = this.onTypeChange.bind(this)
+		this.onAccountToChange = this.onAccountToChange.bind(this)
+		this.onAccountFromChange = this.onAccountFromChange.bind(this)
+		this.onGetAllAccounts = this.onGetAllAccounts.bind(this)
 	}
 
 	state = {
@@ -39,12 +39,12 @@ class PaymentNew extends React.Component {
 	}
 
 	componentDidMount() {
-		getAllAccountsAsOptions(this.onGetAllAccounts);
+		getAllAccountsAsOptions(this.onGetAllAccounts)
 	}
 
 	onGetAllAccounts(accounts) {
-		this.setState({ accounts: accounts });
-		this.onTypeChange(INVOICE_IN);
+		this.setState({ accounts: accounts })
+		this.onTypeChange(INVOICE_IN)
 	}
 
 	render() {
@@ -72,24 +72,24 @@ class PaymentNew extends React.Component {
 						</div>
 						<div className={this.state.input.type === INVOICE_IN_PAYMENT ? 'hidden' : ''}>
 							<span className="label">Cost account (credit)</span>
-							<AccountSelect name="account_to" placeholder="Cost account" options={this.state.accounts} value={this.state.input.account_to} onChange={this.onAccountToChange} />
+							<AccountSelect options={this.state.accounts} value={this.state.input.account_to} onChange={this.onAccountToChange} />
 						</div>
 						<div className={this.state.input.type === INVOICE_IN ? 'hidden' : ''}>
 							<span className="label">From account (debit)</span>
-							<AccountSelect name="account_from" placeholder="Payed from account" options={this.state.accounts} value={this.state.input.account_from} onChange={this.onAccountFromChange} />
+							<AccountSelect options={this.state.accounts} value={this.state.input.account_from} onChange={this.onAccountFromChange} />
 						</div>
 					</div>
 					<input type="submit" value="Add" />
 				</form>
 			</div >
-		);
+		)
 	}
 
 	renderHideWhenSek() {
 		if (this.state === 'SEK') {
-			return 'hidden';
+			return 'hidden'
 		} else {
-			return '';
+			return ''
 		}
 	}
 
@@ -102,7 +102,7 @@ class PaymentNew extends React.Component {
 	}
 
 	async onSubmit(event) {
-		event.preventDefault();
+		event.preventDefault()
 
 		let accountData = {}
 		// Account From
@@ -123,23 +123,19 @@ class PaymentNew extends React.Component {
 			...this.state.input,
 			...accountData,
 		}
-		const formData = new FormData();
-		formData.append('json', JSON.stringify(toJson));
-		formData.append('file', this.fileRef.current.files[0]);
+		const formData = new FormData()
+		formData.append('json', JSON.stringify(toJson))
+		formData.append('file', this.fileRef.current.files[0])
 
 		Axios.post(
-			config.apiUrl('/verification/create'),
-			formData, {
-			headers: {
-				'Content-Type': 'multipart/form-data'
-			}
-		}).then(response => {
-			if (typeof response.data !== 'undefined') {
+			config.apiUrl('/verification/create-payment'),
+			formData,
+			{ headers: { 'Content-Type': 'multipart/form-data' } }
+		).then(response => {
 
-			}
 		}).catch(error => {
-			console.log(error);
-		});
+			console.log(error)
+		})
 	}
 
 	onChange(event) {
@@ -148,7 +144,7 @@ class PaymentNew extends React.Component {
 				...this.state.input,
 				[event.target.name]: event.target.value
 			}
-		});
+		})
 	}
 
 	onAccountToChange(selectedOption) {
@@ -157,17 +153,17 @@ class PaymentNew extends React.Component {
 				...this.state.input,
 				account_to: selectedOption
 			}
-		});
+		})
 	}
 
 	onAccountFromChange(selectedOption) {
-		console.log(selectedOption);
+		console.log(selectedOption)
 		this.setState({
 			input: {
 				...this.state.input,
 				account_from: selectedOption
 			}
-		});
+		})
 	}
 
 	onTypeChange(type) {
@@ -176,22 +172,22 @@ class PaymentNew extends React.Component {
 				...prevState.input,
 				type: type
 			}
-		}));
+		}))
 		switch (type) {
 			case 'INVOICE_IN':
-				this.setState({ header: 'New Invoice Received' });
-				break;
+				this.setState({ header: 'New Invoice Received' })
+				break
 			case 'INVOICE_IN_PAYMENT':
-				this.setState({ header: 'New Invoice Payment' });
-				break;
+				this.setState({ header: 'New Invoice Payment' })
+				break
 			case 'PAYMENT_DIRECT':
-				this.setState({ header: 'New Direct Payment' });
-				break;
+				this.setState({ header: 'New Direct Payment' })
+				break
 			default:
-				this.setState({ header: 'Invalid' });
-				break;
+				this.setState({ header: 'Invalid' })
+				break
 		}
 	}
 }
 
-export default PaymentNew;
+export default PaymentNew

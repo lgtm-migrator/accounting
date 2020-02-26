@@ -1,10 +1,10 @@
 <?php namespace App\Controllers;
 
+use App\Entities\Verification as EntitiesVerification;
 use App\Libraries\VerificationFactory;
 use App\Models\AccountModel;
 use App\Models\TransactionModel;
 use App\Models\VerificationModel;
-use RuntimeException;
 
 class Verification extends ApiController {
 	public function getAll($fiscalId = null) {
@@ -36,9 +36,8 @@ class Verification extends ApiController {
 		return $this->respond($verifications);
 	}
 
-	public function create() {
+	public function createPayment() {
 		$json = $this->request->getPost('json');
-		log_message('debug', "JSON:\n$json");
 		$input = json_decode($json, true);
 		$file = $this->getFile();
 
@@ -49,6 +48,21 @@ class Verification extends ApiController {
 		$this->saveVerification($verification, $file);
 
 		return $this->respondCreated(null, 'Verification successfully created');
+	}
+
+	public function createTransaction() {
+		$json = $this->request->getPost('json');
+		$input = json_decode($json, true);
+		$file = $this->getFile();
+
+		$verificationFactory = new VerificationFactory($input);
+		$verificationFactory->setInternalName('MANUAL');
+		$verificationFactory->setType(EntitiesVerification::TYPE_TRANSACTION);
+		$verification = $verificationFactory->create();
+
+		$this->saveVerification($verification, $file);
+
+		return $this->respondCreated(null, 'Transaction successfully created');
 	}
 
 	public function createFromPdf() {
@@ -75,8 +89,6 @@ class Verification extends ApiController {
 	}
 
 	private function saveVerification(&$verification, &$file) {
-
-
 		helper('verification_file');
 		$verificationModel = new VerificationModel();
 		$transactionModel = new TransactionModel();

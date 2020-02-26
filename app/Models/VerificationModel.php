@@ -30,22 +30,11 @@ class VerificationModel extends Model {
 		return $result !== null;
 	}
 
-	public function getAll(int $userId, $fiscalId = null) {
+	public function getAll(int $userId) {
 		$builder = $this->where('user_id', $userId);
-
-		// TODO fiscal ID
-		// if ($fiscalId) {
-		// 	$builder = $builder->where('fiscal_id', $fiscalId);
-		// }
 		
 		$builder = $builder->orderBy('date', 'ASC');
 		
 		return $builder->findAll();
-	}
-
-	public function insert($data = null, bool $returnID = true) {
-		// TODO automatically get the correct fiscal id
-
-		return parent::insert($data, $returnID);
 	}
 }

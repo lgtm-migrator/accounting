@@ -19,7 +19,6 @@ const VALID_PROPERTIES = [
 	'currency' => true,
 	'account_from' => true,
 	'account_to' => true,
-	'vat' => true,
 	'require_confirmation' => true
 ];
 
@@ -35,6 +34,9 @@ class VerificationFactory {
 	public function __construct($data = null)	{
 		if ($data) {
 			$this->properties = $data;
+		}
+		if (!isset($this->transactions)) {
+			$this->properties['transactions'] = [];
 		}
 	}
 
@@ -78,6 +80,14 @@ class VerificationFactory {
 
 	public function setInvoiceAmount($invoice_amount) {
 		$this->properties['invoice_amount'] = $invoice_amount;
+		if (!isset($this->amount)) {
+			$this->setAmount($invoice_amount);
+		}
+		return $this;
+	}
+
+	public function setAmount($amount) {
+		$this->properties['amount'] = $amount;
 		return $this;
 	}
 
@@ -89,10 +99,6 @@ class VerificationFactory {
 	public function setCurrency($currency) {
 		$this->properties['currency'] = $currency;
 		return $this;
-	}
-
-	public function getCurrency() {
-		return $this->properties['currency'];
 	}
 
 	public function setAccountFrom($account_from) {
@@ -110,8 +116,49 @@ class VerificationFactory {
 		return $this;
 	}
 
+	/**
+	 * Add a manual transaction. Only works if type of the transaction is set
+	 * to {Verification::TRANSACTION}.
+	 * @param int $account_id 
+	 * @param float $amount 
+	 * @param string $currency 
+	 * @return void 
+	 */
+	public function addTransaction(int $account_id, float $amount, $currency = 'SEK') {
+		$this->transactions[] = [
+			'account_id' => $account_id,
+			'amount' => $amount,
+			'currency' => $currency
+		];
+	}
+
 	private function validate() {
 		// TODO
+	}
+
+	private static function validateTransactionSum(&$verification) {
+		$sum = 0;
+			foreach ($verification->transactions as $transaction) {
+				$sum += $transaction->amount;
+			}
+			
+			if (round($sum, 4) != 0) {
+				throw new RuntimeException("Transactions doesn't sum to 0. Sum: $sum");
+			}
+	}
+
+	private function calculateAmountFromTransactions() {
+		$minAmount = 0;
+		$maxAmount = 0;
+		foreach ($this->properties['transactions'] as $transaction) {
+			$amount = $transaction['amount'];
+			
+			$minAmount = min($minAmount, $amount);
+			$maxAmount = max($maxAmount, $amount);
+		}
+
+		$minAmount *= -1;
+		return max($minAmount, $minAmount);
 	}
 
 	public function create() {
@@ -122,7 +169,12 @@ class VerificationFactory {
 		$verification->date = $this->date;
 		$verification->name = $this->name;
 		$verification->internal_name = $this->internal_name;
-		$verification->total = $this->invoice_amount;
+
+		// Total amount
+		if (!isset($this->amount)) {
+			$this->setAmount($this->calculateAmountFromTransactions());
+		}
+		$verification->total = $this->amount;
 		
 		if (isset($this->setRequireConfirmation)) {
 			$verification->require_confirmation = $this->require_confirmation ? 1 : 0;
@@ -133,6 +185,7 @@ class VerificationFactory {
 			$this->exchange_rate = exchangeRateToSek($this->currency, $this->date);
 		}
 		$this->createTransactions($verification);
+		static::validateTransactionSum($verification);
 		return $verification;
 	}
 
@@ -204,6 +257,22 @@ class VerificationFactory {
 	}
 
 	private function createTransactions($verification) {
+		if ($this->type == Verification::TYPE_TRANSACTION) {
+			$this->createManualTransactions($verification);
+		} else {
+			$this->createAutomaticTransactions($verification);
+		}
+	}
+
+	private function createManualTransactions($verification) {
+		foreach ($this->transactions as $data) {
+			$transaction = new Transaction($verification);
+			$transaction->fill($data);
+			$verification->transactions[] = $transaction;
+		}
+	}
+
+	private function createAutomaticTransactions($verification) {
 		$this->setDefaults();
 
 		$account_to_payed = $this->payed_in_sek;

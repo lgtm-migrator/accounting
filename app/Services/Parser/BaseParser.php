@@ -1,5 +1,6 @@
 <?php namespace App\Services\Parser;
 
+use App\Libraries\VerificationFactory;
 use RuntimeException;
 
 abstract class BaseParser {
@@ -33,32 +34,6 @@ abstract class BaseParser {
 		if (!is_array($verifications)) {
 			$verifications = [$verifications];
 		}
-
-		static::validateTransactionSum($verifications);
 		return $verifications;
-	}
-
-	protected static function validateTransactionSum(&$verifications) {
-		// Multiple Transactions
-		foreach ($verifications as $verification) {
-			$sum = 0;
-			foreach ($verification->transactions as $transaction) {
-				$sum += BaseParser::getTransactionAmount($transaction);
-			}
-			
-			if (round($sum, 4) != 0) {
-				throw new RuntimeException("Transactions doesn't sum to 0. Sum: $sum");
-			}
-		}
-	}
-
-	private static function getTransactionAmount(&$transaction) {
-		if (isset($transaction->debit)) {
-			return $transaction->debit;
-		} else if (isset($transaction->credit)) {
-			return -$transaction->credit;
-		} else {
-			return 0;
-		}
 	}
 }
