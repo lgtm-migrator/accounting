@@ -2,12 +2,11 @@ import { Interactor } from '../core/definitions/Interactor'
 import { VerifyApiKeyInput } from './VerifyApiKeyInput'
 import { VerifyApiKeyOutput } from './VerifyApiKeyOutput'
 import { VerifyApiKeyRepository } from './VerifyApiKeyRepository'
+import { InternalError, InternalErrorTypes } from '../core/definitions/CustomError'
+import { OutputErrorTypes, OutputError } from '../core/definitions/OutputError'
 
 /**
- * TODO Write documentation for VerifyApiKeyInteractor
- * Contains the business logic of the specific use case.
- * Interacts with the underlying entities (enterprise wide
- * business rules)
+ * Verifies if there is a user with the API key and returns that user's id
  */
 export class VerifyApiKeyInteractor extends Interactor<VerifyApiKeyInput, VerifyApiKeyOutput, VerifyApiKeyRepository> {
 	constructor(repository: VerifyApiKeyRepository) {
@@ -15,10 +14,11 @@ export class VerifyApiKeyInteractor extends Interactor<VerifyApiKeyInput, Verify
 	}
 
 	/**
-	 * TODO Write documentation for VerifyApiKeyInteractor.execute()
-	 * @param input:
-	 * @return {Promise.<VerifyApiKeyOutput>}
-	 * @throws
+	 * Verifies if there is a user with the specified API key
+	 * @param {VerifyApiKeyInput} input an object containing the API key
+	 * @return {Promise.<VerifyApiKeyOutput|OutputError>} an object containing the user id if successful
+	 * @throws {OutputErrorTypes.userNotFound} if no user was found with the specified APi key
+	 * @throws {OutputErrorTypes.internalError} if an internal error occurred
 	 */
 	execute(input: VerifyApiKeyInput): Promise<VerifyApiKeyOutput> {
 		return new Promise<VerifyApiKeyOutput>((resolve, reject) => {
@@ -31,7 +31,12 @@ export class VerifyApiKeyInteractor extends Interactor<VerifyApiKeyInput, Verify
 					})
 				})
 				.catch((reason) => {
-					reject(new Error('test'))
+					if (reason instanceof InternalError) {
+						if (reason.type == InternalErrorTypes.userNotFound) {
+							reject(new OutputError(OutputErrorTypes.userNotFound))
+						}
+					}
+					reject(new OutputError(OutputErrorTypes.internalError))
 				})
 		})
 	}
