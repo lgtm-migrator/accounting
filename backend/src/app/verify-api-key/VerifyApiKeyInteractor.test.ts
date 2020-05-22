@@ -1,7 +1,5 @@
 import { VerifyApiKeyInteractor } from './VerifyApiKeyInteractor'
 import { VerifyApiKeyRepository } from './VerifyApiKeyRepository'
-import { mock } from 'jest-mock-extended'
-import { Id } from '../core/definitions/Id'
 import * as faker from 'faker'
 import { VerifyApiKeyInput } from './VerifyApiKeyInput'
 import { VerifyApiKeyOutput } from './VerifyApiKeyOutput'
