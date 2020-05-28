@@ -7,4 +7,11 @@ export enum EntityErrors {
 	dateModifiedBeforeCreated = 'date-modified-before-created',
 	dateDeletedNotSameAsModified = 'date-deleted-not-same-as-modified',
 	dateDeletedRequiresDateModified = 'date-deleted-requires-date-modified',
+	accountNumberOutOfRange = 'account-number-out-of-range',
+	accountNumberInvalidFormat = 'account-number-invalid-format',
+	amountOriginalIsZero = 'amount-original-is-zero',
+	currencyCodeInvalid = 'currency-code-invalid',
+	currencyCodeNotSet = 'currency-code-not-set',
+	exchangeRateNotSet = 'exchange-rate-not-set',
+	exchangeRateNegativeOrZero = 'exchange-rate-negative-or-zero',
 }

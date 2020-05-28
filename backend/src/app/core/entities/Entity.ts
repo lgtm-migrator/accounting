@@ -4,11 +4,25 @@ import { EntityErrors } from '../definitions/EntityErrors'
 /** Date: 2000-01-01 */
 const VALID_DATE_AFTER = 946684800000
 
-export class Entity {
+export interface Entity {
 	id?: Id
 	date_created?: number
 	date_modified?: number
 	date_deleted?: number
+}
+
+export class EntityImpl implements Entity {
+	id?: Id
+	date_created?: number
+	date_modified?: number
+	date_deleted?: number
+
+	constructor(data?: Entity) {
+		this.id = data?.id
+		this.date_created = data?.date_created
+		this.date_modified = data?.date_modified
+		this.date_deleted = data?.date_deleted
+	}
 
 	/**
 	 * Validate the entity so it has correct values
@@ -24,7 +38,7 @@ export class Entity {
 		}
 
 		// Date created
-		if (typeof this.date_created !== 'undefined') {
+		if (this.date_created) {
 			// Invalid before a specified date
 			if (this.date_created < VALID_DATE_AFTER) {
 				errors.push(EntityErrors.dateCreatedTooEarly)
@@ -36,9 +50,9 @@ export class Entity {
 		}
 
 		// Date modified
-		if (typeof this.date_modified !== 'undefined') {
+		if (this.date_modified) {
 			// Requires date_created
-			if (typeof this.date_created === 'undefined') {
+			if (!this.date_created) {
 				errors.push(EntityErrors.dateModifiedRequiresDateCreated)
 			}
 			// Before date created
@@ -52,9 +66,9 @@ export class Entity {
 		}
 
 		// Date deleted
-		if (typeof this.date_deleted !== 'undefined') {
+		if (this.date_deleted) {
 			// Requires date_modified
-			if (typeof this.date_modified === 'undefined') {
+			if (!this.date_modified) {
 				errors.push(EntityErrors.dateDeletedRequiresDateModified)
 			}
 			// Not equal to modified

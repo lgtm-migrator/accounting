@@ -1,5 +1,5 @@
 import * as faker from 'faker'
-import { Entity } from './Entity'
+import { EntityImpl } from './Entity'
 import { EntityErrors } from '../definitions/EntityErrors'
 
 const TEST_TIMES = 1000
@@ -13,10 +13,10 @@ function faker_get_valid_time(): number {
 }
 
 describe('Validate entity #cold #entity', () => {
-	let entity: Entity
+	let entity: EntityImpl
 
 	beforeEach(() => {
-		entity = new Entity()
+		entity = new EntityImpl()
 	})
 
 	it('Validate empty Entity should pass', () => {
