@@ -11,5 +11,6 @@ export class OutputError {
 
 export enum OutputErrorTypes {
 	userNotFound = 'user-not-found',
+	invalidInput = 'invalid-input',
 	internalError = 'internal-error',
 }

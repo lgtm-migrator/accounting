@@ -16,5 +16,6 @@ export class InternalError extends Error {
  */
 export enum InternalErrorTypes {
 	userNotFound = 'user-not-found',
+	invalidEntityState = 'invalid-entity-state',
 	unknown = 'internal-error',
 }

@@ -3,8 +3,8 @@ import { VerifyApiKeyRepository } from './VerifyApiKeyRepository'
 import * as faker from 'faker'
 import { VerifyApiKeyInput } from './VerifyApiKeyInput'
 import { VerifyApiKeyOutput } from './VerifyApiKeyOutput'
-import { InternalError, InternalErrorTypes } from '../core/definitions/CustomError'
-import { OutputErrorTypes } from '../core/definitions/OutputError'
+import { InternalError, InternalErrorTypes } from '../../core/definitions/InternalError'
+import { OutputErrorTypes } from '../../core/definitions/OutputError'
 
 describe('Verify Api Key #cold #use-case', () => {
 	let interactor: VerifyApiKeyInteractor
