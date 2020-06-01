@@ -1,7 +1,8 @@
 import * as faker from 'faker'
 import { Transaction, TransactionImpl, ACCOUNT_NUMBER_MIN, ACCOUNT_NUMBER_MAX } from './Transaction'
-import { Currency, CurrencyCodes } from '../definitions/Currency'
+import { CurrencyCodes } from '../definitions/Currency'
 import { EntityErrors } from '../definitions/EntityErrors'
+import DineroFactory, { Dinero, Currency, globalExchangeRatesApi } from 'dinero.js'
 
 const TEST_TIMES = 1000
 const CURRENCIES = Object.keys(CurrencyCodes)
@@ -10,17 +11,21 @@ function faker_valid_account_number(): number {
 	return faker.random.number({ min: ACCOUNT_NUMBER_MIN, max: ACCOUNT_NUMBER_MAX })
 }
 
-function faker_valid_amount(): number {
-	let number: number
+function faker_valid_amount(): Dinero {
+	let number
 	do {
-		number = Number.parseFloat(faker.finance.amount(-1000))
+		number = faker.random.number({ min: -1000, max: 1000 })
 	} while (number == 0)
-	return number
+	return DineroFactory({ amount: number, currency: CurrencyCodes.LOCAL })
 }
 
-function faker_valid_currency(): string {
-	const index = faker.random.number({ min: 0, max: CURRENCIES.length - 1 })
-	return CURRENCIES[index]
+function faker_valid_currency_amount(): Dinero {
+	let currency: Currency
+	do {
+		const index = faker.random.number({ min: 0, max: CURRENCIES.length - 1 })
+		currency = CURRENCIES[index] as Currency
+	} while (currency == CurrencyCodes.LOCAL)
+	return DineroFactory({ amount: faker_valid_amount().getAmount(), currency: currency })
 }
 
 function faker_valid_exchange_rate(): number {
@@ -66,7 +71,7 @@ describe('Validate a transaction #cold #entity', () => {
 	it('Valid original amount', () => {
 		for (let i = 0; i < TEST_TIMES; ++i) {
 			transaction.amount = faker_valid_amount()
-			if (transaction.amount != 0) {
+			if (transaction.amount.getAmount() != 0) {
 				expect(transaction.validate()).toStrictEqual([])
 			}
 		}
@@ -76,36 +81,34 @@ describe('Validate a transaction #cold #entity', () => {
 	it('Check valid currencies', () => {
 		transaction.exchangeRate = faker_valid_exchange_rate()
 		CURRENCIES.forEach((currencyCode) => {
-			transaction.currencyCode = currencyCode
-			expect(transaction.validate()).toStrictEqual([])
+			if (currencyCode != CurrencyCodes.LOCAL) {
+				transaction.amount = DineroFactory({ amount: 1, currency: currencyCode as Currency })
+				expect(transaction.validate()).toStrictEqual([])
+			}
 		})
+	})
+
+	it('Currency code is local when exchange rate is set', () => {
+		transaction.exchangeRate = faker_valid_exchange_rate()
+		expect(transaction.validate()).toStrictEqual([EntityErrors.currencyCodeIsLocal])
 	})
 
 	it('Check invalid currency', () => {
 		transaction.exchangeRate = faker_valid_exchange_rate()
-		transaction.currencyCode = '12'
+		transaction.amount = DineroFactory({ amount: 1, currency: 'INVALID' as Currency })
 		expect(transaction.validate()).toStrictEqual([EntityErrors.currencyCodeInvalid])
-
-		transaction.currencyCode = 'EUTR'
+		transaction.amount = DineroFactory({ amount: 1, currency: 'EURT' as Currency })
 		expect(transaction.validate()).toStrictEqual([EntityErrors.currencyCodeInvalid])
-	})
-
-	it('Currency code not set when exchange rate is set', () => {
-		transaction.exchangeRate = faker_valid_exchange_rate()
-		expect(transaction.validate()).toStrictEqual([EntityErrors.currencyCodeNotSet])
-
-		transaction.currencyCode = ''
-		expect(transaction.validate()).toStrictEqual([EntityErrors.currencyCodeNotSet])
 	})
 
 	// Exchange rate
 	it('Exchange rate not set when currency code has been set', () => {
-		transaction.currencyCode = faker_valid_currency()
+		transaction.amount = faker_valid_currency_amount()
 		expect(transaction.validate()).toStrictEqual([EntityErrors.exchangeRateNotSet])
 	})
 
 	it('Exchange rate valid', () => {
-		transaction.currencyCode = faker_valid_currency()
+		transaction.amount = faker_valid_currency_amount()
 		for (let i = 0; i < TEST_TIMES; ++i) {
 			transaction.exchangeRate = faker_valid_exchange_rate()
 			expect(transaction.validate()).toStrictEqual([])
@@ -113,13 +116,13 @@ describe('Validate a transaction #cold #entity', () => {
 	})
 
 	it('Exchange value is 0', () => {
-		transaction.currencyCode = faker_valid_currency()
+		transaction.amount = faker_valid_currency_amount()
 		transaction.exchangeRate = 0
 		expect(transaction.validate()).toStrictEqual([EntityErrors.exchangeRateNegativeOrZero])
 	})
 
 	it('Invalid exchange rate (is below 0)', () => {
-		transaction.currencyCode = faker_valid_currency()
+		transaction.amount = faker_valid_currency_amount()
 		for (let i = 0; i < TEST_TIMES; ++i) {
 			transaction.exchangeRate = -Number.parseFloat(faker.finance.amount(0.01))
 			expect(transaction.validate()).toStrictEqual([EntityErrors.exchangeRateNegativeOrZero])

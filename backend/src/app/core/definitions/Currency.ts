@@ -1,3 +1,5 @@
+import { Currency } from 'dinero.js'
+
 export enum CurrencyCodes {
 	AED = 'AED',
 	AFN = 'AFN',
@@ -169,11 +171,17 @@ export enum CurrencyCodes {
 	ZWL = 'ZWL',
 }
 
-export namespace Currency {
-	export function codeIsValid(code: string): boolean {
+export namespace CurrencyCodes {
+	export function isValid(code: string): boolean {
 		if (Object.keys(CurrencyCodes).includes(code)) {
 			return true
 		}
 		return false
 	}
+
+	export function toCurrency(code: CurrencyCodes): Currency {
+		return code as Currency
+	}
+
+	export const LOCAL = CurrencyCodes.SEK
 }
