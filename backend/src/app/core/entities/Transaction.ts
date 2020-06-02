@@ -1,47 +1,39 @@
 import { Entity, EntityImpl } from './Entity'
 import { EntityErrors } from '../definitions/EntityErrors'
-import DineroFactory, { Dinero } from 'dinero.js'
 import { Immutable } from '../definitions/Immutable'
-import { CurrencyCodes } from '../definitions/Currency'
+import { Currency } from '../definitions/Currency'
 
 export const ACCOUNT_NUMBER_MIN = 1000
 export const ACCOUNT_NUMBER_MAX = 9999
 
 export interface Transaction extends Entity {
 	accountNumber: number
-	amount: Dinero
-	exchangeRate?: number
+	amount: Currency
 }
 
 export type ImmutableTransaction = Immutable<Transaction>
 
 export class TransactionImpl extends EntityImpl implements Transaction {
 	accountNumber: number
-	amount: Dinero
+	amount: Currency
 	exchangeRate?: number
 
 	constructor(data: Transaction) {
 		super(data)
 		this.accountNumber = data.accountNumber
 		this.amount = data.amount
-		this.exchangeRate = data.exchangeRate
 	}
 
 	/**
 	 * If an exchange rate is set it calculates the local amount from amount * exchange rate and rounds the result up
 	 * @return local amount
 	 */
-	getLocalAmount(): Dinero {
+	getLocalAmount(): Currency {
 		return TransactionImpl.getLocalAmount(this)
 	}
 
-	static getLocalAmount(transaction: Transaction): Dinero {
-		let localAmount = transaction.amount
-		if (transaction.exchangeRate) {
-			const convertedAmount = localAmount.multiply(transaction.exchangeRate, 'HALF_UP').getAmount()
-			localAmount = DineroFactory({ amount: convertedAmount, currency: CurrencyCodes.LOCAL })
-		}
-		return localAmount
+	static getLocalAmount(transaction: Transaction): Currency {
+		return transaction.amount.getLocalCurrency()
 	}
 
 	validate(): EntityErrors[] {
@@ -60,30 +52,6 @@ export class TransactionImpl extends EntityImpl implements Transaction {
 		// Amount original - Checks so the amount isn't exactly 0
 		if (this.amount.isZero()) {
 			errors.push(EntityErrors.amountOriginalIsZero)
-		}
-
-		// Currency
-		if (this.amount.getCurrency() !== CurrencyCodes.LOCAL) {
-			// Needs exchange rate
-			if (typeof this.exchangeRate === 'undefined') {
-				errors.push(EntityErrors.exchangeRateNotSet)
-			}
-			// Checks so the currency is valid
-			if (!CurrencyCodes.isValid(this.amount.getCurrency())) {
-				errors.push(EntityErrors.currencyCodeInvalid)
-			}
-		}
-
-		// Exchange rate
-		if (typeof this.exchangeRate !== 'undefined') {
-			// Currency code is not set to something else than local
-			if (this.amount.getCurrency() === CurrencyCodes.LOCAL) {
-				errors.push(EntityErrors.currencyCodeIsLocal)
-			}
-			// Exchange rate needs to be more than 0
-			if (this.exchangeRate <= 0) {
-				errors.push(EntityErrors.exchangeRateNegativeOrZero)
-			}
 		}
 
 		return errors

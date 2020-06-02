@@ -3,9 +3,9 @@ import { VerificationImpl, Verification, VerificationTypes } from './Verificatio
 import { Transaction } from './Transaction'
 import DineroFactory from 'dinero.js'
 import { EntityErrors } from '../definitions/EntityErrors'
-import { CurrencyCodes } from '../definitions/Currency'
+import { Codes } from '../definitions/Currency'
 
-DineroFactory.defaultCurrency = CurrencyCodes.LOCAL
+DineroFactory.defaultCurrency = Codes.LOCAL
 
 function faker_valid_date(): number {
 	return faker.date.between('2010-01-01', '2020-01-01').getTime()

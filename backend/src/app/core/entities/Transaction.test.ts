@@ -1,11 +1,11 @@
 import * as faker from 'faker'
 import { Transaction, TransactionImpl, ACCOUNT_NUMBER_MIN, ACCOUNT_NUMBER_MAX } from './Transaction'
-import { CurrencyCodes } from '../definitions/Currency'
+import { Codes } from '../definitions/Currency'
 import { EntityErrors } from '../definitions/EntityErrors'
 import DineroFactory, { Dinero, Currency, globalExchangeRatesApi } from 'dinero.js'
 
 const TEST_TIMES = 1000
-const CURRENCIES = Object.keys(CurrencyCodes)
+const CURRENCIES = Object.keys(Codes)
 
 function faker_valid_account_number(): number {
 	return faker.random.number({ min: ACCOUNT_NUMBER_MIN, max: ACCOUNT_NUMBER_MAX })
@@ -16,7 +16,7 @@ function faker_valid_amount(): Dinero {
 	do {
 		number = faker.random.number({ min: -1000, max: 1000 })
 	} while (number == 0)
-	return DineroFactory({ amount: number, currency: CurrencyCodes.LOCAL })
+	return DineroFactory({ amount: number, currency: Codes.LOCAL })
 }
 
 function faker_valid_currency_amount(): Dinero {
@@ -24,7 +24,7 @@ function faker_valid_currency_amount(): Dinero {
 	do {
 		const index = faker.random.number({ min: 0, max: CURRENCIES.length - 1 })
 		currency = CURRENCIES[index] as Currency
-	} while (currency == CurrencyCodes.LOCAL)
+	} while (currency == Codes.LOCAL)
 	return DineroFactory({ amount: faker_valid_amount().getAmount(), currency: currency })
 }
 
@@ -81,7 +81,7 @@ describe('Validate a transaction #cold #entity', () => {
 	it('Check valid currencies', () => {
 		transaction.exchangeRate = faker_valid_exchange_rate()
 		CURRENCIES.forEach((currencyCode) => {
-			if (currencyCode != CurrencyCodes.LOCAL) {
+			if (currencyCode != Codes.LOCAL) {
 				transaction.amount = DineroFactory({ amount: 1, currency: currencyCode as Currency })
 				expect(transaction.validate()).toStrictEqual([])
 			}
