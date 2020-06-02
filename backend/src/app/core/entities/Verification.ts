@@ -4,7 +4,6 @@ import { Id } from '../definitions/Id'
 import { Immutable } from '../definitions/Immutable'
 import { EntityErrors } from '../definitions/EntityErrors'
 import DineroFactory, { Dinero } from 'dinero.js'
-import { parse } from 'querystring'
 
 const ISO_DATE_REGEX = /^\d\d\d\d-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])$/
 
@@ -169,15 +168,25 @@ export class VerificationImpl extends EntityImpl implements Verification {
 		if (this.totalAmountOriginal) {
 			const amountVar = this.totalAmountOriginal.getAmount()
 			let found = false
+			let sameCurrency: boolean | undefined
 			this.transactions.forEach((transaction) => {
 				const transactionAmount = transaction.amount.getAmount()
 				if (Math.abs(transactionAmount) == amountVar) {
 					found = true
+					if (transaction.amount.getCurrency() == this.totalAmountOriginal.getCurrency()) {
+						sameCurrency = true
+					} else if (typeof sameCurrency === 'undefined') {
+						sameCurrency = false
+					}
 				}
 			})
 
 			if (!found) {
 				errors.push(EntityErrors.verificationOriginalAmountDoesNotMatchAnyTransaction)
+			}
+
+			if (typeof sameCurrency === 'boolean' && !sameCurrency) {
+				errors.push(EntityErrors.verificationOriginalAmountHaveDifferentCurrency)
 			}
 		}
 
@@ -201,7 +210,22 @@ export class VerificationImpl extends EntityImpl implements Verification {
 		return errors
 	}
 
-	private validateTransactions(errors: EntityErrors[]) {}
+	private validateTransactions(errors: EntityErrors[]) {
+		// Check for errors in each transaction
+		this.transactions.forEach((transaction) => {
+			errors.push(...transaction.validate())
+		})
+
+		// Make sure all transaction amounts add up to 0 (locally)
+		let sum = 0
+		this.transactions.forEach((transaction) => {
+			sum += transaction.getLocalAmount().getAmount()
+		})
+
+		if (sum != 0) {
+			errors.push(EntityErrors.transactionSumIsNotZero)
+		}
+	}
 
 	/**
 	 * @return largest original amount from all transactions

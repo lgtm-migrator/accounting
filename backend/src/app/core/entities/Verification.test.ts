@@ -3,6 +3,9 @@ import { VerificationImpl, Verification, VerificationTypes } from './Verificatio
 import { Transaction } from './Transaction'
 import DineroFactory from 'dinero.js'
 import { EntityErrors } from '../definitions/EntityErrors'
+import { CurrencyCodes } from '../definitions/Currency'
+
+DineroFactory.defaultCurrency = CurrencyCodes.LOCAL
 
 function faker_valid_date(): number {
 	return faker.date.between('2010-01-01', '2020-01-01').getTime()
@@ -104,4 +107,28 @@ describe('Verification test #cold #entity', () => {
 		verification.date = '2019-02-29'
 		expect(verification.validate()).toStrictEqual([EntityErrors.verificationDateInvalidFormat])
 	})
+
+	// Total amount (local)
+	it('Total local amount does not exist in any transaction', () => {
+		const amount = faker.random.number({ min: 10000001, max: 90000000 })
+		verification.totalAmountLocal = DineroFactory({ amount: amount })
+		expect(verification.validate()).toStrictEqual([EntityErrors.verificationLocalAmountDoesNotMatchAnyTransaction])
+	})
+
+	// Total amount (original)
+	it('Total original amount does not exist in any transaction (different amounts)', () => {
+		const amount = verification.transactions[0].amount.getAmount() + 1
+		verification.totalAmountOriginal = DineroFactory({ amount: amount })
+		expect(verification.validate()).toStrictEqual([EntityErrors.verificationOriginalAmountDoesNotMatchAnyTransaction])
+	})
+
+	it('Total amount does not exist in any transaction (currency code)', () => {
+		const amount = verification.transactions[0].amount.getAmount()
+		const currency = verification.transactions[0].amount.getCurrency()
+		verification.totalAmountOriginal = DineroFactory({ amount: amount, currency: 'USD' })
+		expect(verification.validate()).toStrictEqual([EntityErrors.verificationOriginalAmountHaveDifferentCurrency])
+	})
+
+	// Transaction sum
+	it('Transaction sum is not zero', () => {})
 })

@@ -26,4 +26,6 @@ export enum EntityErrors {
 	verificationPaymentIdIsEmpty = 'verification-payment-id-is-empty',
 	verificationLocalAmountDoesNotMatchAnyTransaction = 'verification-local-amount-does-not-match-any-transaction',
 	verificationOriginalAmountDoesNotMatchAnyTransaction = 'verification-original-amount-does-not-match-any-transaction',
+	verificationOriginalAmountHaveDifferentCurrency = 'verification-original-amount-have-different-currency',
+	transactionSumIsNotZero = 'transactionSumIsNotZero',
 }
