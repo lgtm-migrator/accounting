@@ -5,17 +5,28 @@ import { EntityErrors } from './EntityErrors'
 
 const TEST_TIMES = 1000
 
+function faker_valid_amount(): bigint {
+	return BigInt(faker.random.number({ min: -10000000, max: 1000000 }))
+}
+
 describe('Currency tester #cold #entity', () => {
 	let data: Currency.Option
 
 	it('Minimum valid currency', () => {
 		data = {
-			amount: 0n,
+			amount: faker_valid_amount(),
 			code: 'SEK',
 		}
 		const valid = {
-			amount: 0n,
+			amount: data.amount,
 			code: Currency.Codes.SEK,
+		}
+		expect(new Currency(data)).toEqual(valid)
+
+		// Small letters
+		data = {
+			amount: data.amount,
+			code: 'sek',
 		}
 		expect(new Currency(data)).toEqual(valid)
 	})
@@ -25,7 +36,7 @@ describe('Currency tester #cold #entity', () => {
 		expect.assertions(2)
 
 		data = {
-			amount: 0n,
+			amount: faker_valid_amount(),
 			code: 'INVALID',
 		}
 
@@ -38,12 +49,20 @@ describe('Currency tester #cold #entity', () => {
 		}
 	})
 
+	it('Input currency code as Code not string', () => {
+		data = {
+			amount: faker_valid_amount(),
+			code: Currency.Codes.SEK,
+		}
+		expect(new Currency(data)).toEqual(data)
+	})
+
 	// Local currency code
 	it('Invalid local currency code', () => {
 		expect.assertions(2)
 
 		data = {
-			amount: 0n,
+			amount: faker_valid_amount(),
 			code: 'SEK',
 			localCode: 'INVALID',
 			exchangeRate: 12,
@@ -58,11 +77,27 @@ describe('Currency tester #cold #entity', () => {
 		}
 	})
 
+	it('Input local currency code as Code not string', () => {
+		data = {
+			amount: faker_valid_amount(),
+			code: 'SEK',
+			localCode: Currency.Codes.USD,
+			exchangeRate: 1,
+		}
+		let valid = {
+			amount: data.amount,
+			code: Currency.Codes.SEK,
+			localCode: Currency.Codes.USD,
+			exchangeRate: 1,
+		}
+		expect(new Currency(data)).toEqual(valid)
+	})
+
 	it('Missing local currency code', () => {
 		expect.assertions(2)
 
 		data = {
-			amount: 0n,
+			amount: faker_valid_amount(),
 			code: 'SEK',
 			exchangeRate: 12,
 		}
@@ -79,7 +114,7 @@ describe('Currency tester #cold #entity', () => {
 		expect.assertions(2)
 
 		data = {
-			amount: 0n,
+			amount: faker_valid_amount(),
 			code: 'SEK',
 			localCode: 'SEK',
 			exchangeRate: 12,
@@ -100,7 +135,7 @@ describe('Currency tester #cold #entity', () => {
 		const errorObject = { errors: [EntityErrors.exchangeRateNegativeOrZero] }
 		for (let i = 0; i < TEST_TIMES; ++i) {
 			data = {
-				amount: 0n,
+				amount: faker_valid_amount(),
 				code: 'SEK',
 				localCode: 'USD',
 				exchangeRate: faker.random.number({ min: -1000, max: 0, precision: 6 }),
@@ -118,7 +153,7 @@ describe('Currency tester #cold #entity', () => {
 		expect.assertions(2)
 
 		data = {
-			amount: 0n,
+			amount: faker_valid_amount(),
 			code: 'SEK',
 			localCode: 'USD',
 			exchangeRate: 0,
@@ -136,7 +171,7 @@ describe('Currency tester #cold #entity', () => {
 		expect.assertions(2)
 
 		data = {
-			amount: 0n,
+			amount: faker_valid_amount(),
 			code: 'SEK',
 			localCode: 'USD',
 		}
@@ -173,10 +208,58 @@ describe('Currency tester #cold #entity', () => {
 		expect(currency.isZero()).toBe(false)
 	})
 
+	// isPositive()
+	it('isPositive() -> Check various inputs', () => {
+		data = {
+			amount: 0n,
+			code: 'SEK',
+		}
+		let currency = new Currency(data)
+		expect(currency.isPositive()).toBe(false)
+
+		data = {
+			amount: -1n,
+			code: 'SEK',
+		}
+		currency = new Currency(data)
+		expect(currency.isPositive()).toBe(false)
+
+		data = {
+			amount: 1n,
+			code: 'SEK',
+		}
+		currency = new Currency(data)
+		expect(currency.isPositive()).toBe(true)
+	})
+
+	// isNegative()
+	it('isNegative() -> Check various inputs', () => {
+		data = {
+			amount: 0n,
+			code: 'SEK',
+		}
+		let currency = new Currency(data)
+		expect(currency.isNegative()).toBe(false)
+
+		data = {
+			amount: -1n,
+			code: 'SEK',
+		}
+		currency = new Currency(data)
+		expect(currency.isNegative()).toBe(true)
+
+		data = {
+			amount: 1n,
+			code: 'SEK',
+		}
+		currency = new Currency(data)
+		expect(currency.isNegative()).toBe(false)
+	})
+
 	// getLocalAmount()
 	it('getLocalAmount() -> No local code, returning this directly', () => {
 		data = {
-			amount: 0n,
+			amount: faker_valid_amount(),
 			code: 'SEK',
 		}
 		const currency = new Currency(data)
@@ -228,11 +311,11 @@ describe('Currency tester #cold #entity', () => {
 	it('getLocalAmount() -> Test various exchange rates to same precision', () => {
 		for (let i = 0; i < TEST_TIMES; ++i) {
 			const exchangeRate = faker.random.number({ min: 0.00001, max: 1000, precision: 0.00000001 })
-			const from = faker.random.number({ min: 1, max: 100000 })
-			const to = Math.round(from * (exchangeRate + Number.EPSILON))
+			const from = faker_valid_amount()
+			const to = Math.round(Number(from) * (exchangeRate + Number.EPSILON))
 
 			data = {
-				amount: BigInt(from),
+				amount: from,
 				code: 'SEK',
 				localCode: 'USD',
 				exchangeRate: exchangeRate,
@@ -245,8 +328,106 @@ describe('Currency tester #cold #entity', () => {
 
 			expect(new Currency(data).getLocalCurrency()).toEqual(valid)
 		}
+	})
 
-		// TODO specific edge cases that might be wrong
+	it('getLocalAmount() -> Testing positive edge cases', () => {
+		data = {
+			amount: 1000n,
+			code: 'USD',
+			localCode: 'SEK',
+			exchangeRate: 1.0005,
+		}
+
+		let valid = {
+			amount: 1001n,
+			code: Currency.Codes.SEK,
+		}
+		expect(new Currency(data).getLocalCurrency()).toEqual(valid)
+
+		data = {
+			amount: 1000n,
+			code: 'USD',
+			localCode: 'SEK',
+			exchangeRate: 1.00049999,
+		}
+
+		valid = {
+			amount: 1000n,
+			code: Currency.Codes.SEK,
+		}
+		expect(new Currency(data).getLocalCurrency()).toEqual(valid)
+	})
+
+	it('getLocalAmount() -> Testing negative edge cases', () => {
+		data = {
+			amount: -1000n,
+			code: 'USD',
+			localCode: 'SEK',
+			exchangeRate: 1.0005,
+		}
+
+		let valid = {
+			amount: -1001n,
+			code: Currency.Codes.SEK,
+		}
+		expect(new Currency(data).getLocalCurrency()).toEqual(valid)
+
+		data = {
+			amount: -1000n,
+			code: 'USD',
+			localCode: 'SEK',
+			exchangeRate: 1.00049999,
+		}
+
+		valid = {
+			amount: -1000n,
+			code: Currency.Codes.SEK,
+		}
+		expect(new Currency(data).getLocalCurrency()).toEqual(valid)
+	})
+
+	it('getLocalAmount() -> Changing precision with exchange rate at the same time', () => {
+		data = {
+			amount: 1000n,
+			code: 'JPY',
+			localCode: 'SEK',
+			exchangeRate: 1.56,
+		}
+
+		let valid = {
+			amount: BigInt(156000),
+			code: Currency.Codes.SEK,
+		}
+		expect(new Currency(data).getLocalCurrency()).toEqual(valid)
+	})
+
+	// negate()
+	it('negate() -> Test to negate an amount', () => {
+		// Minimal info
+		data = {
+			amount: 1000n,
+			code: 'SEK',
+		}
+		let valid = {
+			amount: -data.amount,
+			code: Currency.Codes.SEK,
+		}
+		expect(new Currency(data).negate()).toEqual(valid)
+
+		// Full info
+		data = {
+			amount: 1000n,
+			code: 'SEK',
+			localCode: 'USD',
+			exchangeRate: 15.005,
+		}
+		let validSecond = {
+			amount: -data.amount,
+			code: Currency.Codes.SEK,
+			localCode: Currency.Codes.USD,
+			exchangeRate: data.exchangeRate,
+		}
+		expect(new Currency(data).negate()).toEqual(validSecond)
 	})
 
 	// fromString()

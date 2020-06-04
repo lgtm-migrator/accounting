@@ -16,6 +16,7 @@ export class InternalError extends Error {
  */
 export enum InternalErrorTypes {
 	userNotFound = 'user-not-found',
+	comparableError = 'cannot-compare-the-objects',
 	invalidEntityState = 'invalid-entity-state',
 	unknown = 'internal-error',
 }

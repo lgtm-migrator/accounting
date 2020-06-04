@@ -8,20 +8,20 @@ export const ACCOUNT_NUMBER_MAX = 9999
 
 export interface Transaction extends Entity {
 	accountNumber: number
-	amount: Currency
+	currency: Currency
 }
 
 export type ImmutableTransaction = Immutable<Transaction>
 
 export class TransactionImpl extends EntityImpl implements Transaction {
 	accountNumber: number
-	amount: Currency
+	currency: Currency
 	exchangeRate?: number
 
 	constructor(data: Transaction) {
 		super(data)
 		this.accountNumber = data.accountNumber
-		this.amount = data.amount
+		this.currency = data.currency
 	}
 
 	/**
@@ -33,7 +33,21 @@ export class TransactionImpl extends EntityImpl implements Transaction {
 	}
 
 	static getLocalAmount(transaction: Transaction): Currency {
-		return transaction.amount.getLocalCurrency()
+		return transaction.currency.getLocalCurrency()
+	}
+
+	/**
+	 * @return the local currency code if it exists. undefined if it doesn't exist
+	 */
+	getLocalCurrencyCode(): Currency.Code | undefined {
+		return this.currency.localCode
+	}
+
+	/**
+	 * @return the currency code for this transaction
+	 */
+	getCurrencyCode(): Currency.Code {
+		return this.currency.code
 	}
 
 	validate(): EntityErrors[] {
@@ -50,8 +64,8 @@ export class TransactionImpl extends EntityImpl implements Transaction {
 		}
 
 		// Amount original - Checks so the amount isn't exactly 0
-		if (this.amount.isZero()) {
-			errors.push(EntityErrors.amountOriginalIsZero)
+		if (this.currency.isZero()) {
+			errors.push(EntityErrors.amountIsZero)
 		}
 
 		return errors

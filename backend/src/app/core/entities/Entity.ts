@@ -17,11 +17,11 @@ export class EntityImpl implements Entity {
 	dateModified?: number
 	dateDeleted?: number
 
-	constructor(data?: Entity) {
-		this.id = data?.id
-		this.dateCreated = data?.dateCreated
-		this.dateModified = data?.dateModified
-		this.dateDeleted = data?.dateDeleted
+	constructor(data: Entity) {
+		this.id = data.id
+		this.dateCreated = data.dateCreated
+		this.dateModified = data.dateModified
+		this.dateDeleted = data.dateDeleted
 	}
 
 	/**

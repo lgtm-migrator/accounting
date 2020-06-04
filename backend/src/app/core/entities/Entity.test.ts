@@ -16,7 +16,7 @@ describe('Validate entity #cold #entity', () => {
 	let entity: EntityImpl
 
 	beforeEach(() => {
-		entity = new EntityImpl()
+		entity = new EntityImpl({})
 	})
 
 	it('Validate empty Entity should pass', () => {

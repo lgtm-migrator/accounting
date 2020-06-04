@@ -3,7 +3,7 @@ import { Transaction, TransactionImpl } from './Transaction'
 import { Id } from '../definitions/Id'
 import { Immutable } from '../definitions/Immutable'
 import { EntityErrors } from '../definitions/EntityErrors'
-import DineroFactory, { Dinero } from 'dinero.js'
+import { Currency } from '../definitions/Currency'
 
 const ISO_DATE_REGEX = /^\d\d\d\d-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])$/
 
@@ -25,8 +25,7 @@ export interface Verification extends Entity {
 	dateFiled?: number
 	type: VerificationTypes
 	description?: string
-	totalAmountLocal?: Dinero
-	totalAmountOriginal?: Dinero
+	totalAmount?: Currency
 	files?: string[]
 	invoiceId?: Id
 	paymentId?: Id
@@ -45,8 +44,7 @@ export class VerificationImpl extends EntityImpl implements Verification {
 	dateFiled?: number
 	type: VerificationTypes
 	description?: string
-	totalAmountLocal: Dinero
-	totalAmountOriginal: Dinero
+	totalAmount: Currency
 	files?: string[]
 	invoiceId?: Id
 	paymentId?: Id
@@ -75,18 +73,11 @@ export class VerificationImpl extends EntityImpl implements Verification {
 			this.transactions.push(new TransactionImpl(transaction))
 		})
 
-		// Calculate total local amount
-		if (typeof data.totalAmountLocal === 'undefined') {
-			this.totalAmountLocal = this.getLargestLocalAmount()
-		} else {
-			this.totalAmountLocal = data.totalAmountLocal
-		}
-
 		// Calculate total original amount
-		if (typeof data.totalAmountOriginal === 'undefined') {
-			this.totalAmountOriginal = this.getLargestOriginalAmount()
+		if (typeof data.totalAmount === 'undefined') {
+			this.totalAmount = this.getLargestAmount()
 		} else {
-			this.totalAmountOriginal = data.totalAmountOriginal
+			this.totalAmount = data.totalAmount
 		}
 	}
 
@@ -148,45 +139,20 @@ export class VerificationImpl extends EntityImpl implements Verification {
 			}
 		}
 
-		// Total amount local - Check so that one transaction at least has this amount
-		if (this.totalAmountLocal) {
-			const amountVar = this.totalAmountLocal.getAmount()
+		// Total amount
+		if (this.totalAmount) {
 			let found = false
-			this.transactions.forEach((transaction) => {
-				const transactionAmount = transaction.getLocalAmount().getAmount()
-				if (Math.abs(transactionAmount) == amountVar) {
-					found = true
-				}
-			})
-
-			if (!found) {
-				errors.push(EntityErrors.verificationLocalAmountDoesNotMatchAnyTransaction)
-			}
-		}
-
-		// Total amount original
-		if (this.totalAmountOriginal) {
-			const amountVar = this.totalAmountOriginal.getAmount()
-			let found = false
-			let sameCurrency: boolean | undefined
-			this.transactions.forEach((transaction) => {
-				const transactionAmount = transaction.amount.getAmount()
-				if (Math.abs(transactionAmount) == amountVar) {
-					found = true
-					if (transaction.amount.getCurrency() == this.totalAmountOriginal.getCurrency()) {
-						sameCurrency = true
-					} else if (typeof sameCurrency === 'undefined') {
-						sameCurrency = false
+			for (let transaction of this.transactions) {
+				if (this.totalAmount.isComparableTo(transaction.currency)) {
+					if (this.totalAmount.isEqualTo(transaction.currency)) {
+						found = true
+						break
 					}
 				}
-			})
-
-			if (!found) {
-				errors.push(EntityErrors.verificationOriginalAmountDoesNotMatchAnyTransaction)
 			}
 
-			if (typeof sameCurrency === 'boolean' && !sameCurrency) {
-				errors.push(EntityErrors.verificationOriginalAmountHaveDifferentCurrency)
+			if (!found) {
+				errors.push(EntityErrors.verificationAmountDoesNotMatchAnyTransaction)
 			}
 		}
 
@@ -217,55 +183,51 @@ export class VerificationImpl extends EntityImpl implements Verification {
 		})
 
 		// Make sure all transaction amounts add up to 0 (locally)
-		let sum = 0
+		let sum = 0n
 		this.transactions.forEach((transaction) => {
-			sum += transaction.getLocalAmount().getAmount()
+			sum += transaction.getLocalAmount().amount
 		})
 
-		if (sum != 0) {
+		if (sum != 0n) {
 			errors.push(EntityErrors.transactionSumIsNotZero)
 		}
 	}
 
 	/**
-	 * @return largest original amount from all transactions
+	 * @return largest amount from all transactions
 	 */
-	private getLargestOriginalAmount(): Dinero {
-		let largest: Dinero = DineroFactory({ amount: 0 })
+	private getLargestAmount(): Currency {
+		const localCurrency = this.findLocalCurrencyCode()
+		let largest = new Currency({ amount: 0n, code: localCurrency })
 		this.transactions.forEach((transaction) => {
-			let localAmount = transaction.getLocalAmount()
-
-			// Make the amount positive
-			if (localAmount.isNegative()) {
-				localAmount = localAmount.multiply(-1)
-			}
-
-			if (localAmount.getAmount() > largest.getAmount()) {
-				largest = localAmount
+			const currency = transaction.currency
+			if (currency.isLargerThan(largest)) {
+				largest = currency
 			}
 		})
+
+		if (largest.isNegative()) {
+			largest = largest.negate()
+		}
 
 		return largest
 	}
 
 	/**
-	 * @return largest local amount from all transactions
+	 * Iterate through all transactions and see if there's a local
+	 * currency code available. If not, we use the currency code
+	 * of the transaction's code directly
+	 * @return local currency code
 	 */
-	private getLargestLocalAmount(): Dinero {
-		let largest: Dinero = DineroFactory({ amount: 0 })
-		this.transactions.forEach((transaction) => {
-			let originalAmount = transaction.amount
-
-			// Make the amount positive
-			if (originalAmount.isNegative()) {
-				originalAmount = originalAmount.multiply(-1)
+	private findLocalCurrencyCode(): Currency.Code {
+		for (let i = 0; i < this.transactions.length; ++i) {
+			const transaction = this.transactions[i]
+			const localCode = transaction.getLocalCurrencyCode()
+			if (localCode) {
+				return localCode
 			}
+		}
 
-			if (originalAmount.getAmount() > largest.getAmount()) {
-				largest = originalAmount
-			}
-		})
-
-		return largest
+		return this.transactions[0].getCurrencyCode()
 	}
 }

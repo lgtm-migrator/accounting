@@ -20,11 +20,15 @@ export class Currency {
 
 		const errors: EntityErrors[] = []
 
-		let foundCode = Currency.Codes.fromString(options.code)
-		if (foundCode) {
-			this.code = foundCode
+		if (typeof options.code === 'string') {
+			let foundCode = Currency.Codes.fromString(options.code)
+			if (foundCode) {
+				this.code = foundCode
+			} else {
+				errors.push(EntityErrors.currencyCodeInvalid)
+			}
 		} else {
-			errors.push(EntityErrors.currencyCodeInvalid)
+			this.code = options.code
 		}
 
 		if (typeof options.exchangeRate !== 'undefined') {
@@ -32,11 +36,15 @@ export class Currency {
 		}
 
 		if (typeof options.localCode !== 'undefined') {
-			foundCode = Currency.Codes.fromString(options.localCode)
-			if (foundCode) {
-				this.localCode = foundCode
+			if (typeof options.localCode === 'string') {
+				let foundCode = Currency.Codes.fromString(options.localCode)
+				if (foundCode) {
+					this.localCode = foundCode
+				} else {
+					errors.push(EntityErrors.currencyCodeLocalInvalid)
+				}
 			} else {
-				errors.push(EntityErrors.currencyCodeLocalInvalid)
+				this.localCode = options.localCode
 			}
 		}
 
@@ -83,6 +91,328 @@ export class Currency {
 	}
 
 	/**
+	 * @return true if amount is less than 0
+	 */
+	isNegative(): boolean {
+		return this.amount < 0n
+	}
+
+	/**
+	 * @return true if amount is larger than 0
+	 */
+	isPositive(): boolean {
+		return this.amount > 0n
+	}
+
+	/**
+	 * Checks if the amounts are equal if they can be compared in the same currency.
+	 * @param other the other currency to compare with this one
+	 * @return true if the other currency has the same amount value as this
+	 * @throws {InternalError} with the {EntityError.currenciesNotComparable} if {isComparableTo() returns false}
+	 * @see isComparableTo() to check beforehand if they are comparable
+	 * @see isSmallerThan() to check which comparable amount is closest to 0
+	 * @see isSmallerThanOrEqualTo() to check which comparable amount is closest to 0
+	 * @see isLargerThan() to check which comparable amount is farthest away from 0
+	 * @see isLargerThanEqualTo() to check which comparable amount is farthest away from 0
+	 * @see isLessThan() to check if the comparable amount is less than other
+	 * @see isLessThanEqualTo() to check if the comparable amount is less than or equal to other
+	 * @see isGreaterThan() to check if the comparable amount is greater than other
+	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
+	 */
+	isEqualTo(other: Currency): boolean {
+		// Short circuit if they are the same object
+		if (other === this) {
+			return true
+		}
+
+		const comparableResults = this.getComparableResults(other)
+		return comparableResults[0] == comparableResults[1]
+	}
+
+	/**
+	 * Checks if this amount is smaller than other's amount if they can be compared in the same currency.
+	 * By smaller we mean closer to 0.
+	 * @return true if this amount is smaller than the other's amount (compared in the same currency)
+	 * @throws {InternalError} with the {EntityError.currenciesNotComparable} if {isComparableTo() returns false
+	 * @example new Currency({amount: 10, code: 'USD'}).isSmallerThan(new Currency({amount: 5, code: 'USD'})) => false
+	 * @example new Currency({amount: -10, code: 'USD'}).isSmallerThan(new Currency({amount: -5, code: 'USD'})) => false
+	 * @example new Currency({amount: 5, code: 'USD'}).isSmallerThan(new Currency({amount: -5, code: 'USD'})) => false
+	 * @example new Currency({amount: -5, code: 'USD'}).isSmallerThan(new Currency({amount: 10, code: 'USD'})) => true
+	 * @see isComparableTo() to check beforehand if they are comparable
+	 * @see isSmallerThanOrEqualTo() to check which comparable amount is closest to 0
+	 * @see isLargerThan() to check which comparable amount is farthest away from 0
+	 * @see isLargerThanEqualTo() to check which comparable amount is farthest away from 0
+	 * @see isLessThan() to check if the comparable amount is less than other
+	 * @see isLessThanEqualTo() to check if the comparable amount is less than or equal to other
+	 * @see isGreaterThan() to check if the comparable amount is greater than other
+	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
+	 */
+	isSmallerThan(other: Currency): boolean {
+		const comparableResults = this.getComparableResults(other)
+
+		// Make comparables positive
+		if (comparableResults[0] < 0) {
+			comparableResults[0] *= -1n
+		}
+		if (comparableResults[1] < 0) {
+			comparableResults[1] *= -1n
+		}
+
+		return comparableResults[0] < comparableResults[1]
+	}
+
+	/**
+	 * Checks if this amount is smaller than or equal to other's amount if they can be compared in the same currency.
+	 * By smaller we mean closer to 0.
+	 * @return true if this amount is smaller than or equal to the other's amount (compared in the same currency)
+	 * @throws {InternalError} with the {EntityError.currenciesNotComparable} if {isComparableTo() returns false}
+	 * @example new Currency({amount: 10, code: 'USD'}).isSmallerThanEqualTo(new Currency({amount: 5, code: 'USD'})) => false
+	 * @example new Currency({amount: -10, code: 'USD'}).isSmallerThanEqualTo(new Currency({amount: -5, code: 'USD'})) => false
+	 * @example new Currency({amount: 5, code: 'USD'}).isSmallerThanEqualTo(new Currency({amount: -5, code: 'USD'})) => true
+	 * @example new Currency({amount: -5, code: 'USD'}).isSmallerThanEqualTo(new Currency({amount: 10, code: 'USD'})) => true
+	 * @see isComparableTo() to check beforehand if they are comparable
+	 * @see isSmallerThan() to check which comparable amount is closest to 0
+	 * @see isLargerThan() to check which comparable amount is farthest away from 0
+	 * @see isLargerThanEqualTo() to check which comparable amount is farthest away from 0
+	 * @see isLessThan() to check if the comparable amount is less than other
+	 * @see isLessThanEqualTo() to check if the comparable amount is less than or equal to other
+	 * @see isGreaterThan() to check if the comparable amount is greater than other
+	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
+	 */
+	isSmallerThanEqualTo(other: Currency): boolean {
+		const comparableResults = this.getComparableResults(other)
+
+		// Make comparables positive
+		if (comparableResults[0] < 0) {
+			comparableResults[0] *= -1n
+		}
+		if (comparableResults[1] < 0) {
+			comparableResults[1] *= -1n
+		}
+
+		return comparableResults[0] <= comparableResults[1]
+	}
+
+	/**
+	 * Checks if this amount is larger than other's amount if they can be compared in the same currency.
+	 * By larger we mean farther away from 0.
+	 * @return true if this amount is larger than the other's amount (compared in the same currency)
+	 * @throws {InternalError} with the {EntityError.currenciesNotComparable} if {isComparableTo() returns false}
+	 * @example new Currency({amount: 10, code: 'USD'}).isLargerThan(new Currency({amount: 5, code: 'USD'})) => true
+	 * @example new Currency({amount: -10, code: 'USD'}).isLargerThan(new Currency({amount: -5, code: 'USD'})) => true
+	 * @example new Currency({amount: 5, code: 'USD'}).isLargerThan(new Currency({amount: -5, code: 'USD'})) => false
+	 * @example new Currency({amount: -5, code: 'USD'}).isLargerThan(new Currency({amount: 10, code: 'USD'})) => false
+	 * @see isComparableTo() to check beforehand if they are comparable
+	 * @see isSmallerThan() to check which comparable amount is closest to 0
+	 * @see isSmallerThanOrEqualTo() to check which comparable amount is closest to 0
+	 * @see isLargerThanEqualTo() to check which comparable amount is farthest away from 0
+	 * @see isLessThan() to check if the comparable amount is less than other
+	 * @see isLessThanEqualTo() to check if the comparable amount is less than or equal to other
+	 * @see isGreaterThan() to check if the comparable amount is greater than other
+	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
+	 */
+	isLargerThan(other: Currency): boolean {
+		const comparableResults = this.getComparableResults(other)
+
+		// Make comparables positive
+		if (comparableResults[0] < 0) {
+			comparableResults[0] *= -1n
+		}
+		if (comparableResults[1] < 0) {
+			comparableResults[1] *= -1n
+		}
+
+		return comparableResults[0] > comparableResults[1]
+	}
+
+	/**
+	 * Checks if this amount is larger than or equal to other's amount if they can be compared in the same currency.
+	 * By larger we mean farther away from 0.
+	 * @return true if this amount is larger than or equal to the other's amount (compared in the same currency)
+	 * @throws {InternalError} with the {EntityError.currenciesNotComparable} if {isComparableTo() returns false}
+	 * @example new Currency({amount: 10, code: 'USD'}).isLargerThanEqualTo(new Currency({amount: 5, code: 'USD'})) => true
+	 * @example new Currency({amount: -10, code: 'USD'}).isLargerThanEqualTo(new Currency({amount: -5, code: 'USD'})) => true
+	 * @example new Currency({amount: 5, code: 'USD'}).isLargerThanEqualTo(new Currency({amount: -5, code: 'USD'})) => true
+	 * @example new Currency({amount: -5, code: 'USD'}).isLargerThanEqualTo(new Currency({amount: 10, code: 'USD'})) => false
+	 * @see isComparableTo() to check beforehand if they are comparable
+	 * @see isSmallerThan() to check which comparable amount is closest to 0
+	 * @see isSmallerThanOrEqualTo() to check which comparable amount is closest to 0
+	 * @see isLargerThan() to check which comparable amount is farthest away from 0
+	 * @see isLessThan() to check if the comparable amount is less than other
+	 * @see isLessThanEqualTo() to check if the comparable amount is less than or equal to other
+	 * @see isGreaterThan() to check if the comparable amount is greater than other
+	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
+	 */
+	isLargerThanEqualTo(other: Currency): boolean {
+		const comparableResults = this.getComparableResults(other)
+
+		// Make comparables positive
+		if (comparableResults[0] < 0) {
+			comparableResults[0] *= -1n
+		}
+		if (comparableResults[1] < 0) {
+			comparableResults[1] *= -1n
+		}
+
+		return comparableResults[0] >= comparableResults[1]
+	}
+
+	/**
+	 * Checks if this amount is less than other's amount if they can be compared in the same currency.
+	 * @return true if this amount is less than the other's amount (compared in the same currency)
+	 * @throws {InternalError} with the {EntityError.currenciesNotComparable} if {isComparableTo() returns false}
+	 * @see isComparableTo() to check beforehand if they are comparable
+	 * @see isLessThanEqualTo() to check if the comparable amount is less than or equal to other
+	 * @see isGreaterThan() to check if the comparable amount is greater than other
+	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
+	 * @see isSmallerThan() to check which comparable amount is closest to 0
+	 * @see isSmallerThanOrEqualTo() to check which comparable amount is closest to 0
+	 * @see isLargerThan() to check which comparable amount is farthest away from 0
+	 * @see isLargerThanEqualTo() to check which comparable amount is farthest away from 0
+	 */
+	isLessThan(other: Currency): boolean {
+		const comparableResults = this.getComparableResults(other)
+		return comparableResults[0] < comparableResults[1]
+	}
+
+	/**
+	 * Checks if this amount is less than or equal to other's amount if they can be compared in the same currency.
+	 * @return true if this amount is less than or equal to the other's amount (compared in the same currency)
+	 * @throws {InternalError} with the {EntityError.currenciesNotComparable} if {isComparableTo() returns false}
+	 * @see isComparableTo() to check beforehand if they are comparable
+	 * @see isLessThan() to check if the comparable amount is less than other
+	 * @see isGreaterThan() to check if the comparable amount is greater than other
+	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
+	 * @see isSmallerThan() to check which comparable amount is closest to 0
+	 * @see isSmallerThanOrEqualTo() to check which comparable amount is closest to 0
+	 * @see isLargerThan() to check which comparable amount is farthest away from 0
+	 * @see isLargerThanEqualTo() to check which comparable amount is farthest away from 0
+	 */
+	isLessThanEqualTo(other: Currency): boolean {
+		const comparableResults = this.getComparableResults(other)
+		return comparableResults[0] <= comparableResults[1]
+	}
+
+	/**
+	 * Checks if this amount is greater than other's amount if they can be compared in the same currency.
+	 * @return true if this amount is greater than the other's amount (compared in the same currency)
+	 * @throws {InternalError} with the {EntityError.currenciesNotComparable} if {isComparableTo() returns false}
+	 * @see isComparableTo() to check beforehand if they are comparable
+	 * @see isLessThan() to check if the comparable amount is less than other
+	 * @see isLessThanEqualTo() to check if the comparable amount is less than or equal to other
+	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
+	 * @see isSmallerThan() to check which comparable amount is closest to 0
+	 * @see isSmallerThanOrEqualTo() to check which comparable amount is closest to 0
+	 * @see isLargerThan() to check which comparable amount is farthest away from 0
+	 * @see isLargerThanEqualTo() to check which comparable amount is farthest away from 0
+	 */
+	isGreaterThan(other: Currency): boolean {
+		const comparableResults = this.getComparableResults(other)
+		return comparableResults[0] > comparableResults[1]
+	}
+
+	/**
+	 * Checks if this amount is greater than or equal to other's amount if they can be compared in the same currency.
+	 * @return true if this amount is greater than or equal to the other's amount (compared in the same currency)
+	 * @throws {InternalError} with the {EntityError.currenciesNotComparable} if {isComparableTo() returns false}
+	 * @see isComparableTo() to check beforehand if they are comparable
+	 * @see isLessThan() to check if the comparable amount is less than other
+	 * @see isLessThanEqualTo() to check if the comparable amount is less than or equal to other
+	 * @see isGreaterThan() to check if the comparable amount is greater than other
+	 * @see isSmallerThan() to check which comparable amount is closest to 0
+	 * @see isSmallerThanOrEqualTo() to check which comparable amount is closest to 0
+	 * @see isLargerThan() to check which comparable amount is farthest away from 0
+	 * @see isLargerThanEqualTo() to check which comparable amount is farthest away from 0
+	 */
+	isGreaterThanEqualTo(other: Currency): boolean {
+		const comparableResults = this.getComparableResults(other)
+		return comparableResults[0] >= comparableResults[1]
+	}
+
+	/**
+	 * Calculate comparable results depending on which codes this vs the other currency has.
+	 * @param other the other currency to compare with this one
+	 * @return two amounts in the same currency code that can be compared
+	 * @throws {InternalError} with the {EntityError.currenciesNotComparable} if they have totally different
+	 * currency codes. As long as two of the codes (doesn't matter if its code or localCode) are equal
+	 * they can be compared
+	 * @see isLessThan() to check if the comparable amount is less than other
+	 * @see isLessThanEqualTo() to check if the comparable amount is less than or equal to other
+	 * @see isGreaterThan() to check if the comparable amount is greater than other
+	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
+	 * @see isSmallerThan() to check which comparable amount is closest to 0
+	 * @see isSmallerThanOrEqualTo() to check which comparable amount is closest to 0
+	 * @see isLargerThan() to check which comparable amount is farthest away from 0
+	 * @see isLargerThanEqualTo() to check which comparable amount is farthest away from 0
+	 */
+	private getComparableResults(other: Currency): bigint[] {
+		if (!this.isComparableTo(other)) {
+			throw new InternalError(InternalErrorTypes.comparableError, {
+				errors: [EntityErrors.currenciesNotComparable],
+			})
+		}
+
+		let first: Currency = this
+		let second: Currency = other
+
+		if (this.localCode == other.localCode) {
+			first = this.getLocalCurrency()
+			second = other.getLocalCurrency()
+		} else if (this.code == other.localCode) {
+			first = this
+			second = other.getLocalCurrency()
+		} else if (this.localCode == other.code) {
+			first = this.getLocalCurrency()
+			second = other
+		}
+
+		return [first.amount, second.amount]
+	}
+
+	/**
+	 * Checks if the two currencies are comparable
+	 * @param other the other to check if it's comparable with this one
+	 * @return true if they are comparable
+	 * @see isEqualTo() to compare if the amount is equal
+	 * @see isSmallerThan() to check which comparable amount is closest to 0
+	 * @see isSmallerThanOrEqualTo() to check which comparable amount is closest to 0
+	 * @see isLargerThan() to check which comparable amount is farthest away from 0
+	 * @see isLargerThanEqualTo() to check which comparable amount is farthest away from 0
+	 * @see isLessThan() to check if the comparable amount is less than other
+	 * @see isLessThanEqualTo() to check if the comparable amount is less than or equal to other
+	 * @see isGreaterThan() to check if the comparable amount is greater than other
+	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
+	 */
+	isComparableTo(other: Currency): boolean {
+		if (this.code == other.code) {
+			return true
+		}
+
+		if (this.localCode == other.localCode && typeof this.localCode !== 'undefined') {
+			return true
+		}
+
+		if (this.code == other.localCode || this.localCode == other.code) {
+			return true
+		}
+
+		return false
+	}
+
+	/**
+	 * Negate the currency
+	 * @return creates a new currency that has negated the amount
+	 */
+	negate(): Currency {
+		return new Currency({
+			amount: -this.amount,
+			code: this.code,
+			localCode: this.localCode,
+			exchangeRate: this.exchangeRate,
+		})
+	}
+
+	/**
 	 * Calculate the local amount, i.e., amount * exchangeRate
 	 * @return amount * exchangeRate, or just amount if no exchangeRate has been set
 	 */
@@ -124,8 +454,17 @@ export class Currency {
 			const rest = localAmount % 10n
 			localAmount /= 10n
 
-			if (rest >= 5n) {
-				localAmount += 1n
+			// Positive amount
+			if (this.isPositive()) {
+				if (rest >= 5n) {
+					localAmount += 1n
+				}
+			}
+			// Negative amount
+			else {
+				if (rest <= -5n) {
+					localAmount -= 1n
+				}
 			}
 		}
 
@@ -162,8 +501,8 @@ export namespace Currency {
 
 	export interface Option {
 		readonly amount: bigint
-		readonly code: string
-		readonly localCode?: string
+		readonly code: string | Code
+		readonly localCode?: string | Code
 		readonly exchangeRate?: number
 	}
 
@@ -345,7 +684,7 @@ export namespace Currency {
 		export function fromString(code: string): Code | undefined {
 			const values = Object.values(Codes)
 			for (const value of values) {
-				if (value.hasOwnProperty('name')) {
+				if (value.hasOwnProperty('precision')) {
 					const codeObject = value as Code
 					if (codeObject.name == code.toUpperCase()) {
 						return codeObject
