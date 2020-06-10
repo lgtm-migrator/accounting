@@ -8,12 +8,13 @@ import { Input } from '../../core/definitions/Input'
 interface VerificationNewCustomTransactionInputInterface extends Input {
 	verification: {
 		name: string
-		date: Date
-		pdfFilepaths?: string[]
+		description?: string
+		date: string
+		files?: string[]
 		transactions: {
-			account_number: number
-			amount: number
-			currency: string
+			accountNumber: number
+			amount: bigint
+			currencyCode: string
 		}[]
 	}
 	userId: Id

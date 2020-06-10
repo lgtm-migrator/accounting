@@ -51,7 +51,7 @@ export class Currency {
 		this.validate(errors)
 
 		if (errors.length > 0) {
-			throw new InternalError(InternalErrorTypes.invalidEntityState, { errors: errors })
+			throw new InternalError(InternalErrorTypes.invalidEntityState, errors)
 		}
 	}
 
@@ -669,6 +669,7 @@ export namespace Currency {
 		static XCD: Code = { name: 'XCD', precision: 2 }
 		static XOF: Code = { name: 'XOF', precision: 0 }
 		static XPF: Code = { name: 'XPF', precision: 0 }
+		static XTS: Code = { name: 'XTS', precision: 0 }
 		static YER: Code = { name: 'YER', precision: 2 }
 		static ZAR: Code = { name: 'ZAR', precision: 2 }
 		static ZMW: Code = { name: 'ZMW', precision: 2 }

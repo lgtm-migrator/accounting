@@ -1,6 +1,6 @@
 import * as faker from 'faker'
 import { VerificationImpl, Verification, VerificationTypes } from './Verification'
-import { Transaction } from './Transaction'
+import { Transaction, TransactionImpl } from './Transaction'
 import { EntityErrors } from '../definitions/EntityErrors'
 import { Currency } from '../definitions/Currency'
 
@@ -76,11 +76,11 @@ describe('Verification test #cold #entity', () => {
 		expect(verification.validate()).toStrictEqual([EntityErrors.verificationNumberMissing])
 	})
 
-	it('Date filed but missing creation date', () => {
-		verification.dateFiled = faker_valid_date()
-		verification.number = 1
-		expect(verification.validate()).toStrictEqual([EntityErrors.dateCreatedMissing])
-	})
+	// it('Date filed but missing creation date', () => {
+	// 	verification.dateFiled = faker_valid_date()
+	// 	verification.number = 1
+	// 	expect(verification.validate()).toStrictEqual([EntityErrors.dateCreatedMissing])
+	// })
 
 	it('Date filed before creation date', () => {
 		verification.number = 1
@@ -122,5 +122,23 @@ describe('Verification test #cold #entity', () => {
 	})
 
 	// Transaction sum
-	it('Transaction sum is not zero', () => {})
+	it('Transaction sum is not zero', () => {
+		verification.transactions.push(
+			new TransactionImpl({
+				accountNumber: 2666,
+				currency: new Currency({
+					amount: 1n,
+					code: 'SEK',
+				}),
+			})
+		)
+
+		expect(verification.validate()).toStrictEqual([EntityErrors.transactionSumIsNotZero])
+	})
+
+	// Missing transactions
+	it('Missing transactions', () => {
+		verification.transactions = []
+		expect(verification.validate()).toStrictEqual([EntityErrors.transactionsMissing])
+	})
 })

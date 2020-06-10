@@ -50,7 +50,10 @@ describe('Validate entity #cold #entity', () => {
 	it('Date created in the future', () => {
 		for (let i = 0; i < TEST_TIMES; ++i) {
 			entity.dateCreated = faker.date.future().getTime()
-			expect(entity.validate()).toStrictEqual([EntityErrors.dateCreatedInTheFuture])
+			expect(entity.validate()).toStrictEqual([
+				EntityErrors.dateCreatedInTheFuture,
+				EntityErrors.dateModifiedBeforeCreated,
+			])
 		}
 	})
 
@@ -63,6 +66,7 @@ describe('Validate entity #cold #entity', () => {
 
 	it('Date created right now', () => {
 		entity.dateCreated = new Date().getTime()
+		entity.dateModified = entity.dateCreated
 		expect(entity.validate()).toStrictEqual([])
 	})
 
@@ -97,10 +101,10 @@ describe('Validate entity #cold #entity', () => {
 		}
 	})
 
-	it('Date modified exists but not date created', () => {
-		entity.dateModified = faker_get_valid_time()
-		expect(entity.validate()).toStrictEqual([EntityErrors.dateModifiedRequiresDateCreated])
-	})
+	// it('Date modified exists but not date created', () => {
+	// 	entity.dateModified = faker_get_valid_time()
+	// 	expect(entity.validate()).toStrictEqual([EntityErrors.dateModifiedRequiresDateCreated])
+	// })
 
 	// date_deleted
 	it('Date deleted is not same as date modified', () => {
@@ -121,8 +125,8 @@ describe('Validate entity #cold #entity', () => {
 		}
 	})
 
-	it('Date deleted requires date modified', () => {
-		entity.dateDeleted = faker_get_valid_time()
-		expect(entity.validate()).toStrictEqual([EntityErrors.dateDeletedRequiresDateModified])
-	})
+	// it('Date deleted requires date modified', () => {
+	// 	entity.dateDeleted = faker_get_valid_time()
+	// 	expect(entity.validate()).toStrictEqual([EntityErrors.dateDeletedRequiresDateModified])
+	// })
 })

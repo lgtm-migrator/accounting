@@ -1,5 +1,6 @@
 import { Id } from '../definitions/Id'
 import { EntityErrors } from '../definitions/EntityErrors'
+import { type } from 'os'
 
 /** Date: 2000-01-01 */
 const VALID_DATE_AFTER = 946684800000
@@ -13,15 +14,27 @@ export interface Entity {
 
 export class EntityImpl implements Entity {
 	id?: Id
-	dateCreated?: number
-	dateModified?: number
+	dateCreated: number
+	dateModified: number
 	dateDeleted?: number
 
 	constructor(data: Entity) {
 		this.id = data.id
-		this.dateCreated = data.dateCreated
-		this.dateModified = data.dateModified
 		this.dateDeleted = data.dateDeleted
+
+		// Use the current date as default when it hasn't been set
+		if (typeof data.dateCreated === 'undefined') {
+			this.dateCreated = new Date().getTime()
+		} else {
+			this.dateCreated = data.dateCreated
+		}
+
+		// Use the current date as default when it hasn't been set
+		if (typeof data.dateModified === 'undefined') {
+			this.dateModified = new Date().getTime()
+		} else {
+			this.dateModified = data.dateModified
+		}
 	}
 
 	/**

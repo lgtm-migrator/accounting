@@ -4,8 +4,10 @@
  */
 export class OutputError {
 	type: OutputErrorTypes
-	constructor(type: OutputErrorTypes) {
+	errors: string[]
+	constructor(type: OutputErrorTypes, errors: string[] = []) {
 		this.type = type
+		this.errors = errors
 	}
 }
 

@@ -43,7 +43,7 @@ describe('Currency tester #cold #entity', () => {
 		try {
 			new Currency(data)
 		} catch (e) {
-			const errorObject = { errors: [EntityErrors.currencyCodeInvalid] }
+			const errorObject = [EntityErrors.currencyCodeInvalid]
 			expect(e).toBeInstanceOf(InternalError)
 			expect(e).toHaveProperty('error', errorObject)
 		}
@@ -71,7 +71,7 @@ describe('Currency tester #cold #entity', () => {
 		try {
 			new Currency(data)
 		} catch (error) {
-			const errorObject = { errors: [EntityErrors.currencyCodeLocalInvalid] }
+			const errorObject = [EntityErrors.currencyCodeLocalInvalid]
 			expect(error).toBeInstanceOf(InternalError)
 			expect(error).toHaveProperty('error', errorObject)
 		}
@@ -104,7 +104,7 @@ describe('Currency tester #cold #entity', () => {
 		try {
 			new Currency(data)
 		} catch (error) {
-			const errorObject = { errors: [EntityErrors.currencyCodeLocalNotSet] }
+			const errorObject = [EntityErrors.currencyCodeLocalNotSet]
 			expect(error).toBeInstanceOf(InternalError)
 			expect(error).toHaveProperty('error', errorObject)
 		}
@@ -122,7 +122,7 @@ describe('Currency tester #cold #entity', () => {
 		try {
 			new Currency(data)
 		} catch (error) {
-			const errorObject = { errors: [EntityErrors.currencyCodesAreSame] }
+			const errorObject = [EntityErrors.currencyCodesAreSame]
 			expect(error).toBeInstanceOf(InternalError)
 			expect(error).toHaveProperty('error', errorObject)
 		}
@@ -132,7 +132,7 @@ describe('Currency tester #cold #entity', () => {
 	it('Exchange rate below 0', () => {
 		expect.assertions(2 * TEST_TIMES)
 
-		const errorObject = { errors: [EntityErrors.exchangeRateNegativeOrZero] }
+		const errorObject = [EntityErrors.exchangeRateNegativeOrZero]
 		for (let i = 0; i < TEST_TIMES; ++i) {
 			data = {
 				amount: faker_valid_amount(),
@@ -161,7 +161,7 @@ describe('Currency tester #cold #entity', () => {
 		try {
 			new Currency(data)
 		} catch (error) {
-			const errorObject = { errors: [EntityErrors.exchangeRateNegativeOrZero] }
+			const errorObject = [EntityErrors.exchangeRateNegativeOrZero]
 			expect(error).toBeInstanceOf(InternalError)
 			expect(error).toHaveProperty('error', errorObject)
 		}
@@ -178,7 +178,7 @@ describe('Currency tester #cold #entity', () => {
 		try {
 			new Currency(data)
 		} catch (error) {
-			const errorObject = { errors: [EntityErrors.exchangeRateNotSet] }
+			const errorObject = [EntityErrors.exchangeRateNotSet]
 			expect(error).toBeInstanceOf(InternalError)
 			expect(error).toHaveProperty('error', errorObject)
 		}

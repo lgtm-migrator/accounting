@@ -69,11 +69,11 @@ export class VerificationImpl extends EntityImpl implements Verification {
 		this.transactions = []
 
 		// Convert transactions to implementation versions
-		data.transactions.forEach((transaction) => {
+		for (let transaction of data.transactions) {
 			this.transactions.push(new TransactionImpl(transaction))
-		})
+		}
 
-		// Calculate total original amount
+		// Calculate total amount
 		if (typeof data.totalAmount === 'undefined') {
 			this.totalAmount = this.getLargestAmount()
 		} else {
@@ -140,7 +140,7 @@ export class VerificationImpl extends EntityImpl implements Verification {
 		}
 
 		// Total amount
-		if (this.totalAmount) {
+		if (this.transactions.length > 0) {
 			let found = false
 			for (let transaction of this.transactions) {
 				if (this.totalAmount.isComparableTo(transaction.currency)) {
@@ -177,6 +177,11 @@ export class VerificationImpl extends EntityImpl implements Verification {
 	}
 
 	private validateTransactions(errors: EntityErrors[]) {
+		// No transactions
+		if (this.transactions.length == 0) {
+			errors.push(EntityErrors.transactionsMissing)
+		}
+
 		// Check for errors in each transaction
 		this.transactions.forEach((transaction) => {
 			errors.push(...transaction.validate())
@@ -199,12 +204,12 @@ export class VerificationImpl extends EntityImpl implements Verification {
 	private getLargestAmount(): Currency {
 		const localCurrency = this.findLocalCurrencyCode()
 		let largest = new Currency({ amount: 0n, code: localCurrency })
-		this.transactions.forEach((transaction) => {
+		for (const transaction of this.transactions) {
 			const currency = transaction.currency
 			if (currency.isLargerThan(largest)) {
 				largest = currency
 			}
-		})
+		}
 
 		if (largest.isNegative()) {
 			largest = largest.negate()
@@ -220,14 +225,19 @@ export class VerificationImpl extends EntityImpl implements Verification {
 	 * @return local currency code
 	 */
 	private findLocalCurrencyCode(): Currency.Code {
-		for (let i = 0; i < this.transactions.length; ++i) {
-			const transaction = this.transactions[i]
+		for (const transaction of this.transactions) {
 			const localCode = transaction.getLocalCurrencyCode()
 			if (localCode) {
 				return localCode
 			}
 		}
 
-		return this.transactions[0].getCurrencyCode()
+		if (this.transactions.length > 0) {
+			return this.transactions[0].getCurrencyCode()
+		}
+		// Return 'invalid' currency code if none is applicable
+		else {
+			return Currency.Codes.XTS
+		}
 	}
 }

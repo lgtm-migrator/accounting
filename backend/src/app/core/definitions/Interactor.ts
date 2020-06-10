@@ -4,6 +4,8 @@ import { Repository } from './Repository'
 
 export abstract class Interactor<InputType extends Input, OutputType extends Output, RepoType extends Repository> {
 	protected repository: RepoType
+	protected reject!: (reason: any) => void
+	protected input!: InputType
 
 	public constructor(repository: RepoType) {
 		this.repository = repository
