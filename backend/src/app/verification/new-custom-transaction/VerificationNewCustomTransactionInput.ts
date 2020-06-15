@@ -13,7 +13,7 @@ interface VerificationNewCustomTransactionInputInterface extends Input {
 		files?: string[]
 		transactions: {
 			accountNumber: number
-			amount: bigint
+			amount: number
 			currencyCode: string
 		}[]
 	}

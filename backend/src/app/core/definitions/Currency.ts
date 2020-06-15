@@ -16,8 +16,6 @@ export class Currency {
 	 * @throws {InternalError} if the input data (options) isn't valid
 	 */
 	constructor(options: Currency.Option) {
-		this.amount = options.amount
-
 		const errors: EntityErrors[] = []
 
 		if (typeof options.code === 'string') {
@@ -53,6 +51,15 @@ export class Currency {
 		if (errors.length > 0) {
 			throw new InternalError(InternalErrorTypes.invalidEntityState, errors)
 		}
+
+		// Use amount directly
+		if (typeof options.amount === 'bigint') {
+			this.amount = options.amount
+		}
+		// Convert from number to bigint
+		else {
+			this.amount = Currency.numberToBigInt(options.amount, this.code.precision)
+		}
 	}
 
 	private validate(errors: EntityErrors[]) {
@@ -84,6 +91,25 @@ export class Currency {
 				errors.push(EntityErrors.currencyCodesAreSame)
 			}
 		}
+	}
+
+	private static numberToBigInt(value: number, precision: number): bigint {
+		let negate = false
+		if (value < 0) {
+			negate = true
+			value *= -1
+		}
+
+		let out: bigint = BigInt(Math.round(value * 10 ** precision))
+
+		// Calculate rest value so we round of correctly
+		const rest: bigint = BigInt(Math.round(value * 10 ** (precision + 1))) % 10n
+
+		if (negate) {
+			out *= -1n
+		}
+
+		return out
 	}
 
 	isZero(): boolean {
@@ -500,7 +526,7 @@ export namespace Currency {
 	}
 
 	export interface Option {
-		readonly amount: bigint
+		readonly amount: bigint | number
 		readonly code: string | Code
 		readonly localCode?: string | Code
 		readonly exchangeRate?: number

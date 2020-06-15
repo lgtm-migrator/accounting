@@ -10,7 +10,7 @@ function faker_valid_amount(): bigint {
 }
 
 describe('Currency tester #cold #entity', () => {
-	let data: Currency.Option
+	let data
 
 	it('Minimum valid currency', () => {
 		data = {
@@ -28,6 +28,51 @@ describe('Currency tester #cold #entity', () => {
 			amount: data.amount,
 			code: 'sek',
 		}
+		expect(new Currency(data)).toEqual(valid)
+	})
+
+	// Using number as amount
+	it('Amount as number', () => {
+		data = {
+			amount: 10.501,
+			code: 'SEK',
+		}
+
+		const valid = {
+			amount: 1050n,
+			code: Currency.Codes.SEK,
+		}
+		expect(new Currency(data)).toEqual(valid)
+
+		data.amount = 10.49999
+		expect(new Currency(data)).toEqual(valid)
+
+		data.amount = 10.5049999
+		expect(new Currency(data)).toEqual(valid)
+
+		data.amount = 10.505
+		valid.amount = 1051n
+		expect(new Currency(data)).toEqual(valid)
+
+		data.amount = 10.50500001
+		expect(new Currency(data)).toEqual(valid)
+
+		// Negative
+		data.amount = -10.501
+		valid.amount = -1050n
+		expect(new Currency(data)).toEqual(valid)
+
+		data.amount = -10.49999
+		expect(new Currency(data)).toEqual(valid)
+
+		data.amount = -10.5049999
+		expect(new Currency(data)).toEqual(valid)
+
+		data.amount = -10.505
+		valid.amount = -1051n
+		expect(new Currency(data)).toEqual(valid)
+
+		data.amount = -10.505000001
 		expect(new Currency(data)).toEqual(valid)
 	})
 
