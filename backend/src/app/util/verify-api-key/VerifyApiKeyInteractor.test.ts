@@ -43,6 +43,7 @@ describe('Verify Api Key #cold #use-case', () => {
 		expect.assertions(1)
 		return expect(interactor.execute(input)).rejects.toEqual({
 			type: OutputErrorTypes.userNotFound,
+			errors: [],
 		})
 	})
 
@@ -58,6 +59,7 @@ describe('Verify Api Key #cold #use-case', () => {
 		expect.assertions(1)
 		return expect(interactor.execute(input)).rejects.toEqual({
 			type: OutputErrorTypes.internalError,
+			errors: [],
 		})
 	})
 
@@ -73,6 +75,7 @@ describe('Verify Api Key #cold #use-case', () => {
 		expect.assertions(1)
 		return expect(interactor.execute(input)).rejects.toEqual({
 			type: OutputErrorTypes.internalError,
+			errors: [],
 		})
 	})
 })
