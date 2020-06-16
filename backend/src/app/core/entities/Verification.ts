@@ -177,21 +177,31 @@ export class VerificationImpl extends EntityImpl implements Verification {
 	}
 
 	private validateTransactions(errors: EntityErrors[]) {
+		const localCurrencyCode = this.findLocalCurrencyCode()
+
 		// No transactions
 		if (this.transactions.length == 0) {
 			errors.push(EntityErrors.transactionsMissing)
 		}
 
 		// Check for errors in each transaction
-		this.transactions.forEach((transaction) => {
+		for (let transaction of this.transactions) {
 			errors.push(...transaction.validate())
-		})
+		}
 
 		// Make sure all transaction amounts add up to 0 (locally)
 		let sum = 0n
-		this.transactions.forEach((transaction) => {
-			sum += transaction.getLocalAmount().amount
-		})
+		for (let transaction of this.transactions) {
+			const localAmount = transaction.getLocalAmount()
+
+			// Local code doesn't match
+			if (localAmount.code != localCurrencyCode) {
+				errors.push(EntityErrors.transactionsCurrencyCodeLocalMismatch)
+				return
+			}
+
+			sum += localAmount.amount
+		}
 
 		if (sum != 0n) {
 			errors.push(EntityErrors.transactionSumIsNotZero)

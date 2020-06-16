@@ -30,4 +30,5 @@ export enum EntityErrors {
 	verificationAmountDoesNotMatchAnyTransaction = 'verification-amount-does-not-match-any-transaction',
 	transactionSumIsNotZero = 'transaction-sum-is-not-zero',
 	transactionsMissing = 'transactions-missing',
+	transactionsCurrencyCodeLocalMismatch = 'transactions-currency-code-local-mismatch',
 }

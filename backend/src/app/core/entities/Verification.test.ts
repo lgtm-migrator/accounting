@@ -141,4 +141,42 @@ describe('Verification test #cold #entity', () => {
 		verification.transactions = []
 		expect(verification.validate()).toStrictEqual([EntityErrors.transactionsMissing])
 	})
+
+	// Mismatch local code for transactions
+	it('Transaction local code mismatch', () => {
+		const firstTransaction = new TransactionImpl({
+			accountNumber: 3000,
+			currency: new Currency({
+				amount: 10n,
+				code: 'SEK',
+			}),
+		})
+
+		// Should never report sum doesn't equal 0, because we can't check the sum...
+		verification.transactions = [
+			firstTransaction,
+			new TransactionImpl({
+				accountNumber: 6000,
+				currency: new Currency({
+					amount: -1n,
+					code: 'USD',
+					localCode: 'SEK',
+					exchangeRate: 10,
+				}),
+			}),
+			new TransactionImpl({
+				accountNumber: 5000,
+				currency: new Currency({
+					amount: 50n,
+					code: 'EUR',
+					localCode: 'USD',
+					exchangeRate: 5,
+				}),
+			}),
+		]
+
+		verification.totalAmount = firstTransaction.currency
+
+		expect(verification.validate()).toStrictEqual([EntityErrors.transactionsCurrencyCodeLocalMismatch])
+	})
 })
