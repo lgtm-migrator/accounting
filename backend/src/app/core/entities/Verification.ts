@@ -215,17 +215,18 @@ export class VerificationImpl extends EntityImpl implements Verification {
 		const localCurrency = this.findLocalCurrencyCode()
 		let largest = new Currency({ amount: 0n, code: localCurrency })
 		for (const transaction of this.transactions) {
-			const currency = transaction.currency
-			if (currency.isLargerThan(largest)) {
-				largest = currency
+			// Try if the amount isn't comparable to the local currency
+			try {
+				const currency = transaction.currency
+				if (currency.isLargerThan(largest)) {
+					largest = currency
+				}
+			} catch (InternalError) {
+				// Does nothing
 			}
 		}
 
-		if (largest.isNegative()) {
-			largest = largest.negate()
-		}
-
-		return largest
+		return largest.absolute()
 	}
 
 	/**
