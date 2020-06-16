@@ -439,6 +439,19 @@ export class Currency {
 	}
 
 	/**
+	 * Return this currency if the amount is positive, or create a new currency that has been negated so
+	 * the amount is positive
+	 * @return absolute currency (amount) from this currency
+	 */
+	absolute(): Currency {
+		let currency: Currency = this
+		if (this.isNegative()) {
+			currency = this.negate()
+		}
+		return currency
+	}
+
+	/**
 	 * Calculate the local amount, i.e., amount * exchangeRate
 	 * @return amount * exchangeRate, or just amount if no exchangeRate has been set
 	 */

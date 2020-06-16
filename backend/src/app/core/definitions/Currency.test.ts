@@ -475,6 +475,51 @@ describe('Currency tester #cold #entity', () => {
 		expect(new Currency(data).negate()).toEqual(validSecond)
 	})
 
+	// Absolute
+	it('absolute() -> Test for returning absolute', () => {
+		// Positive - Minimal info
+		data = {
+			amount: 1000n,
+			code: 'SEK',
+		}
+		const valid = {
+			amount: data.amount,
+			code: Currency.Codes.SEK,
+		}
+		expect(new Currency(data).absolute()).toEqual(valid)
+
+		// Positive - Full info
+		data = {
+			amount: 1000n,
+			code: 'SEK',
+			localCode: 'USD',
+			exchangeRate: 15.005,
+		}
+		const validSecond = {
+			amount: data.amount,
+			code: Currency.Codes.SEK,
+			localCode: Currency.Codes.USD,
+			exchangeRate: data.exchangeRate,
+		}
+		expect(new Currency(data).absolute()).toEqual(validSecond)
+
+		// Negative - Minimal info
+		data = {
+			amount: -1000n,
+			code: 'SEK',
+		}
+		expect(new Currency(data).absolute()).toEqual(valid)
+
+		// Negative - Full info
+		data = {
+			amount: -1000n,
+			code: 'SEK',
+			localCode: 'USD',
+			exchangeRate: 15.005,
+		}
+		expect(new Currency(data).absolute()).toEqual(validSecond)
+	})
+
 	// fromString()
 	it('fromString() -> function valid', () => {
 		for (const codeString of CODES) {
