@@ -373,9 +373,7 @@ export class Currency {
 	 */
 	private getComparableResults(other: Currency): bigint[] {
 		if (!this.isComparableTo(other)) {
-			throw new InternalError(InternalErrorTypes.comparableError, {
-				errors: [EntityErrors.currenciesNotComparable],
-			})
+			throw new InternalError(InternalErrorTypes.comparableError, [EntityErrors.currenciesNotComparable])
 		}
 
 		let first: Currency = this

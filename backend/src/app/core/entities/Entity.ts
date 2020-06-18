@@ -5,20 +5,22 @@ import { type } from 'os'
 /** Date: 2000-01-01 */
 const VALID_DATE_AFTER = 946684800000
 
-export interface Entity {
-	id?: Id
-	dateCreated?: number
-	dateModified?: number
-	dateDeleted?: number
+export namespace Entity {
+	export interface Option {
+		id?: Id
+		dateCreated?: number
+		dateModified?: number
+		dateDeleted?: number
+	}
 }
 
-export class EntityImpl implements Entity {
+export class Entity implements Entity.Option {
 	id?: Id
 	dateCreated: number
 	dateModified: number
 	dateDeleted?: number
 
-	constructor(data: Entity) {
+	constructor(data: Entity.Option) {
 		this.id = data.id
 		this.dateDeleted = data.dateDeleted
 

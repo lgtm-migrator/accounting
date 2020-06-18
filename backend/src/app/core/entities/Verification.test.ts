@@ -1,6 +1,6 @@
 import * as faker from 'faker'
-import { VerificationImpl, Verification, VerificationTypes } from './Verification'
-import { Transaction, TransactionImpl } from './Transaction'
+import { Verification } from './Verification'
+import { Transaction } from './Transaction'
 import { EntityErrors } from '../definitions/EntityErrors'
 import { Currency } from '../definitions/Currency'
 
@@ -8,7 +8,7 @@ function faker_valid_date(): number {
 	return faker.date.between('2010-01-01', '2020-01-01').getTime()
 }
 
-function faker_transaction(): Transaction {
+function faker_transaction(): Transaction.Option {
 	return {
 		accountNumber: faker.random.number({ min: 1000, max: 2000 }),
 		currency: new Currency({
@@ -18,9 +18,9 @@ function faker_transaction(): Transaction {
 	}
 }
 
-function faker_valid_transaction_pair(): Transaction[] {
+function faker_valid_transaction_pair(): Transaction.Option[] {
 	const transaction = faker_transaction()
-	const opposite: Transaction = {
+	const opposite: Transaction.Option = {
 		accountNumber: faker.random.number({ min: 3000, max: 4000 }),
 		currency: transaction.currency.negate(),
 	}
@@ -29,17 +29,17 @@ function faker_valid_transaction_pair(): Transaction[] {
 }
 
 describe('Verification test #cold #entity', () => {
-	let verification: VerificationImpl
+	let verification: Verification
 
 	beforeEach(() => {
-		const validData: Verification = {
+		const validData: Verification.Option = {
 			userId: 1,
 			name: 'Test',
 			date: '2020-01-15',
-			type: VerificationTypes.TRANSACTION,
+			type: Verification.Types.TRANSACTION,
 			transactions: faker_valid_transaction_pair(),
 		}
-		verification = new VerificationImpl(validData)
+		verification = new Verification(validData)
 	})
 
 	// Minimum valid
@@ -124,7 +124,7 @@ describe('Verification test #cold #entity', () => {
 	// Transaction sum
 	it('Transaction sum is not zero', () => {
 		verification.transactions.push(
-			new TransactionImpl({
+			new Transaction({
 				accountNumber: 2666,
 				currency: new Currency({
 					amount: 1n,
@@ -144,7 +144,7 @@ describe('Verification test #cold #entity', () => {
 
 	// Mismatch local code for transactions
 	it('Transaction local code mismatch', () => {
-		const firstTransaction = new TransactionImpl({
+		const firstTransaction = new Transaction({
 			accountNumber: 3000,
 			currency: new Currency({
 				amount: 10n,
@@ -155,7 +155,7 @@ describe('Verification test #cold #entity', () => {
 		// Should never report sum doesn't equal 0, because we can't check the sum...
 		verification.transactions = [
 			firstTransaction,
-			new TransactionImpl({
+			new Transaction({
 				accountNumber: 6000,
 				currency: new Currency({
 					amount: -1n,
@@ -164,7 +164,7 @@ describe('Verification test #cold #entity', () => {
 					exchangeRate: 10,
 				}),
 			}),
-			new TransactionImpl({
+			new Transaction({
 				accountNumber: 5000,
 				currency: new Currency({
 					amount: 50n,

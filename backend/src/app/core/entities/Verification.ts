@@ -1,5 +1,5 @@
-import { Entity, EntityImpl } from './Entity'
-import { Transaction, TransactionImpl } from './Transaction'
+import { Entity } from './Entity'
+import { Transaction } from './Transaction'
 import { Id } from '../definitions/Id'
 import { Immutable } from '../definitions/Immutable'
 import { EntityErrors } from '../definitions/EntityErrors'
@@ -7,51 +7,44 @@ import { Currency } from '../definitions/Currency'
 
 const ISO_DATE_REGEX = /^\d\d\d\d-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])$/
 
-export enum VerificationTypes {
-	INVOICE_IN = 'INVOICE_IN',
-	INVOICE_IN_PAYMENT = 'INVOICE_IN_PAYMENT',
-	INVOICE_OUT = 'INVOICE_OUT',
-	INVOICE_OUT_PAYMENT = 'INVOICE_OUT_PAYMENT',
-	PAYMENT_DIRECT = 'PAYMENT_DIRECT',
-	TRANSACTION = 'TRANSACTION',
-}
-
-export interface Verification extends Entity {
-	userId: Id
-	name: string
-	internalName?: string
-	number?: number
-	date: string
-	dateFiled?: number
-	type: VerificationTypes
-	description?: string
-	totalAmount?: Currency
-	files?: string[]
-	invoiceId?: Id
-	paymentId?: Id
-	requireConfirmation?: boolean
-	transactions: Transaction[]
+export namespace Verification {
+	export interface Option extends Entity.Option {
+		userId: Id
+		name: string
+		internalName?: string
+		number?: number
+		date: string
+		dateFiled?: number
+		type: Types
+		description?: string
+		totalAmount?: Currency
+		files?: string[]
+		invoiceId?: Id
+		paymentId?: Id
+		requireConfirmation?: boolean
+		transactions: Transaction.Option[]
+	}
 }
 
 export type ImmutableVerification = Immutable<Verification>
 
-export class VerificationImpl extends EntityImpl implements Verification {
+export class Verification extends Entity implements Verification.Option {
 	userId: Id
 	name: string
 	internalName?: string
 	number?: number
 	date: string
 	dateFiled?: number
-	type: VerificationTypes
+	type: Verification.Types
 	description?: string
 	totalAmount: Currency
 	files?: string[]
 	invoiceId?: Id
 	paymentId?: Id
 	requireConfirmation?: boolean
-	transactions: TransactionImpl[]
+	transactions: Transaction[]
 
-	constructor(data: Verification) {
+	constructor(data: Verification.Option) {
 		super(data)
 
 		this.userId = data.userId
@@ -70,7 +63,7 @@ export class VerificationImpl extends EntityImpl implements Verification {
 
 		// Convert transactions to implementation versions
 		for (let transaction of data.transactions) {
-			this.transactions.push(new TransactionImpl(transaction))
+			this.transactions.push(new Transaction(transaction))
 		}
 
 		// Calculate total amount
@@ -250,5 +243,16 @@ export class VerificationImpl extends EntityImpl implements Verification {
 		else {
 			return Currency.Codes.XTS
 		}
+	}
+}
+
+export namespace Verification {
+	export enum Types {
+		INVOICE_IN = 'INVOICE_IN',
+		INVOICE_IN_PAYMENT = 'INVOICE_IN_PAYMENT',
+		INVOICE_OUT = 'INVOICE_OUT',
+		INVOICE_OUT_PAYMENT = 'INVOICE_OUT_PAYMENT',
+		PAYMENT_DIRECT = 'PAYMENT_DIRECT',
+		TRANSACTION = 'TRANSACTION',
 	}
 }

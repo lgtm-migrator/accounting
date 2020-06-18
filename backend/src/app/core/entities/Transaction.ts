@@ -1,4 +1,4 @@
-import { Entity, EntityImpl } from './Entity'
+import { Entity } from './Entity'
 import { EntityErrors } from '../definitions/EntityErrors'
 import { Immutable } from '../definitions/Immutable'
 import { Currency } from '../definitions/Currency'
@@ -6,19 +6,20 @@ import { Currency } from '../definitions/Currency'
 export const ACCOUNT_NUMBER_MIN = 1000
 export const ACCOUNT_NUMBER_MAX = 9999
 
-export interface Transaction extends Entity {
-	accountNumber: number
-	currency: Currency
+export namespace Transaction {
+	export interface Option extends Entity.Option {
+		accountNumber: number
+		currency: Currency
+	}
 }
 
 export type ImmutableTransaction = Immutable<Transaction>
 
-export class TransactionImpl extends EntityImpl implements Transaction {
+export class Transaction extends Entity implements Transaction.Option {
 	accountNumber: number
 	currency: Currency
-	exchangeRate?: number
 
-	constructor(data: Transaction) {
+	constructor(data: Transaction.Option) {
 		super(data)
 		this.accountNumber = data.accountNumber
 		this.currency = data.currency
@@ -29,7 +30,7 @@ export class TransactionImpl extends EntityImpl implements Transaction {
 	 * @return local amount
 	 */
 	getLocalAmount(): Currency {
-		return TransactionImpl.getLocalAmount(this)
+		return Transaction.getLocalAmount(this)
 	}
 
 	static getLocalAmount(transaction: Transaction): Currency {

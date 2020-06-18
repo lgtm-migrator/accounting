@@ -1,5 +1,5 @@
 import * as faker from 'faker'
-import { Transaction, TransactionImpl, ACCOUNT_NUMBER_MIN, ACCOUNT_NUMBER_MAX } from './Transaction'
+import { Transaction, ACCOUNT_NUMBER_MIN, ACCOUNT_NUMBER_MAX } from './Transaction'
 import { Currency } from '../definitions/Currency'
 import { EntityErrors } from '../definitions/EntityErrors'
 
@@ -32,14 +32,14 @@ function faker_valid_currency_code(): string {
 }
 
 describe('Validate a transaction #cold #entity', () => {
-	let transaction: TransactionImpl
+	let transaction: Transaction
 
 	beforeEach(() => {
-		const data: Transaction = {
+		const data: Transaction.Option = {
 			accountNumber: faker_valid_account_number(),
 			currency: faker_valid_currency_amount(),
 		}
-		transaction = new TransactionImpl(data)
+		transaction = new Transaction(data)
 	})
 
 	// Account number
