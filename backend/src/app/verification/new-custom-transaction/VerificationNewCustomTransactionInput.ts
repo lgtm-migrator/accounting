@@ -3,6 +3,15 @@ import { Id } from '../../core/definitions/Id'
 import { Input } from '../../core/definitions/Input'
 
 /**
+ * Transaction Data
+ */
+export interface TransactionInputData {
+	accountNumber: number
+	amount: number | bigint
+	currencyCode: string
+}
+
+/**
  * Custom transaction input.
  */
 interface VerificationNewCustomTransactionInputInterface extends Input {
@@ -11,11 +20,7 @@ interface VerificationNewCustomTransactionInputInterface extends Input {
 		description?: string
 		date: string
 		files?: string[]
-		transactions: {
-			accountNumber: number
-			amount: number
-			currencyCode: string
-		}[]
+		transactions: TransactionInputData[]
 	}
 	userId: Id
 }

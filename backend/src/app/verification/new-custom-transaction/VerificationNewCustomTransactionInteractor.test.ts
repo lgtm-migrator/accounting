@@ -2,14 +2,12 @@ import { VerificationNewCustomTransactionInteractor } from './VerificationNewCus
 import { VerificationNewCustomTransactionRepository } from './VerificationNewCustomTransactionRepository'
 import { VerificationNewCustomTransactionInput } from './VerificationNewCustomTransactionInput'
 import { VerificationNewCustomTransactionOutput } from './VerificationNewCustomTransactionOutput'
-import * as faker from 'faker'
 import { Id } from '../../core/definitions/Id'
-import { Currency } from '../../core/definitions/Currency'
-import { VerificationTypes } from '../../core/entities/Verification'
-import { InternalError } from '../../core/definitions/InternalError'
-import { OutputErrorTypes } from '../../core/definitions/OutputError'
+import { Currency } from '../../core/entities/Currency'
+import { OutputError } from '../../core/definitions/OutputError'
+import { Verification } from '../../core/entities/Verification'
 
-const localCurrency = Currency.Codes.SEK
+const localCurrency: Currency.Code = Currency.Codes.SEK
 
 describe('New verification from custom transactions #cold #use-case', () => {
 	let interactor: VerificationNewCustomTransactionInteractor
@@ -20,10 +18,10 @@ describe('New verification from custom transactions #cold #use-case', () => {
 	beforeAll(() => {
 		repository = {
 			getExchangeRate(date: string, fromCode: Currency.Code, toCode: Currency.Code) {
-				return 10
+				return Promise.resolve(10)
 			},
-			getLocalCurrency(userId: Id): Currency.Code {
-				return localCurrency
+			getLocalCurrency(userId: Id): Promise<Currency.Code> {
+				return Promise.resolve(localCurrency)
 			},
 		}
 		interactor = new VerificationNewCustomTransactionInteractor(repository)
@@ -37,12 +35,12 @@ describe('New verification from custom transactions #cold #use-case', () => {
 				transactions: [
 					{
 						accountNumber: 2020,
-						amount: 100n,
+						amount: 100,
 						currencyCode: localCurrency.name,
 					},
 					{
 						accountNumber: 1960,
-						amount: -100n,
+						amount: -100,
 						currencyCode: localCurrency.name,
 					},
 				],
@@ -58,19 +56,19 @@ describe('New verification from custom transactions #cold #use-case', () => {
 			userId: input.userId,
 			name: input.verification.name,
 			date: input.verification.date,
-			type: VerificationTypes.TRANSACTION,
+			type: Verification.Types.TRANSACTION,
 			transactions: [
 				{
 					accountNumber: 2020,
 					currency: {
-						amount: 100n,
+						amount: 10000n,
 						code: localCurrency,
 					},
 				},
 				{
 					accountNumber: 1960,
 					currency: {
-						amount: -100n,
+						amount: -10000n,
 						code: localCurrency,
 					},
 				},
@@ -110,7 +108,7 @@ describe('New verification from custom transactions #cold #use-case', () => {
 			date: input.verification.date,
 			description: input.verification.description,
 			files: input.verification.files,
-			type: VerificationTypes.TRANSACTION,
+			type: Verification.Types.TRANSACTION,
 			transactions: [
 				{
 					accountNumber: 2020,
@@ -148,7 +146,7 @@ describe('New verification from custom transactions #cold #use-case', () => {
 
 		expect.assertions(1)
 		await expect(output).rejects.toEqual({
-			type: OutputErrorTypes.invalidInput,
+			type: OutputError.Types.invalidInput,
 			errors: ['name-too-short', 'verification-date-invalid-format', 'transactions-missing'],
 		})
 	})
