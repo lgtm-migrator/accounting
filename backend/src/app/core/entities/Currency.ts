@@ -8,6 +8,7 @@ import { EntityErrors } from '../definitions/EntityErrors'
 export class Currency {
 	readonly amount: bigint
 	readonly code!: Currency.Code
+	readonly localAmount?: bigint
 	readonly localCode?: Currency.Code
 	readonly exchangeRate?: number
 
@@ -59,6 +60,13 @@ export class Currency {
 		// Convert from number to bigint
 		else {
 			this.amount = Currency.numberToBigInt(options.amount, this.code.precision)
+		}
+
+		// Set local amount
+		if (typeof options.localAmount !== 'undefined') {
+			this.localAmount = options.localAmount
+		} else if (typeof options.localCode !== 'undefined') {
+			this.localAmount = this.calculateLocalAmount()
 		}
 	}
 
@@ -112,6 +120,117 @@ export class Currency {
 		return out
 	}
 
+	private isLocalAmountSet(): boolean {
+		return typeof this.localAmount !== 'undefined'
+	}
+
+	/**
+	 * Split the currency into parts. If you were to add these together the result would
+	 * always be this currency. Note that this splits the amount from the localAmount and not amount.
+	 * Any remaining amount will be added to the first fraction.
+	 * @param fractions list of parts to split it into. The sum should always be 1 here. Needs at least two elements
+	 * @return parts of the currency where localAmount has been set manually
+	 * @throws {InternalError.currencyPartsNotSumOne} if fractions doesn't add up to 1
+	 * @throws {InternalError.tooFewElements} if too few elements were supplied
+	 */
+	split(fractions: number[]): Currency[] {
+		if (fractions.length < 2) {
+			throw new InternalError(InternalError.Types.tooFewElements)
+		}
+
+		let maxFractionPrecision = 1n
+		for (let fraction of fractions) {
+			const fractionPrecision = Currency.calculatePrecision(fraction)
+
+			if (fractionPrecision > maxFractionPrecision) {
+				maxFractionPrecision = fractionPrecision
+			}
+		}
+		const maxFractionPrecisionMulti = 10n ** maxFractionPrecision
+
+		let localAmount: bigint = 0n
+		if (this.isLocalAmountSet()) {
+			localAmount = this.localAmount!
+		}
+		let localAmountLeft = localAmount * maxFractionPrecisionMulti
+
+		const amount = this.amount
+		let amountLeft = amount * maxFractionPrecisionMulti
+
+		const amounts: bigint[] = []
+		const localAmounts: bigint[] = []
+		for (let fraction of fractions) {
+			const fractionInt = BigInt(fraction * Number(maxFractionPrecisionMulti))
+
+			if (this.isLocalAmountSet()) {
+				const fractionLocalAmount = localAmount * fractionInt
+				localAmountLeft -= fractionLocalAmount
+				localAmounts.push(fractionLocalAmount)
+			}
+
+			const fractionAmount = amount * fractionInt
+			amountLeft -= fractionAmount
+			amounts.push(fractionAmount)
+		}
+
+		if (this.isLocalAmountSet() && localAmountLeft != 0n) {
+			localAmounts[0] += localAmountLeft
+		}
+
+		if (amountLeft != 0n) {
+			amounts[0] += amountLeft
+		}
+
+		// Create Currencies
+		const currencies: Currency[] = []
+		const maxFractionPrecisionDivide = 10n ** (maxFractionPrecision - 1n)
+		for (let i = 0; i < amounts.length; ++i) {
+			// Local amount
+			let fractionLocalAmount: bigint | undefined
+			if (this.isLocalAmountSet()) {
+				fractionLocalAmount = localAmounts[i]
+				fractionLocalAmount /= maxFractionPrecisionDivide
+				const remainder = fractionLocalAmount % 10n
+				fractionLocalAmount /= 10n
+
+				// Round up/down
+				if (remainder <= -5n) {
+					fractionLocalAmount -= 1n
+				} else if (remainder >= 5) {
+					fractionLocalAmount += 1n
+				}
+			}
+
+			// Amount
+			let fractionAmount = amounts[i]
+			fractionAmount /= maxFractionPrecisionDivide
+			const remainder = fractionAmount % 10n
+			fractionAmount /= 10n
+
+			// Round up/down
+			if (remainder <= -5n) {
+				fractionAmount -= 1n
+			} else if (remainder >= 5) {
+				fractionAmount += 1n
+			}
+
+			currencies.push(
+				new Currency({
+					amount: fractionAmount,
+					localAmount: fractionLocalAmount,
+					code: this.code,
+					localCode: this.localCode,
+					exchangeRate: this.exchangeRate,
+				})
+			)
+		}
+
+		return currencies
+	}
+
+	/**
+	 * @return true if the amount is 0
+	 */
 	isZero(): boolean {
 		return this.amount == 0n
 	}
@@ -428,9 +547,15 @@ export class Currency {
 	 * @return creates a new currency that has negated the amount
 	 */
 	negate(): Currency {
+		let localAmount = this.localAmount
+		if (typeof localAmount !== 'undefined') {
+			localAmount = -localAmount
+		}
+
 		return new Currency({
 			amount: -this.amount,
 			code: this.code,
+			localAmount: localAmount,
 			localCode: this.localCode,
 			exchangeRate: this.exchangeRate,
 		})
@@ -449,13 +574,9 @@ export class Currency {
 		return currency
 	}
 
-	/**
-	 * Calculate the local amount, i.e., amount * exchangeRate
-	 * @return amount * exchangeRate, or just amount if no exchangeRate has been set
-	 */
-	getLocalCurrency(): Currency {
+	private calculateLocalAmount(): bigint {
 		if (typeof this.localCode === 'undefined') {
-			return this
+			return this.amount
 		}
 
 		let localAmount = this.amount
@@ -504,9 +625,20 @@ export class Currency {
 				}
 			}
 		}
+		return localAmount
+	}
+
+	/**
+	 * Calculate the local amount, i.e., amount * exchangeRate
+	 * @return amount * exchangeRate, or just amount if no exchangeRate has been set
+	 */
+	getLocalCurrency(): Currency {
+		if (typeof this.localCode === 'undefined' || typeof this.localAmount === 'undefined') {
+			return this
+		}
 
 		const option: Currency.Option = {
-			amount: localAmount,
+			amount: this.localAmount,
 			code: this.localCode.name,
 		}
 		return new Currency(option)
@@ -539,6 +671,7 @@ export namespace Currency {
 	export interface Option {
 		readonly amount: bigint | number
 		readonly code: string | Code
+		readonly localAmount?: bigint
 		readonly localCode?: string | Code
 		readonly exchangeRate?: number
 	}

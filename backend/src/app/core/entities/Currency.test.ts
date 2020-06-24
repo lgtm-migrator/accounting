@@ -131,6 +131,7 @@ describe('Currency tester #cold #entity', () => {
 		}
 		let valid = {
 			amount: data.amount,
+			localAmount: data.amount,
 			code: Currency.Codes.SEK,
 			localCode: Currency.Codes.USD,
 			exchangeRate: 1,
@@ -309,6 +310,12 @@ describe('Currency tester #cold #entity', () => {
 		}
 		const currency = new Currency(data)
 		expect(currency.getLocalCurrency()).toEqual(currency)
+
+		let valid = {
+			amount: data.amount,
+			code: Currency.Codes.SEK,
+		}
+		expect(currency).toEqual(valid)
 	})
 
 	it('getLocalAmount() -> Simple test of conversion from 100 USD -> 1000 SEK', () => {
@@ -322,7 +329,17 @@ describe('Currency tester #cold #entity', () => {
 			amount: 1000n,
 			code: Currency.Codes.SEK,
 		}
-		expect(new Currency(data).getLocalCurrency()).toEqual(valid)
+		let currency = new Currency(data)
+		expect(currency.getLocalCurrency()).toEqual(valid)
+
+		let validFull = {
+			amount: 100n,
+			code: Currency.Codes.USD,
+			localAmount: 1000n,
+			localCode: Currency.Codes.SEK,
+			exchangeRate: 10,
+		}
+		expect(currency).toEqual(validFull)
 	})
 
 	it('getLocalAmount() -> Test precision system conversion (with exchange rate of 1)', () => {
@@ -337,7 +354,17 @@ describe('Currency tester #cold #entity', () => {
 			amount: 10n,
 			code: Currency.Codes.JPY,
 		}
-		expect(new Currency(data).getLocalCurrency()).toEqual(valid)
+		let currency = new Currency(data)
+		expect(currency.getLocalCurrency()).toEqual(valid)
+
+		let validFull = {
+			amount: 1000n,
+			code: Currency.Codes.SEK,
+			localAmount: 10n,
+			localCode: Currency.Codes.JPY,
+			exchangeRate: 1,
+		}
+		expect(currency).toEqual(validFull)
 
 		// Back from JPY to SEK
 		data = {
@@ -350,7 +377,17 @@ describe('Currency tester #cold #entity', () => {
 			amount: 1000n,
 			code: Currency.Codes.SEK,
 		}
-		expect(new Currency(data).getLocalCurrency()).toEqual(valid)
+		currency = new Currency(data)
+		expect(currency.getLocalCurrency()).toEqual(valid)
+
+		validFull = {
+			amount: 10n,
+			code: Currency.Codes.JPY,
+			localAmount: 1000n,
+			localCode: Currency.Codes.SEK,
+			exchangeRate: 1,
+		}
+		expect(currency).toEqual(validFull)
 	})
 
 	it('getLocalAmount() -> Test various exchange rates to same precision', () => {
@@ -370,8 +407,17 @@ describe('Currency tester #cold #entity', () => {
 				amount: BigInt(to),
 				code: Currency.Codes.USD,
 			}
+			let currency = new Currency(data)
+			expect(currency.getLocalCurrency()).toEqual(valid)
 
-			expect(new Currency(data).getLocalCurrency()).toEqual(valid)
+			let validFull = {
+				amount: from,
+				code: Currency.Codes.SEK,
+				localAmount: BigInt(to),
+				localCode: Currency.Codes.USD,
+				exchangeRate: exchangeRate,
+			}
+			expect(currency).toEqual(validFull)
 		}
 	})
 
@@ -440,7 +486,7 @@ describe('Currency tester #cold #entity', () => {
 		}
 
 		let valid = {
-			amount: BigInt(156000),
+			amount: 156000n,
 			code: Currency.Codes.SEK,
 		}
 		expect(new Currency(data).getLocalCurrency()).toEqual(valid)
@@ -469,6 +515,7 @@ describe('Currency tester #cold #entity', () => {
 		let validSecond = {
 			amount: -data.amount,
 			code: Currency.Codes.SEK,
+			localAmount: -15005n,
 			localCode: Currency.Codes.USD,
 			exchangeRate: data.exchangeRate,
 		}
@@ -498,6 +545,7 @@ describe('Currency tester #cold #entity', () => {
 		const validSecond = {
 			amount: data.amount,
 			code: Currency.Codes.SEK,
+			localAmount: 15005n,
 			localCode: Currency.Codes.USD,
 			exchangeRate: data.exchangeRate,
 		}
@@ -519,6 +567,48 @@ describe('Currency tester #cold #entity', () => {
 		}
 		expect(new Currency(data).absolute()).toEqual(validSecond)
 	})
+
+	// split()
+	it('split() -> Test for splitting amounts', () => {
+		data = {
+			amount: 133.34,
+			code: 'USD',
+			localCode: 'SEK',
+			exchangeRate: 8.354867,
+		}
+
+		let currency = new Currency(data)
+		let [costPart, vatPart] = currency.split([0.8, 0.2])
+
+		const validCost = {
+			amount: 10667n,
+			localAmount: 89123n,
+			code: Currency.Codes.USD,
+			localCode: Currency.Codes.SEK,
+			exchangeRate: 8.354867,
+		}
+		expect(costPart).toEqual(validCost)
+
+		const validVat = {
+			amount: 2667n,
+			localAmount: 22281n,
+			code: Currency.Codes.USD,
+			localCode: Currency.Codes.SEK,
+			exchangeRate: 8.354867,
+		}
+		expect(vatPart).toEqual(validVat)
+
+		const valid = {
+			amount: 13334n,
+			localAmount: 111404n,
+			code: Currency.Codes.USD,
+			localCode: Currency.Codes.SEK,
+			exchangeRate: 8.354867,
+		}
+		expect(currency).toEqual(valid)
+	})
+
+	// TODO split with invalid inputs
 
 	// fromString()
 	it('fromString() -> function valid', () => {

@@ -42,6 +42,8 @@ export namespace InternalError {
 		accountNumberNotFound = 'account-number-not-found',
 		invalidEntityState = 'invalid-entity-state',
 		serviceNotReachable = 'service-not-reachable',
+		currencyPartsNotSumOne = 'currency-parts-not-sum-one',
+		tooFewElements = 'too-few-elements',
 		unknown = 'internal-error',
 	}
 }
