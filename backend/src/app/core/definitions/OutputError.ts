@@ -3,16 +3,18 @@
  * messages as an output.
  */
 export class OutputError {
-	type: OutputErrorTypes
+	type: OutputError.Types
 	errors: string[]
-	constructor(type: OutputErrorTypes, errors: string[] = []) {
+	constructor(type: OutputError.Types, errors: string[] = []) {
 		this.type = type
 		this.errors = errors
 	}
 }
 
-export enum OutputErrorTypes {
-	userNotFound = 'user-not-found',
-	invalidInput = 'invalid-input',
-	internalError = 'internal-error',
+export namespace OutputError {
+	export enum Types {
+		userNotFound = 'user-not-found',
+		invalidInput = 'invalid-input',
+		internalError = 'internal-error',
+	}
 }

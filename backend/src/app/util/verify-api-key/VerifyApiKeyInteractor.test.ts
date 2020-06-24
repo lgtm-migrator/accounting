@@ -3,8 +3,8 @@ import { VerifyApiKeyRepository } from './VerifyApiKeyRepository'
 import * as faker from 'faker'
 import { VerifyApiKeyInput } from './VerifyApiKeyInput'
 import { VerifyApiKeyOutput } from './VerifyApiKeyOutput'
-import { InternalError, InternalErrorTypes } from '../../core/definitions/InternalError'
-import { OutputErrorTypes } from '../../core/definitions/OutputError'
+import { InternalError } from '../../core/definitions/InternalError'
+import { OutputError } from '../../core/definitions/OutputError'
 
 describe('Verify Api Key #cold #use-case', () => {
 	let interactor: VerifyApiKeyInteractor
@@ -34,7 +34,7 @@ describe('Verify Api Key #cold #use-case', () => {
 	it(`Can't find a user with API key`, () => {
 		repository = {
 			findUserWithApiKey: jest.fn(async () => {
-				throw new InternalError(InternalErrorTypes.userNotFound)
+				throw new InternalError(InternalError.Types.userNotFound)
 			}),
 		}
 
@@ -42,7 +42,7 @@ describe('Verify Api Key #cold #use-case', () => {
 
 		expect.assertions(1)
 		return expect(interactor.execute(input)).rejects.toEqual({
-			type: OutputErrorTypes.userNotFound,
+			type: OutputError.Types.userNotFound,
 			errors: [],
 		})
 	})
@@ -50,7 +50,7 @@ describe('Verify Api Key #cold #use-case', () => {
 	it('Repository throws an unknown internal error', () => {
 		repository = {
 			findUserWithApiKey: jest.fn(async () => {
-				throw new InternalError(InternalErrorTypes.unknown)
+				throw new InternalError(InternalError.Types.unknown)
 			}),
 		}
 
@@ -58,7 +58,7 @@ describe('Verify Api Key #cold #use-case', () => {
 
 		expect.assertions(1)
 		return expect(interactor.execute(input)).rejects.toEqual({
-			type: OutputErrorTypes.internalError,
+			type: OutputError.Types.internalError,
 			errors: [],
 		})
 	})
@@ -74,7 +74,7 @@ describe('Verify Api Key #cold #use-case', () => {
 
 		expect.assertions(1)
 		return expect(interactor.execute(input)).rejects.toEqual({
-			type: OutputErrorTypes.internalError,
+			type: OutputError.Types.internalError,
 			errors: [],
 		})
 	})

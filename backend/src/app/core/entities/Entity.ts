@@ -1,6 +1,5 @@
 import { Id } from '../definitions/Id'
 import { EntityErrors } from '../definitions/EntityErrors'
-import { type } from 'os'
 
 /** Date: 2000-01-01 */
 const VALID_DATE_AFTER = 946684800000

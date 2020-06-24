@@ -1,6 +1,6 @@
 import * as faker from 'faker'
 import { Transaction, ACCOUNT_NUMBER_MIN, ACCOUNT_NUMBER_MAX } from './Transaction'
-import { Currency } from '../definitions/Currency'
+import { Currency } from './Currency'
 import { EntityErrors } from '../definitions/EntityErrors'
 
 const TEST_TIMES = 1000

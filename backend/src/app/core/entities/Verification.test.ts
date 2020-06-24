@@ -2,7 +2,7 @@ import * as faker from 'faker'
 import { Verification } from './Verification'
 import { Transaction } from './Transaction'
 import { EntityErrors } from '../definitions/EntityErrors'
-import { Currency } from '../definitions/Currency'
+import { Currency } from './Currency'
 
 function faker_valid_date(): number {
 	return faker.date.between('2010-01-01', '2020-01-01').getTime()

@@ -1,7 +1,7 @@
 import * as faker from 'faker'
 import { Currency } from './Currency'
-import { InternalError, InternalErrorTypes } from './InternalError'
-import { EntityErrors } from './EntityErrors'
+import { EntityErrors } from '../definitions/EntityErrors'
+import { InternalError } from '../definitions/InternalError'
 
 const TEST_TIMES = 1000
 

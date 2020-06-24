@@ -10,6 +10,7 @@ export enum EntityErrors {
 	dateDeletedRequiresDateModified = 'date-deleted-requires-date-modified',
 	accountNumberOutOfRange = 'account-number-out-of-range',
 	accountNumberInvalidFormat = 'account-number-invalid-format',
+	accountNumberDoesNotExist = 'account-number-does-not-exist',
 	amountIsZero = 'amount-is-zero',
 	currenciesNotComparable = 'currencies-not-comparable',
 	currencyCodeInvalid = 'currency-code-invalid',

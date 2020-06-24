@@ -3,7 +3,7 @@ import { Transaction } from './Transaction'
 import { Id } from '../definitions/Id'
 import { Immutable } from '../definitions/Immutable'
 import { EntityErrors } from '../definitions/EntityErrors'
-import { Currency } from '../definitions/Currency'
+import { Currency } from './Currency'
 
 const ISO_DATE_REGEX = /^\d\d\d\d-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])$/
 
@@ -252,7 +252,8 @@ export namespace Verification {
 		INVOICE_IN_PAYMENT = 'INVOICE_IN_PAYMENT',
 		INVOICE_OUT = 'INVOICE_OUT',
 		INVOICE_OUT_PAYMENT = 'INVOICE_OUT_PAYMENT',
-		PAYMENT_DIRECT = 'PAYMENT_DIRECT',
+		PAYMENT_DIRECT_IN = 'PAYMENT_DIRECT_IN',
+		PAYMENT_DIRECT_OUT = 'PAYMENT_DIRECT_OUT',
 		TRANSACTION = 'TRANSACTION',
 	}
 }

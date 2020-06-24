@@ -1,5 +1,5 @@
-import { InternalError, InternalErrorTypes } from './InternalError'
-import { EntityErrors } from './EntityErrors'
+import { InternalError } from '../definitions/InternalError'
+import { EntityErrors } from '../definitions/EntityErrors'
 
 /**
  * Holds the currency amount, code, and also an optional exchange rate with a local code.
@@ -49,7 +49,7 @@ export class Currency {
 		this.validate(errors)
 
 		if (errors.length > 0) {
-			throw new InternalError(InternalErrorTypes.invalidEntityState, errors)
+			throw new InternalError(InternalError.Types.invalidEntityState, errors)
 		}
 
 		// Use amount directly
@@ -373,7 +373,7 @@ export class Currency {
 	 */
 	private getComparableResults(other: Currency): bigint[] {
 		if (!this.isComparableTo(other)) {
-			throw new InternalError(InternalErrorTypes.comparableError, [EntityErrors.currenciesNotComparable])
+			throw new InternalError(InternalError.Types.comparableError, [EntityErrors.currenciesNotComparable])
 		}
 
 		let first: Currency = this

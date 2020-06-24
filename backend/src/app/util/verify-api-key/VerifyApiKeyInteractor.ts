@@ -2,8 +2,8 @@ import { Interactor } from '../../core/definitions/Interactor'
 import { VerifyApiKeyInput } from './VerifyApiKeyInput'
 import { VerifyApiKeyOutput } from './VerifyApiKeyOutput'
 import { VerifyApiKeyRepository } from './VerifyApiKeyRepository'
-import { InternalError, InternalErrorTypes } from '../../core/definitions/InternalError'
-import { OutputErrorTypes, OutputError } from '../../core/definitions/OutputError'
+import { InternalError } from '../../core/definitions/InternalError'
+import { OutputError } from '../../core/definitions/OutputError'
 
 /**
  * Verifies if there is a user with the API key and returns that user's id
@@ -32,11 +32,11 @@ export class VerifyApiKeyInteractor extends Interactor<VerifyApiKeyInput, Verify
 				})
 				.catch((reason) => {
 					if (reason instanceof InternalError) {
-						if (reason.type == InternalErrorTypes.userNotFound) {
-							reject(new OutputError(OutputErrorTypes.userNotFound))
+						if (reason.type == InternalError.Types.userNotFound) {
+							reject(new OutputError(OutputError.Types.userNotFound))
 						}
 					}
-					reject(new OutputError(OutputErrorTypes.internalError))
+					reject(new OutputError(OutputError.Types.internalError))
 				})
 		})
 	}

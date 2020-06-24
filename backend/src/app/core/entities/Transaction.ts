@@ -1,7 +1,7 @@
 import { Entity } from './Entity'
 import { EntityErrors } from '../definitions/EntityErrors'
 import { Immutable } from '../definitions/Immutable'
-import { Currency } from '../definitions/Currency'
+import { Currency } from './Currency'
 
 export const ACCOUNT_NUMBER_MIN = 1000
 export const ACCOUNT_NUMBER_MAX = 9999
