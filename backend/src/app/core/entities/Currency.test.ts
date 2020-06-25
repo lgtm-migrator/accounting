@@ -568,6 +568,37 @@ describe('Currency tester #cold #entity', () => {
 		expect(new Currency(data).absolute()).toEqual(validSecond)
 	})
 
+	// multiply()
+	it('multiply() -> Test to multiply values', () => {
+		// Minimum value
+		data = {
+			amount: 100n,
+			code: 'SEK',
+		}
+		let valid = {
+			amount: 13n,
+			code: Currency.Codes.SEK,
+		}
+		expect(new Currency(data).multiply(0.13)).toEqual(valid)
+
+		// Full value
+		data = {
+			amount: -100n,
+			code: 'USD',
+			localAmount: -500n,
+			localCode: 'SEK',
+			exchangeRate: 1,
+		}
+		let validFull = {
+			amount: -167n,
+			localAmount: -833n,
+			code: Currency.Codes.USD,
+			localCode: Currency.Codes.SEK,
+			exchangeRate: 1,
+		}
+		expect(new Currency(data).multiply(5 / 3)).toEqual(validFull)
+	})
+
 	// split()
 	it('split() -> Test for splitting amounts', () => {
 		data = {
@@ -608,7 +639,31 @@ describe('Currency tester #cold #entity', () => {
 		expect(currency).toEqual(valid)
 	})
 
-	// TODO split with invalid inputs
+	it('split() -> Invalid number of inputs', () => {
+		expect.assertions(4)
+		data = {
+			amount: 10n,
+			code: 'SEK',
+		}
+		const currency = new Currency(data)
+		try {
+			currency.split([])
+		} catch (e) {
+			expect(e).toBeInstanceOf(InternalError)
+			expect(e).toMatchObject({
+				type: InternalError.Types.tooFewElements,
+			})
+		}
+
+		try {
+			currency.split([1])
+		} catch (e) {
+			expect(e).toBeInstanceOf(InternalError)
+			expect(e).toMatchObject({
+				type: InternalError.Types.tooFewElements,
+			})
+		}
+	})
 
 	// fromString()
 	it('fromString() -> function valid', () => {

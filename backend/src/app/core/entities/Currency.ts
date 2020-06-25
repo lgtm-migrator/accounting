@@ -1,5 +1,6 @@
 import { InternalError } from '../definitions/InternalError'
 import { EntityErrors } from '../definitions/EntityErrors'
+import { isUndefined } from 'util'
 
 /**
  * Holds the currency amount, code, and also an optional exchange rate with a local code.
@@ -125,12 +126,70 @@ export class Currency {
 	}
 
 	/**
+	 * Create a new currency by multiplying with this currency. Will multiply against both the amount and
+	 * local amount if it's available
+	 * @param multiplier how much to multiply the value with
+	 * @return new currency that has been multiplied with multiplier
+	 * @see split() if you want to split the currency into parts (for example VAT and cost)
+	 */
+	multiply(multiplier: number): Currency {
+		const precision = Currency.calculatePrecision(multiplier)
+		const multiplierInt = BigInt(multiplier * 10 ** Number(precision))
+
+		let amount = this.amount * multiplierInt
+		let localAmount: bigint | undefined
+		if (typeof this.localAmount !== 'undefined') {
+			localAmount = this.localAmount * multiplierInt
+		}
+
+		// Divide
+		amount = Currency.divideByPrecision(amount, precision)
+		if (localAmount !== undefined) {
+			localAmount = Currency.divideByPrecision(localAmount, precision)
+		}
+
+		const currency = new Currency({
+			amount: amount,
+			localAmount: localAmount,
+			code: this.code,
+			localCode: this.localCode,
+			exchangeRate: this.exchangeRate,
+		})
+		return currency
+	}
+
+	/**
+	 * Divide and round the value depending on it's precision
+	 * @param value the value to divide and round up or down
+	 * @param precision the precision of the value (divides by 10 ** precision)
+	 * @return divided and rounded value
+	 */
+	private static divideByPrecision(value: bigint, precision: bigint): bigint {
+		if (precision >= 2n) {
+			value /= 10n ** (precision - 1n)
+		}
+
+		if (precision >= 1n) {
+			const remainder = value % 10n
+			value /= 10n
+			if (remainder >= 5n) {
+				value += 1n
+			} else if (remainder <= -5n) {
+				value -= 1n
+			}
+		}
+
+		return value
+	}
+
+	/**
 	 * Split the currency into parts. If you were to add these together the result would
 	 * always be this currency. Note that this splits the amount from the localAmount and not amount.
 	 * Any remaining amount will be added to the first fraction.
-	 * @param fractions list of parts to split it into. The sum should always be 1 here. Needs at least two elements
+	 * @param fractions list of parts to split it into. Needs at least 2 elements.
+	 * If fractions doesn't add upp to 1 any remaining amount will be added to the first fraction.
 	 * @return parts of the currency where localAmount has been set manually
-	 * @throws {InternalError.currencyPartsNotSumOne} if fractions doesn't add up to 1
+	 * @see multiply() if you want to create a new currency by multiplying this
 	 * @throws {InternalError.tooFewElements} if too few elements were supplied
 	 */
 	split(fractions: number[]): Currency[] {
@@ -183,36 +242,17 @@ export class Currency {
 
 		// Create Currencies
 		const currencies: Currency[] = []
-		const maxFractionPrecisionDivide = 10n ** (maxFractionPrecision - 1n)
 		for (let i = 0; i < amounts.length; ++i) {
 			// Local amount
 			let fractionLocalAmount: bigint | undefined
 			if (this.isLocalAmountSet()) {
 				fractionLocalAmount = localAmounts[i]
-				fractionLocalAmount /= maxFractionPrecisionDivide
-				const remainder = fractionLocalAmount % 10n
-				fractionLocalAmount /= 10n
-
-				// Round up/down
-				if (remainder <= -5n) {
-					fractionLocalAmount -= 1n
-				} else if (remainder >= 5) {
-					fractionLocalAmount += 1n
-				}
+				fractionLocalAmount = Currency.divideByPrecision(fractionLocalAmount, maxFractionPrecision)
 			}
 
 			// Amount
 			let fractionAmount = amounts[i]
-			fractionAmount /= maxFractionPrecisionDivide
-			const remainder = fractionAmount % 10n
-			fractionAmount /= 10n
-
-			// Round up/down
-			if (remainder <= -5n) {
-				fractionAmount -= 1n
-			} else if (remainder >= 5) {
-				fractionAmount += 1n
-			}
+			fractionAmount = Currency.divideByPrecision(fractionAmount, maxFractionPrecision)
 
 			currencies.push(
 				new Currency({
