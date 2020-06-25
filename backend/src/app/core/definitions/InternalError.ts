@@ -1,13 +1,12 @@
 /**
  * A custom error type that is thrown
  */
-export class InternalError extends Error {
+export class InternalError {
 	type: InternalError.Types
-	error: object
-	constructor(type: InternalError.Types, errors: {} = {}, message: string = '') {
-		super(message)
+	error?: object
+	constructor(type: InternalError.Types, error?: {}) {
 		this.type = type
-		this.error = errors
+		this.error = error
 	}
 
 	/**
@@ -43,6 +42,7 @@ export namespace InternalError {
 		invalidEntityState = 'invalid-entity-state',
 		serviceNotReachable = 'service-not-reachable',
 		tooFewElements = 'too-few-elements',
+		exchangeRateNotSet = 'exchange-rate-not-set',
 		unknown = 'internal-error',
 	}
 }

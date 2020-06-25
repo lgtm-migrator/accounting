@@ -13,8 +13,10 @@ export class OutputError {
 
 export namespace OutputError {
 	export enum Types {
+		invalidAccount = 'invalid-account',
 		userNotFound = 'user-not-found',
 		invalidInput = 'invalid-input',
 		internalError = 'internal-error',
+		notImplemented = 'not-implemented',
 	}
 }
