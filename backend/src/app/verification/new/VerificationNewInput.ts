@@ -2,19 +2,20 @@ import { Immutable } from '../../core/definitions/Immutable'
 import { Input } from '../../core/definitions/Input'
 import { Id } from '../../core/definitions/Id'
 
-interface VerificationNewDirectPaymentInputInterface extends Input {
+export interface VerificationNewInputInterface extends Input {
 	userId: Id
 	verification: {
 		name: string
+		internalName?: string
 		description?: string
+		type: string
 		date: string
-		payed: number
-		vatPercent: number
+		amount: number
 		accountFrom: number
 		accountTo: number
 		currencyCode: string
-		files?: string
+		files?: string[]
 	}
 }
 
-export type VerificationNewDirectPaymentInput = Immutable<VerificationNewDirectPaymentInputInterface>
+export type VerificationNewInput = Immutable<VerificationNewInputInterface>

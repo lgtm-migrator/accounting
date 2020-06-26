@@ -6,25 +6,18 @@ import { Id } from '../../core/definitions/Id'
 import { Currency } from '../../core/entities/Currency'
 import { OutputError } from '../../core/definitions/OutputError'
 import { Verification } from '../../core/entities/Verification'
+import { VerificationRepositoryTest } from '../../../jest/VerificationRepositoryTest'
+import { EntityErrors } from '../../core/definitions/EntityErrors'
 
 const localCurrency: Currency.Code = Currency.Codes.SEK
 
 describe('New verification from custom transactions #cold #use-case', () => {
 	let interactor: VerificationNewCustomTransactionInteractor
-	let repository: VerificationNewCustomTransactionRepository
 	let input: VerificationNewCustomTransactionInput
 	let output: Promise<VerificationNewCustomTransactionOutput>
 
 	beforeAll(() => {
-		repository = {
-			getExchangeRate(date: string, fromCode: Currency.Code, toCode: Currency.Code) {
-				return Promise.resolve(10)
-			},
-			getLocalCurrency(userId: Id): Promise<Currency.Code> {
-				return Promise.resolve(localCurrency)
-			},
-		}
-		interactor = new VerificationNewCustomTransactionInteractor(repository)
+		interactor = new VerificationNewCustomTransactionInteractor(new VerificationRepositoryTest())
 	})
 
 	it('Minimum valid input', async () => {
@@ -147,7 +140,7 @@ describe('New verification from custom transactions #cold #use-case', () => {
 		expect.assertions(1)
 		await expect(output).rejects.toEqual({
 			type: OutputError.Types.invalidInput,
-			errors: ['name-too-short', 'verification-date-invalid-format', 'transactions-missing'],
+			errors: [EntityErrors.nameTooShort, EntityErrors.verificationDateInvalidFormat, EntityErrors.transactionsMissing],
 		})
 	})
 })
