@@ -1,13 +1,16 @@
+import { Immutable } from './Immutable'
+
 /**
  * A custom type of error that is solely for sending error
  * messages as an output.
  */
 export class OutputError {
-	type: OutputError.Types
-	errors: string[]
+	readonly type: OutputError.Types
+	readonly errors: Immutable<string[]>
 	constructor(type: OutputError.Types, errors: string[] = []) {
 		this.type = type
-		this.errors = errors
+		// Remove duplicates
+		this.errors = [...new Set(errors)]
 	}
 }
 
