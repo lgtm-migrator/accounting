@@ -89,6 +89,11 @@ export class Verification extends Entity implements Verification.Option {
 			errors.push(EntityErrors.nameTooShort)
 		}
 
+		// Type
+		if (this.type == Verification.Types.INVALID) {
+			errors.push(EntityErrors.verificationTypeInvalid)
+		}
+
 		// Verification number
 		if (typeof this.number === 'number') {
 			// Requires a filed date
@@ -255,15 +260,16 @@ export namespace Verification {
 		PAYMENT_DIRECT_IN = 'PAYMENT_DIRECT_IN',
 		PAYMENT_DIRECT_OUT = 'PAYMENT_DIRECT_OUT',
 		TRANSACTION = 'TRANSACTION',
+		INVALID = 'INVALID',
 	}
 
 	export namespace Types {
 		/**
 		 * Convert a string type into an {Types} object
 		 * @param type string value of the type (case-insensivite)
-		 * @return the correct {Type} object if found or undefined if not found
+		 * @return the correct {Type} object if found or INVALID if it's invalid
 		 */
-		export function fromString(type: string): Types | undefined {
+		export function fromString(type: string): Types {
 			type = type.toUpperCase()
 			for (const value of Object.values(Types)) {
 				if (value as keyof typeof Types) {
@@ -272,7 +278,7 @@ export namespace Verification {
 					}
 				}
 			}
-			return undefined
+			return Types.INVALID
 		}
 	}
 }
