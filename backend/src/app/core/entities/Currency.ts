@@ -889,7 +889,7 @@ export namespace Currency {
 	export namespace Codes {
 		/**
 		 * Convert a string currency code into an {Code} object
-		 * @param code currency code to convert to a Code if it exists
+		 * @param code currency code to convert to a Code if it exists (case-insensitive)
 		 * @return the Correct {Code} object if found or undefined if not found
 		 */
 		export function fromString(code: string): Code | undefined {
