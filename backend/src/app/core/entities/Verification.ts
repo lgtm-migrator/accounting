@@ -256,4 +256,23 @@ export namespace Verification {
 		PAYMENT_DIRECT_OUT = 'PAYMENT_DIRECT_OUT',
 		TRANSACTION = 'TRANSACTION',
 	}
+
+	export namespace Types {
+		/**
+		 * Convert a string type into an {Types} object
+		 * @param type string value of the type (case-insensivite)
+		 * @return the correct {Type} object if found or undefined if not found
+		 */
+		export function fromString(type: string): Types | undefined {
+			type = type.toUpperCase()
+			for (const value of Object.values(Types)) {
+				if (value as keyof typeof Types) {
+					if (value === type) {
+						return Types[value]
+					}
+				}
+			}
+			return undefined
+		}
+	}
 }

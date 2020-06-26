@@ -179,4 +179,23 @@ describe('Verification test #cold #entity', () => {
 
 		expect(verification.validate()).toStrictEqual([EntityErrors.transactionsCurrencyCodeLocalMismatch])
 	})
+
+	it('Types.fromString() -> Check so that it works', () => {
+		expect.assertions(2 * TYPES.length)
+		for (const typeString of TYPES) {
+			const type = Verification.Types.fromString(typeString)
+			expect(type).toBeDefined()
+			expect(type).toEqual(typeString)
+		}
+	})
+
+	const TYPES: string[] = [
+		'INVOICE_IN',
+		'INVOICE_IN_PAYMENT',
+		'INVOICE_OUT',
+		'INVOICE_OUT_PAYMENT',
+		'PAYMENT_DIRECT_IN',
+		'PAYMENT_DIRECT_OUT',
+		'TRANSACTION',
+	]
 })
