@@ -4,65 +4,10 @@ import { TransactionFactory } from './TransactionFactory'
 import { InternalError } from '../core/definitions/InternalError'
 import { OutputError } from '../core/definitions/OutputError'
 import { EntityErrors } from '../core/definitions/EntityErrors'
+import { Accounts } from '../../jest/AccountTestData'
 
 describe('TransactionFactory tests #cold #helper', () => {
 	const LOCAL_CODE = Currency.Codes.SEK
-
-	const BANK_ACCOUNT = new Account({
-		number: 1920,
-	})
-
-	const INVOICE_IN = new Account({
-		number: 2440,
-	})
-
-	const INVOICE_OUT = new Account({
-		number: 1511,
-	})
-
-	const VAT_LOCAL_IN = new Account({
-		number: 2640,
-	})
-
-	const VAT_LOCAL_OUT = new Account({
-		number: 2611,
-		vatPercentage: 0.25,
-	})
-
-	const VAT_ABROAD_IN = new Account({
-		number: 2645,
-	})
-
-	const VAT_ABROAD_OUT = new Account({
-		number: 2614,
-		vatPercentage: 0.25,
-	})
-
-	const INCOME_LOCAL = new Account({
-		number: 3001,
-		vatAccount: VAT_LOCAL_OUT,
-	})
-
-	const EXPENSE_LOCAL = new Account({
-		number: 5400,
-		vatAccount: VAT_LOCAL_IN,
-		vatPercentage: 0.25,
-	})
-
-	const EXPENSE_LOCAL_MISSING_VAT = new Account({
-		number: 5401,
-		vatAccount: VAT_LOCAL_IN,
-	})
-
-	const EXPENSE_ABROAD = new Account({
-		number: 4661,
-		vatAccount: VAT_ABROAD_IN,
-		reverseVatAccount: VAT_ABROAD_OUT,
-	})
-
-	const EXPENSE_BANK = new Account({
-		number: 6570,
-	})
 
 	// createTransaction()
 	it('createTransaction() -> Minimal info', async () => {
@@ -71,20 +16,20 @@ describe('TransactionFactory tests #cold #helper', () => {
 			LOCAL_CODE,
 			LOCAL_CODE,
 			undefined,
-			BANK_ACCOUNT,
-			EXPENSE_BANK
+			Accounts.BANK_ACCOUNT,
+			Accounts.EXPENSE_BANK
 		)
 
 		let validTransactions: any[] = [
 			{
-				accountNumber: BANK_ACCOUNT.number,
+				accountNumber: Accounts.BANK_ACCOUNT.number,
 				currency: {
 					amount: -1000n,
 					code: LOCAL_CODE,
 				},
 			},
 			{
-				accountNumber: EXPENSE_BANK.number,
+				accountNumber: Accounts.EXPENSE_BANK.number,
 				currency: {
 					amount: 1000n,
 					code: LOCAL_CODE,
@@ -104,13 +49,13 @@ describe('TransactionFactory tests #cold #helper', () => {
 			LOCAL_CODE,
 			LOCAL_CODE,
 			undefined,
-			BANK_ACCOUNT,
-			EXPENSE_LOCAL_MISSING_VAT
+			Accounts.BANK_ACCOUNT,
+			Accounts.EXPENSE_LOCAL_MISSING_VAT
 		)
 
 		let error = {
 			type: OutputError.Types.invalidAccount,
-			errors: [EntityErrors.accountVatPercentageNotSet, String(EXPENSE_LOCAL_MISSING_VAT.number)],
+			errors: [EntityErrors.accountVatPercentageNotSet, String(Accounts.EXPENSE_LOCAL_MISSING_VAT.number)],
 		}
 
 		expect.assertions(1)
@@ -123,8 +68,8 @@ describe('TransactionFactory tests #cold #helper', () => {
 			Currency.Codes.USD,
 			LOCAL_CODE,
 			undefined,
-			BANK_ACCOUNT,
-			EXPENSE_BANK
+			Accounts.BANK_ACCOUNT,
+			Accounts.EXPENSE_BANK
 		)
 
 		let error = {
@@ -141,27 +86,27 @@ describe('TransactionFactory tests #cold #helper', () => {
 			LOCAL_CODE,
 			undefined,
 			undefined,
-			BANK_ACCOUNT,
-			EXPENSE_LOCAL
+			Accounts.BANK_ACCOUNT,
+			Accounts.EXPENSE_LOCAL
 		)
 
 		let validTransactions: any[] = [
 			{
-				accountNumber: BANK_ACCOUNT.number,
+				accountNumber: Accounts.BANK_ACCOUNT.number,
 				currency: {
 					amount: -1000n,
 					code: LOCAL_CODE,
 				},
 			},
 			{
-				accountNumber: EXPENSE_LOCAL.number,
+				accountNumber: Accounts.EXPENSE_LOCAL.number,
 				currency: {
 					amount: 800n,
 					code: LOCAL_CODE,
 				},
 			},
 			{
-				accountNumber: VAT_LOCAL_IN.number,
+				accountNumber: Accounts.VAT_LOCAL_IN.number,
 				currency: {
 					amount: 200n,
 					code: LOCAL_CODE,
@@ -181,34 +126,34 @@ describe('TransactionFactory tests #cold #helper', () => {
 			LOCAL_CODE,
 			LOCAL_CODE,
 			undefined,
-			INVOICE_IN,
-			EXPENSE_ABROAD
+			Accounts.INVOICE_IN,
+			Accounts.EXPENSE_ABROAD
 		)
 
 		let validTransactions: any[] = [
 			{
-				accountNumber: INVOICE_IN.number,
+				accountNumber: Accounts.INVOICE_IN.number,
 				currency: {
 					amount: -1000n,
 					code: LOCAL_CODE,
 				},
 			},
 			{
-				accountNumber: EXPENSE_ABROAD.number,
+				accountNumber: Accounts.EXPENSE_ABROAD.number,
 				currency: {
 					amount: 1000n,
 					code: LOCAL_CODE,
 				},
 			},
 			{
-				accountNumber: VAT_ABROAD_IN.number,
+				accountNumber: Accounts.VAT_ABROAD_IN.number,
 				currency: {
 					amount: 250n,
 					code: LOCAL_CODE,
 				},
 			},
 			{
-				accountNumber: VAT_ABROAD_OUT.number,
+				accountNumber: Accounts.VAT_ABROAD_OUT.number,
 				currency: {
 					amount: -250n,
 					code: LOCAL_CODE,
@@ -230,13 +175,13 @@ describe('TransactionFactory tests #cold #helper', () => {
 			code,
 			LOCAL_CODE,
 			exchangeRate,
-			INVOICE_IN,
-			EXPENSE_ABROAD
+			Accounts.INVOICE_IN,
+			Accounts.EXPENSE_ABROAD
 		)
 
 		let validTransactions: any[] = [
 			{
-				accountNumber: INVOICE_IN.number,
+				accountNumber: Accounts.INVOICE_IN.number,
 				currency: {
 					amount: -1000n,
 					localAmount: -10000n,
@@ -246,7 +191,7 @@ describe('TransactionFactory tests #cold #helper', () => {
 				},
 			},
 			{
-				accountNumber: EXPENSE_ABROAD.number,
+				accountNumber: Accounts.EXPENSE_ABROAD.number,
 				currency: {
 					amount: 1000n,
 					localAmount: 10000n,
@@ -256,7 +201,7 @@ describe('TransactionFactory tests #cold #helper', () => {
 				},
 			},
 			{
-				accountNumber: VAT_ABROAD_IN.number,
+				accountNumber: Accounts.VAT_ABROAD_IN.number,
 				currency: {
 					amount: 250n,
 					localAmount: 2500n,
@@ -266,7 +211,7 @@ describe('TransactionFactory tests #cold #helper', () => {
 				},
 			},
 			{
-				accountNumber: VAT_ABROAD_OUT.number,
+				accountNumber: Accounts.VAT_ABROAD_OUT.number,
 				currency: {
 					amount: -250n,
 					localAmount: -2500n,
@@ -289,27 +234,27 @@ describe('TransactionFactory tests #cold #helper', () => {
 			LOCAL_CODE,
 			undefined,
 			undefined,
-			INCOME_LOCAL,
-			INVOICE_OUT
+			Accounts.INCOME_LOCAL,
+			Accounts.INVOICE_OUT
 		)
 
 		let validTransactions: any[] = [
 			{
-				accountNumber: INVOICE_OUT.number,
+				accountNumber: Accounts.INVOICE_OUT.number,
 				currency: {
 					amount: 1000n,
 					code: LOCAL_CODE,
 				},
 			},
 			{
-				accountNumber: INCOME_LOCAL.number,
+				accountNumber: Accounts.INCOME_LOCAL.number,
 				currency: {
 					amount: -800n,
 					code: LOCAL_CODE,
 				},
 			},
 			{
-				accountNumber: VAT_LOCAL_OUT.number,
+				accountNumber: Accounts.VAT_LOCAL_OUT.number,
 				currency: {
 					amount: -200n,
 					code: LOCAL_CODE,
