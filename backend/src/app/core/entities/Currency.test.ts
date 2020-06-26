@@ -667,6 +667,7 @@ describe('Currency tester #cold #entity', () => {
 
 	// fromString()
 	it('fromString() -> function valid', () => {
+		expect.assertions(2 * CODES.length)
 		for (const codeString of CODES) {
 			const code = Currency.Codes.fromString(codeString)
 			expect(code).toBeDefined()
