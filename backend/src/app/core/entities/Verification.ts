@@ -52,13 +52,17 @@ export class Verification extends Entity implements Verification.Option {
 		this.dateFiled = data.dateFiled
 		this.type = data.type
 		this.description = data.description
-		this.files = data.files
 		this.invoiceId = data.invoiceId
 		this.paymentId = data.paymentId
 		this.requireConfirmation = data.requireConfirmation
 		this.transactions = []
 
-		// Convert transactions to implementation versions
+		// Create new array for files
+		if (data.files) {
+			this.files = data.files.concat()
+		}
+
+		// Deep copy transactions
 		for (let transaction of data.transactions) {
 			this.transactions.push(new Transaction(transaction))
 		}
