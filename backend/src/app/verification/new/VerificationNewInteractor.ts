@@ -94,7 +94,6 @@ export class VerificationNewInteractor extends Interactor<
 			internalName: this.input.verification.internalName,
 			date: this.input.verification.date,
 			type: type,
-			files: this.input.verification.files?.concat(),
 			description: this.input.verification.description,
 			transactions: transactions,
 		})

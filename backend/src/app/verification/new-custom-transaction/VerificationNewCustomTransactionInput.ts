@@ -19,7 +19,6 @@ interface VerificationNewCustomTransactionInputInterface extends Input {
 		name: string
 		description?: string
 		date: string
-		files?: string[]
 		transactions: TransactionInputData[]
 	}
 	userId: Id

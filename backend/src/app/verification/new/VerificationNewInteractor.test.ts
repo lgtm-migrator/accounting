@@ -16,7 +16,6 @@ function validFromInput(input: VerificationNewInputInterface): Verification.Opti
 		date: input.verification.date,
 		description: input.verification.description,
 		internalName: input.verification.internalName,
-		files: input.verification.files,
 		type: Verification.Types.fromString(input.verification.type),
 		transactions: [],
 	}
@@ -97,7 +96,6 @@ describe('New Verification #cold #use-case', () => {
 	it('Full valid input with abroad expense', async () => {
 		input.verification.internalName = 'MY_NAME'
 		input.verification.description = 'This is my description'
-		input.verification.files = ['file1', 'file2', 'file3']
 		input.verification.currencyCode = 'USD'
 
 		input.verification.accountFrom = Accounts.INVOICE_IN.number

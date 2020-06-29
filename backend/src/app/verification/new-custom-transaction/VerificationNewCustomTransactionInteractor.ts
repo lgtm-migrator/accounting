@@ -102,7 +102,6 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
 			name: this.input.verification.name,
 			date: this.input.verification.date,
 			type: Verification.Types.TRANSACTION,
-			files: this.input.verification.files?.concat(),
 			description: this.input.verification.description,
 			transactions: transactions,
 		})

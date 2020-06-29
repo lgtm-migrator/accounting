@@ -75,7 +75,6 @@ describe('New verification from custom transactions #cold #use-case', () => {
 				name: 'test',
 				date: '2020-01-01',
 				description: 'My description',
-				files: ['1', '2', '3'],
 				transactions: [
 					{
 						accountNumber: 2020,
@@ -100,7 +99,6 @@ describe('New verification from custom transactions #cold #use-case', () => {
 			name: input.verification.name,
 			date: input.verification.date,
 			description: input.verification.description,
-			files: input.verification.files,
 			type: Verification.Types.TRANSACTION,
 			transactions: [
 				{

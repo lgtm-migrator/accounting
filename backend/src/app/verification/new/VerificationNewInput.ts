@@ -14,7 +14,6 @@ export interface VerificationNewInputInterface extends Input {
 		accountFrom: number
 		accountTo: number
 		currencyCode: string
-		files?: string[]
 	}
 }
 
