@@ -1,4 +1,3 @@
-import { Immutable } from '../../core/definitions/Immutable'
 import { Id } from '../../core/definitions/Id'
 import { Input } from '../../core/definitions/Input'
 
@@ -6,22 +5,20 @@ import { Input } from '../../core/definitions/Input'
  * Transaction Data
  */
 export interface TransactionInputData {
-	accountNumber: number
-	amount: number | bigint
-	currencyCode: string
+	readonly accountNumber: number
+	readonly amount: number | bigint
+	readonly currencyCode: string
 }
 
 /**
  * Custom transaction input.
  */
-interface VerificationNewCustomTransactionInputInterface extends Input {
-	verification: {
-		name: string
-		description?: string
-		date: string
-		transactions: TransactionInputData[]
+export interface VerificationNewCustomTransactionInput extends Input {
+	readonly verification: {
+		readonly name: string
+		readonly description?: string
+		readonly date: string
+		readonly transactions: TransactionInputData[]
 	}
-	userId: Id
+	readonly userId: Id
 }
-
-export type VerificationNewCustomTransactionInput = Immutable<VerificationNewCustomTransactionInputInterface>

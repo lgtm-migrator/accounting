@@ -1,15 +1,14 @@
 import { VerificationNewInteractor } from './VerificationNewInteractor'
-import { VerificationNewInputInterface } from './VerificationNewInput'
 import { VerificationNewOutput } from './VerificationNewOutput'
 import { VerificationRepositoryTest } from '../../../jest/VerificationRepositoryTest'
 import { Accounts } from '../../../jest/AccountTestData'
 import { Currency } from '../../core/entities/Currency'
 import { Verification } from '../../core/entities/Verification'
-import { Account } from '../../core/entities/Account'
 import { OutputError } from '../../core/definitions/OutputError'
 import { EntityErrors } from '../../core/definitions/EntityErrors'
+import { VerificationNewInput } from './VerificationNewInput'
 
-function validFromInput(input: VerificationNewInputInterface): Verification.Option {
+function validFromInput(input: VerificationNewInput): Verification.Option {
 	return {
 		userId: input.userId,
 		name: input.verification.name,
@@ -38,7 +37,7 @@ function testEquality(verification: VerificationNewOutput, valid: Verification.O
 
 describe('New Verification #cold #use-case', () => {
 	let interactor: VerificationNewInteractor
-	let input: VerificationNewInputInterface
+	let input: VerificationNewInput
 	let output: Promise<VerificationNewOutput>
 	let valid: Verification.Option
 

@@ -1,7 +1,6 @@
 import { Entity } from './Entity'
 import { Transaction } from './Transaction'
 import { Id } from '../definitions/Id'
-import { Immutable } from '../definitions/Immutable'
 import { EntityErrors } from '../definitions/EntityErrors'
 import { Currency } from './Currency'
 
@@ -25,8 +24,6 @@ export namespace Verification {
 		transactions: Transaction.Option[]
 	}
 }
-
-export type ImmutableVerification = Immutable<Verification>
 
 export class Verification extends Entity implements Verification.Option {
 	userId: Id
