@@ -4,8 +4,7 @@ Save the verification and it's optional PDF file
 
 ## Input Data
 
-- Verification
-- Transactions
+- Verification (including transactions)
 - Optional PDF file(s)
 
 ## Output Data
