@@ -7,6 +7,11 @@ import { Verification } from '../../core/entities/Verification'
 import { OutputError } from '../../core/definitions/OutputError'
 import { EntityErrors } from '../../core/definitions/EntityErrors'
 import { VerificationNewInput } from './VerificationNewInput'
+import { Id } from '../../core/definitions/Id'
+
+const LOCAL_CODE = VerificationRepositoryTest.LOCAL_CODE
+const EXCHANGE_RATE = VerificationRepositoryTest.EXCHANGE_RATE
+const MIN_ASSERTIONS = 8
 
 function validFromInput(input: VerificationNewInput): Verification.Option {
 	return {
@@ -16,7 +21,22 @@ function validFromInput(input: VerificationNewInput): Verification.Option {
 		description: input.verification.description,
 		internalName: input.verification.internalName,
 		type: Verification.Types.fromString(input.verification.type),
-		transactions: [],
+		transactions: [
+			{
+				accountNumber: Accounts.BANK_ACCOUNT.number,
+				currency: new Currency({
+					amount: -input.verification.amount,
+					code: LOCAL_CODE,
+				}),
+			},
+			{
+				accountNumber: Accounts.EXPENSE_BANK.number,
+				currency: new Currency({
+					amount: input.verification.amount,
+					code: LOCAL_CODE,
+				}),
+			},
+		],
 	}
 }
 
@@ -35,56 +55,58 @@ function testEquality(verification: VerificationNewOutput, valid: Verification.O
 	}
 }
 
+interface InputData {
+	userId?: Id
+	name?: string
+	internalName?: string
+	description?: string
+	date?: string
+	accountFrom?: number
+	accountTo?: number
+	amount?: number
+	currencyCode?: string
+	type?: Verification.Types
+}
+
+function createInput(data: InputData = {}): VerificationNewInput {
+	let amount = 10
+	if (typeof data.amount === 'number') {
+		amount = data.amount
+	}
+
+	return {
+		userId: data.userId ? data.userId : 1,
+		verification: {
+			name: data.name ? data.name : 'test',
+			internalName: data.internalName,
+			description: data.description,
+			date: data.date ? data.date : '2020-03-14',
+			accountFrom: data.accountFrom ? data.accountFrom : Accounts.BANK_ACCOUNT.number,
+			accountTo: data.accountTo ? data.accountTo : Accounts.EXPENSE_BANK.number,
+			amount: amount,
+			currencyCode: data.currencyCode ? data.currencyCode : LOCAL_CODE.name,
+			type: data.type ? data.type : Verification.Types.PAYMENT_DIRECT_OUT,
+		},
+	}
+}
+
 describe('New Verification #cold #use-case', () => {
 	let interactor: VerificationNewInteractor
-	let input: VerificationNewInput
+	let inputData: InputData
 	let output: Promise<VerificationNewOutput>
-	let valid: Verification.Option
-
-	const LOCAL_CODE = VerificationRepositoryTest.LOCAL_CODE
-	const EXCHANGE_RATE = VerificationRepositoryTest.EXCHANGE_RATE
-	const MIN_ASSERTIONS = 8
 
 	beforeAll(() => {
 		interactor = new VerificationNewInteractor(new VerificationRepositoryTest())
 	})
 
 	beforeEach(() => {
-		// Minimum valid input
-		input = {
-			userId: 1,
-			verification: {
-				name: 'test',
-				date: '2020-03-14',
-				accountFrom: Accounts.BANK_ACCOUNT.number,
-				accountTo: Accounts.EXPENSE_BANK.number,
-				amount: 10,
-				currencyCode: LOCAL_CODE.name,
-				type: Verification.Types.PAYMENT_DIRECT_OUT,
-			},
-		}
-
-		valid = validFromInput(input)
-		valid.transactions = [
-			{
-				accountNumber: Accounts.BANK_ACCOUNT.number,
-				currency: new Currency({
-					amount: -input.verification.amount,
-					code: LOCAL_CODE,
-				}),
-			},
-			{
-				accountNumber: Accounts.EXPENSE_BANK.number,
-				currency: new Currency({
-					amount: input.verification.amount,
-					code: LOCAL_CODE,
-				}),
-			},
-		]
+		inputData = {}
 	})
 
 	it('Minimum valid input', async () => {
+		const input = createInput()
 		output = interactor.execute(input)
+		const valid = validFromInput(input)
 
 		expect.assertions(MIN_ASSERTIONS + valid.transactions.length)
 		await output.then((verification) => {
@@ -93,14 +115,15 @@ describe('New Verification #cold #use-case', () => {
 	})
 
 	it('Full valid input with abroad expense', async () => {
-		input.verification.internalName = 'MY_NAME'
-		input.verification.description = 'This is my description'
-		input.verification.currencyCode = 'USD'
+		inputData.internalName = 'MY_NAME'
+		inputData.description = 'This is my description'
+		inputData.currencyCode = 'USD'
 
-		input.verification.accountFrom = Accounts.INVOICE_IN.number
-		input.verification.accountTo = Accounts.EXPENSE_ABROAD.number
+		inputData.accountFrom = Accounts.INVOICE_IN.number
+		inputData.accountTo = Accounts.EXPENSE_ABROAD.number
 
-		valid = validFromInput(input)
+		const input = createInput(inputData)
+		const valid = validFromInput(input)
 		valid.transactions = [
 			{
 				accountNumber: Accounts.INVOICE_IN.number,
@@ -155,10 +178,11 @@ describe('New Verification #cold #use-case', () => {
 	it('Invalid input', async () => {
 		expect.assertions(2)
 
-		input.verification.accountFrom = 2000
-		input.verification.date = '22'
-		input.verification.amount = 0
+		inputData.accountFrom = 2000
+		inputData.date = '22'
+		inputData.amount = 0
 
+		let input = createInput(inputData)
 		output = interactor.execute(input)
 
 		await expect(output).rejects.toEqual({
@@ -166,7 +190,8 @@ describe('New Verification #cold #use-case', () => {
 			errors: [EntityErrors.accountNumberDoesNotExist],
 		})
 
-		input.verification.accountFrom = Accounts.BANK_ACCOUNT.number
+		inputData.accountFrom = Accounts.BANK_ACCOUNT.number
+		input = createInput(inputData)
 		output = interactor.execute(input)
 		await expect(output).rejects.toEqual({
 			type: OutputError.Types.invalidInput,
