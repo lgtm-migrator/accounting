@@ -43,6 +43,9 @@ export namespace InternalError {
 		serviceNotReachable = 'service-not-reachable',
 		tooFewElements = 'too-few-elements',
 		exchangeRateNotSet = 'exchange-rate-not-set',
+		notImplemented = 'not-implemented',
+		errorReadingFile = 'error-reading-file',
+		fileDoesNotExist = 'file-does-not-exist',
 		unknown = 'internal-error',
 	}
 }
