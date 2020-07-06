@@ -24,6 +24,7 @@ export enum EntityErrors {
 	exchangeRateNegativeOrZero = 'exchange-rate-negative-or-zero',
 	userIdIsEmpty = 'user-id-is-empty',
 	nameTooShort = 'name-too-short',
+	internalNameTooShort = 'internal-name-too-short',
 	verificationNumberInvalid = 'verification-number-invalid',
 	verificationNumberMissing = 'verification-number-missing',
 	verificationDateInvalidFormat = 'verification-date-invalid-format',
@@ -38,5 +39,9 @@ export enum EntityErrors {
 	transactionsCurrencyCodeLocalMismatch = 'transactions-currency-code-local-mismatch',
 	parserPatternNotFound = 'parser-pattern-not-found',
 	parserInvalidMatcherFindAndReplace = 'parser-invalid-matcher-find-and-replace',
+	parserInvalidMatcherDate = 'parser-invalid-matcher-date',
+	parserInvalidMatcherCode = 'parser-invalid-matcher-code',
+	parserInvalidMatcherName = 'parser-invalid-matcher-name',
+	parserInvalidMatcherTotal = 'parser-invalid-matcher-total',
 	parserInvalidCurrencyCode = 'parser-invalid-currency-code',
 }

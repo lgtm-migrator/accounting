@@ -1,0 +1,32 @@
+                Skattekonto
+                                                                                                            MY COMPANY AB 555555-5555
+Bokförda transaktioner
+Datum                  Specifikation                                                                    Belopp                          Saldo
+                       Ingående saldo 2019-01-01                                                                                         555
+190117                 Debiterad preliminärskatt                                                           -555                          555
+190212                 Debiterad preliminärskatt                                                           -555                          555
+190227                 Moms jan 2018 - dec 2018                                                           1 111                          555
+190228                 Utbetalning                                                                        -1 111                         555
+190312                 Debiterad preliminärskatt                                                           -555                          555
+190412                 Debiterad preliminärskatt                                                           -555                          555
+190504                 Kostnadsränta                                                                          -1                         555
+190513                 Debiterad preliminärskatt                                                           -555                          555
+190601                 Kostnadsränta                                                                          -1                         555
+190612                 Debiterad preliminärskatt                                                           -555                          555
+190706                 Kostnadsränta                                                                        -1                           555
+190712                 Debiterad preliminärskatt                                                           -555                          555
+190803                 Kostnadsränta                                                                          -1                         555
+190815                 Inbetalning bokförd 190814                                                        10 000                          555
+190819                 Debiterad preliminärskatt                                                           -555                          555
+190901                 Kostnadsränta                                                                          -1                         555
+190912                 Debiterad preliminärskatt                                                           -555                          555
+191014                 Debiterad preliminärskatt                                                           -555                          555
+191112                 Debiterad preliminärskatt                                                           -555                          555
+191201                 Tillgodoförd debiterad preliminärskatt                                             3 333                          555
+191201                 Korrigerad kostnadsränta                                                              33                          555
+191201                 Utbetalning                                                                        -3 333                         555
+191213                 Debiterad preliminärskatt                                                           -555                          555
+                       Utgående saldo 2019-12-31                                                                                         555
+
+Omfattar transaktionstyp: Alla fr.o.m. 2019-01-01 t.o.m. 2019-12-31, sorterade efter transaktionsdag.
+

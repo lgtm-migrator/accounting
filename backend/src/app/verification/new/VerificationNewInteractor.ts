@@ -52,6 +52,7 @@ export class VerificationNewInteractor extends Interactor<
 
 				const exchangeRate = await exchangeRatePromise
 				return TransactionFactory.createTransactions(
+					this.input.userId,
 					this.input.verification.amount,
 					code,
 					localCurrencyCode,

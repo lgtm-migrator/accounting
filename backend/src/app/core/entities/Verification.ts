@@ -3,12 +3,12 @@ import { Transaction } from './Transaction'
 import { Id } from '../definitions/Id'
 import { EntityErrors } from '../definitions/EntityErrors'
 import { Currency } from './Currency'
+import { Consts } from '../definitions/Consts'
 
 const ISO_DATE_REGEX = /^\d\d\d\d-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])$/
 
 export namespace Verification {
 	export interface Option extends Entity.Option {
-		userId: Id
 		name: string
 		internalName?: string
 		number?: number
@@ -26,7 +26,6 @@ export namespace Verification {
 }
 
 export class Verification extends Entity implements Verification.Option {
-	userId: Id
 	name: string
 	internalName?: string
 	number?: number
@@ -44,7 +43,6 @@ export class Verification extends Entity implements Verification.Option {
 	constructor(data: Verification.Option) {
 		super(data)
 
-		this.userId = data.userId
 		this.name = data.name
 		this.internalName = data.internalName
 		this.number = data.number
@@ -78,16 +76,14 @@ export class Verification extends Entity implements Verification.Option {
 	validate(): EntityErrors[] {
 		const errors = super.validate()
 
-		// User ID
-		if (typeof this.userId === 'string') {
-			if (this.userId.length <= 0) {
-				errors.push(EntityErrors.userIdIsEmpty)
-			}
+		// Name
+		if (this.name.length < Consts.NAME_LENGTH_MIN) {
+			errors.push(EntityErrors.nameTooShort)
 		}
 
-		// Name
-		if (this.name.length < 2) {
-			errors.push(EntityErrors.nameTooShort)
+		// Internal name
+		if (this.internalName && this.internalName.length < Consts.NAME_LENGTH_MIN) {
+			errors.push(EntityErrors.internalNameTooShort)
 		}
 
 		// Type

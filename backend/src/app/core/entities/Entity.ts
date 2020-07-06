@@ -7,6 +7,7 @@ const VALID_DATE_AFTER = 946684800000
 export namespace Entity {
 	export interface Option {
 		id?: Id
+		userId: Id
 		dateCreated?: number
 		dateModified?: number
 		dateDeleted?: number
@@ -15,12 +16,14 @@ export namespace Entity {
 
 export class Entity implements Entity.Option {
 	id?: Id
+	userId: Id
 	dateCreated: number
 	dateModified: number
 	dateDeleted?: number
 
 	constructor(data: Entity.Option) {
 		this.id = data.id
+		this.userId = data.userId
 		this.dateDeleted = data.dateDeleted
 
 		// Use the current date as default when it hasn't been set
@@ -48,6 +51,12 @@ export class Entity implements Entity.Option {
 		if (typeof this.id === 'string') {
 			if (this.id.length <= 0) {
 				errors.push(EntityErrors.idIsEmpty)
+			}
+		}
+
+		if (typeof this.userId === 'string') {
+			if (this.userId.length <= 0) {
+				errors.push(EntityErrors.userIdIsEmpty)
 			}
 		}
 

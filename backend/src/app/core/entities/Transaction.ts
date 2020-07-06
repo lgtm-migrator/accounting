@@ -2,9 +2,7 @@ import { Entity } from './Entity'
 import { EntityErrors } from '../definitions/EntityErrors'
 import { Immutable } from '../definitions/Immutable'
 import { Currency } from './Currency'
-
-export const ACCOUNT_NUMBER_MIN = 1000
-export const ACCOUNT_NUMBER_MAX = 9999
+import { Consts } from '../definitions/Consts'
 
 export namespace Transaction {
 	export interface Option extends Entity.Option {
@@ -55,7 +53,7 @@ export class Transaction extends Entity implements Transaction.Option {
 		const errors = super.validate()
 
 		// Account number - Check that the account number is valid
-		if (this.accountNumber < ACCOUNT_NUMBER_MIN || this.accountNumber > ACCOUNT_NUMBER_MAX) {
+		if (this.accountNumber < Consts.ACCOUNT_NUMBER_START || this.accountNumber > Consts.ACCOUNT_NUMBER_END) {
 			errors.push(EntityErrors.accountNumberOutOfRange)
 		}
 

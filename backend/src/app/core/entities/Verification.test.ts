@@ -4,12 +4,13 @@ import { Transaction } from './Transaction'
 import { EntityErrors } from '../definitions/EntityErrors'
 import { Currency } from './Currency'
 
-function faker_valid_date(): number {
+function fakerValidDate(): number {
 	return faker.date.between('2010-01-01', '2020-01-01').getTime()
 }
 
-function faker_transaction(): Transaction.Option {
+function fakerTransaction(): Transaction.Option {
 	return {
+		userId: faker.random.number(),
 		accountNumber: faker.random.number({ min: 1000, max: 2000 }),
 		currency: new Currency({
 			amount: BigInt(faker.random.number({ min: 1, max: 10000000 })),
@@ -18,9 +19,10 @@ function faker_transaction(): Transaction.Option {
 	}
 }
 
-function faker_valid_transaction_pair(): Transaction.Option[] {
-	const transaction = faker_transaction()
+function fakerValidTransactionPair(): Transaction.Option[] {
+	const transaction = fakerTransaction()
 	const opposite: Transaction.Option = {
+		userId: transaction.userId,
 		accountNumber: faker.random.number({ min: 3000, max: 4000 }),
 		currency: transaction.currency.negate(),
 	}
@@ -37,7 +39,7 @@ describe('Verification test #cold #entity', () => {
 			name: 'Test',
 			date: '2020-01-15',
 			type: Verification.Types.TRANSACTION,
-			transactions: faker_valid_transaction_pair(),
+			transactions: fakerValidTransactionPair(),
 		}
 		verification = new Verification(validData)
 	})
@@ -47,15 +49,31 @@ describe('Verification test #cold #entity', () => {
 		expect(verification.validate()).toStrictEqual([])
 	})
 
-	// User ID
-	it('Invalid user id', () => {
-		verification.userId = ''
-		expect(verification.validate()).toStrictEqual([EntityErrors.userIdIsEmpty])
+	// Name
+	it('Valid name', () => {
+		verification.name = '123'
+		expect(verification.validate()).toStrictEqual([])
+	})
+
+	it('Too short name', () => {
+		verification.name = '12'
+		expect(verification.validate()).toStrictEqual([EntityErrors.nameTooShort])
+	})
+
+	// Internal name
+	it('Valid internal name', () => {
+		verification.internalName = '123'
+		expect(verification.validate()).toStrictEqual([])
+	})
+
+	it('Too short internal name', () => {
+		verification.internalName = '12'
+		expect(verification.validate()).toStrictEqual([EntityErrors.internalNameTooShort])
 	})
 
 	// Verification number
 	it('Invalid verification number (less than 1)', () => {
-		verification.dateCreated = faker_valid_date()
+		verification.dateCreated = fakerValidDate()
 		verification.dateFiled = verification.dateCreated
 
 		verification.number = 0
@@ -71,7 +89,7 @@ describe('Verification test #cold #entity', () => {
 
 	// Date Filed
 	it('Date filed but missing verification number', () => {
-		verification.dateCreated = faker_valid_date()
+		verification.dateCreated = fakerValidDate()
 		verification.dateFiled = verification.dateCreated
 		expect(verification.validate()).toStrictEqual([EntityErrors.verificationNumberMissing])
 	})
@@ -125,6 +143,7 @@ describe('Verification test #cold #entity', () => {
 	it('Transaction sum is not zero', () => {
 		verification.transactions.push(
 			new Transaction({
+				userId: faker.random.number(),
 				accountNumber: 2666,
 				currency: new Currency({
 					amount: 1n,
@@ -145,6 +164,7 @@ describe('Verification test #cold #entity', () => {
 	// Mismatch local code for transactions
 	it('Transaction local code mismatch', () => {
 		const firstTransaction = new Transaction({
+			userId: faker.random.number(),
 			accountNumber: 3000,
 			currency: new Currency({
 				amount: 10n,
@@ -156,6 +176,7 @@ describe('Verification test #cold #entity', () => {
 		verification.transactions = [
 			firstTransaction,
 			new Transaction({
+				userId: faker.random.number(),
 				accountNumber: 6000,
 				currency: new Currency({
 					amount: -1n,
@@ -165,6 +186,7 @@ describe('Verification test #cold #entity', () => {
 				}),
 			}),
 			new Transaction({
+				userId: faker.random.number(),
 				accountNumber: 5000,
 				currency: new Currency({
 					amount: 50n,

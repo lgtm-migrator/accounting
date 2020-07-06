@@ -12,6 +12,7 @@ describe('TransactionFactory tests #cold #helper', () => {
 	// createTransaction()
 	it('createTransaction() -> Minimal info', async () => {
 		let transactionPromise = TransactionFactory.createTransactions(
+			1,
 			10,
 			LOCAL_CODE,
 			LOCAL_CODE,
@@ -45,6 +46,7 @@ describe('TransactionFactory tests #cold #helper', () => {
 
 	it('createTransaction() -> Missing VAT for account', async () => {
 		let transactionPromise = TransactionFactory.createTransactions(
+			1,
 			10,
 			LOCAL_CODE,
 			LOCAL_CODE,
@@ -64,6 +66,7 @@ describe('TransactionFactory tests #cold #helper', () => {
 
 	it('createTransaction() -> Missing exchangeRate', async () => {
 		let transactionPromise = TransactionFactory.createTransactions(
+			1,
 			10,
 			Currency.Codes.USD,
 			LOCAL_CODE,
@@ -82,6 +85,7 @@ describe('TransactionFactory tests #cold #helper', () => {
 
 	it('createTransaction() -> Local expense', async () => {
 		let transactionPromise = TransactionFactory.createTransactions(
+			1,
 			10,
 			LOCAL_CODE,
 			undefined,
@@ -122,6 +126,7 @@ describe('TransactionFactory tests #cold #helper', () => {
 
 	it('createTransaction() -> Abroad expense (with local code)', async () => {
 		let transactionPromise = TransactionFactory.createTransactions(
+			1,
 			10,
 			LOCAL_CODE,
 			LOCAL_CODE,
@@ -171,6 +176,7 @@ describe('TransactionFactory tests #cold #helper', () => {
 		const code = Currency.Codes.USD
 		const exchangeRate = 10
 		let transactionPromise = TransactionFactory.createTransactions(
+			1,
 			10,
 			code,
 			LOCAL_CODE,
@@ -230,6 +236,7 @@ describe('TransactionFactory tests #cold #helper', () => {
 
 	it('createTransaction() -> Local income', async () => {
 		let transactionPromise = TransactionFactory.createTransactions(
+			1,
 			10,
 			LOCAL_CODE,
 			undefined,

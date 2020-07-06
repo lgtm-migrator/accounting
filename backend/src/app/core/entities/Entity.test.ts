@@ -16,14 +16,29 @@ describe('Validate entity #cold #entity', () => {
 	let entity: Entity
 
 	beforeEach(() => {
-		entity = new Entity({})
+		entity = new Entity({
+			userId: faker.random.number(),
+		})
+	})
+
+	it('All fields set', () => {
+		const data: Entity.Option = {
+			userId: 1,
+			id: 2,
+			dateCreated: 123,
+			dateDeleted: 1234,
+			dateModified: 1235,
+		}
+
+		const entity = new Entity(data)
+		expect(entity).toEqual(data)
 	})
 
 	it('Validate empty Entity should pass', () => {
 		expect(entity.validate()).toStrictEqual([])
 	})
 
-	// id
+	// ID
 	it('Id is of type number and valid', () => {
 		entity.id = faker.random.number()
 		expect(entity.validate()).toStrictEqual([])
@@ -37,6 +52,22 @@ describe('Validate entity #cold #entity', () => {
 	it('Id is of type string and invalid (empty)', () => {
 		entity.id = ''
 		expect(entity.validate()).toStrictEqual([EntityErrors.idIsEmpty])
+	})
+
+	// User ID
+	it('User id is of type number and valid', () => {
+		entity.userId = faker.random.number()
+		expect(entity.validate()).toStrictEqual([])
+	})
+
+	it('User id is of type string and valid', () => {
+		entity.userId = faker.random.uuid()
+		expect(entity.validate()).toStrictEqual([])
+	})
+
+	it('User id is of type string and invalid (empty)', () => {
+		entity.userId = ''
+		expect(entity.validate()).toStrictEqual([EntityErrors.userIdIsEmpty])
 	})
 
 	// date_created

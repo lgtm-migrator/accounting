@@ -4,7 +4,7 @@ import { Transaction } from '../core/entities/Transaction'
 import { OutputError } from '../core/definitions/OutputError'
 import { EntityErrors } from '../core/definitions/EntityErrors'
 import { InternalError } from '../core/definitions/InternalError'
-import { type } from 'os'
+import { Id } from '../core/definitions/Id'
 
 type CurrencyOrUndefined = Currency | undefined
 type TransactionOrUndefined = Transaction | undefined
@@ -12,6 +12,7 @@ type TransactionOrUndefined = Transaction | undefined
 export class TransactionFactory {
 	/**
 	 * Create transactions from the
+	 * @param userId the ID of the user
 	 * @param amount how much was transfered (payed/invoice)
 	 * @param code the currency code of the amount
 	 * @param localCode the local currency code
@@ -24,6 +25,7 @@ export class TransactionFactory {
 	 * @throws {OutputError.Types.invalidAccount} if the VAT percentage is missing and VAT account has been set
 	 */
 	static async createTransactions(
+		userId: Id,
 		amount: number,
 		code: Currency.Code,
 		localCode: Currency.Code | undefined,
@@ -51,9 +53,9 @@ export class TransactionFactory {
 		})
 
 		// Create the actual transactions for the accounts
-		let transactionsCombined = TransactionFactory.calculateTransactions(accountFrom, 'from', currencyFull)
+		let transactionsCombined = TransactionFactory.calculateTransactions(userId, accountFrom, 'from', currencyFull)
 		transactionsCombined = transactionsCombined.concat(
-			TransactionFactory.calculateTransactions(accountTo, 'to', currencyFull)
+			TransactionFactory.calculateTransactions(userId, accountTo, 'to', currencyFull)
 		)
 
 		const transactions: Transaction[] = []
@@ -70,12 +72,14 @@ export class TransactionFactory {
 
 	/**
 	 * Calculate transactions (including VAT) for an account
+	 * @param userId the user
 	 * @param account the account to or from
 	 * @param toOrFrom whether the account is to or from
 	 * @param currencyFull the full currency
 	 * @return [transaction, transactionVat, transactionReverseVat]. transactionVat and transactionReverseVat can be undefined
 	 */
 	private static calculateTransactions(
+		userId: Id,
 		account: Account,
 		toOrFrom: 'to' | 'from',
 		currencyFull: Currency
@@ -131,6 +135,7 @@ export class TransactionFactory {
 		}
 
 		let transaction = new Transaction({
+			userId: userId,
 			accountNumber: account.number,
 			currency: currency,
 		})
@@ -138,6 +143,7 @@ export class TransactionFactory {
 		let vatTransaction: TransactionOrUndefined
 		if (vatCurrency && vatAccount) {
 			vatTransaction = new Transaction({
+				userId: userId,
 				accountNumber: vatAccount.number,
 				currency: vatCurrency,
 			})
@@ -146,6 +152,7 @@ export class TransactionFactory {
 		let reverseVatTransaction: TransactionOrUndefined
 		if (reverseVatCurrency && reverseVatAccount) {
 			reverseVatTransaction = new Transaction({
+				userId: userId,
 				accountNumber: reverseVatAccount.number,
 				currency: reverseVatCurrency,
 			})
