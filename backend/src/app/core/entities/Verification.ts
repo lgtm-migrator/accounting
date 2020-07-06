@@ -4,8 +4,7 @@ import { Id } from '../definitions/Id'
 import { EntityErrors } from '../definitions/EntityErrors'
 import { Currency } from './Currency'
 import { Consts } from '../definitions/Consts'
-
-const ISO_DATE_REGEX = /^\d\d\d\d-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])$/
+import '../definitions/String'
 
 export namespace Verification {
 	export interface Option extends Entity.Option {
@@ -105,17 +104,7 @@ export class Verification extends Entity implements Verification.Option {
 
 		// Date should be in ISO format
 		if (typeof this.date !== 'undefined') {
-			if (ISO_DATE_REGEX.test(this.date)) {
-				// Check so the date is actually valide
-				const parsedDate = Date.parse(this.date)
-				if (parsedDate === NaN) {
-					errors.push(EntityErrors.verificationDateInvalidFormat)
-				}
-				// Special case for February 29
-				else if (new Date(parsedDate).toISOString().substr(0, 10) != this.date) {
-					errors.push(EntityErrors.verificationDateInvalidFormat)
-				}
-			} else {
+			if (!this.date.isValidIsoDate()) {
 				errors.push(EntityErrors.verificationDateInvalidFormat)
 			}
 		}

@@ -1,9 +1,10 @@
-import { Id } from '../definitions/Id'
 import { Entity } from './Entity'
 import { Verification } from './Verification'
 import { Currency } from './Currency'
 import { OutputError } from '../definitions/OutputError'
 import { EntityErrors } from '../definitions/EntityErrors'
+import { Consts } from '../definitions/Consts'
+import '../definitions/String'
 
 interface VerificationInfo {
 	name: string
@@ -31,10 +32,8 @@ interface MatcherInfo {
 
 export namespace Parser {
 	export interface Option extends Entity.Option {
-		userId: Id
 		verification: VerificationInfo
 		matcher: MatcherInfo
-		isMultiple?: boolean
 	}
 	export interface Output extends VerificationInfo {
 		date: string
@@ -47,18 +46,80 @@ export namespace Parser {
  * Used for parsing text getting all the valuable information from that text
  */
 export class Parser extends Entity implements Parser.Option {
-	userId: Id
 	verification: VerificationInfo
 	matcher: MatcherInfo
-	isMultiple: boolean
 
 	constructor(data: Parser.Option) {
 		super(data)
-
-		this.userId = data.userId
 		this.verification = data.verification
 		this.matcher = data.matcher
-		this.isMultiple = Boolean(data.isMultiple)
+	}
+
+	/**
+	 * Validate the parser
+	 */
+	validate(): EntityErrors[] {
+		const errors = super.validate()
+
+		// Verification name
+		if (this.verification.name.length < Consts.NAME_LENGTH_MIN) {
+			errors.push(EntityErrors.nameTooShort)
+		}
+
+		// Verification internal name
+		if (this.verification.internalName.length < Consts.NAME_LENGTH_MIN) {
+			errors.push(EntityErrors.internalNameTooShort)
+		}
+
+		// Verification type
+		if (this.verification.type == Verification.Types.INVALID) {
+			errors.push(EntityErrors.verificationTypeInvalid)
+		}
+
+		// Account From
+		if (
+			this.verification.accountFrom < Consts.ACCOUNT_NUMBER_START ||
+			this.verification.accountFrom > Consts.ACCOUNT_NUMBER_END
+		) {
+			errors.push(EntityErrors.accountNumberOutOfRange)
+		}
+
+		// Account To
+		if (
+			this.verification.accountTo < Consts.ACCOUNT_NUMBER_START ||
+			this.verification.accountTo > Consts.ACCOUNT_NUMBER_END
+		) {
+			errors.push(EntityErrors.accountNumberOutOfRange)
+		}
+
+		// Matcher
+		Parser.validateMatcher(this.matcher.date, 'date', errors)
+		Parser.validateMatcher(this.matcher.currencyCode, 'code', errors)
+		Parser.validateMatcher(this.matcher.total, 'total', errors)
+
+		return errors
+	}
+
+	/**
+	 * Validate a matcher
+	 * @param matcher the matcher to validate
+	 * @param name the name of the matcher (for printing and logging errors)
+	 * @param errors all errors will be added to this array
+	 */
+	private static validateMatcher(matcher: FindAndReplaceInfo, name: string, errors: string[]) {
+		if (matcher.find) {
+			if (matcher.replace && !matcher.replacement) {
+				errors.push(EntityErrors.parserMatcherReplacementMissing + '-' + name)
+			} else if (matcher.replacement && !matcher.replace) {
+				errors.push(EntityErrors.parserMatcherReplaceMissing + '-' + name)
+			}
+		} else if (matcher.replacement) {
+			if (matcher.replace) {
+				errors.push(EntityErrors.parserMatcherFindMissing + '-' + name)
+			}
+		} else {
+			errors.push(EntityErrors.parserMatcherInvalid + '-' + name)
+		}
 	}
 
 	/**
@@ -71,35 +132,77 @@ export class Parser extends Entity implements Parser.Option {
 	}
 
 	parse(text: string): Parser.Output {
-		const date = this.parseDate(text)
-		const total = this.parseTotal(text)
-		const code = this.parseCurrencyCode(text)
+		const errors: string[] = []
+
+		const date = this.parseDate(text, errors)
+		const total = this.parseTotal(text, errors)
+		const code = this.parseCurrencyCode(text, errors)
+
+		if (errors.length > 0) {
+			throw new OutputError(OutputError.Types.invalidInput, errors)
+		}
 
 		return {
 			...this.verification,
 			date: date,
 			total: total,
-			code: code,
+			code: code!,
 		}
 	}
 
-	private parseDate(text: string): string {
-		return Parser.match(text, this.matcher.date)
-	}
+	private parseDate(text: string, errors: string[]): string {
+		let date = Parser.match(text, this.matcher.date, errors)
 
-	private parseCurrencyCode(text: string): Currency.Code {
-		const codeString = Parser.match(text, this.matcher.currencyCode)
-		const code = Currency.Codes.fromString(codeString)
+		const regexs: RegExp[] = [
+			/[Jj]a(nuary|n)/,
+			/[Ff]e(bruary|b)/,
+			/[Mm]a(rch|r)/,
+			/[Aa]p(ril|r)/,
+			/[Mm]ay/,
+			/[Jj]u(ne|n)/,
+			/[Jj]u(ly|l)/,
+			/[Aa]u(gust|g)/,
+			/[Ss]e(ptember|p)/,
+			/[Oo]c(tober|t)/,
+			/[Nn]o(vember|v)/,
+			/[Dd]e(cember|c)/,
+		]
 
-		if (!code) {
-			throw new OutputError(OutputError.Types.invalidInput, [EntityErrors.parserInvalidCurrencyCode, codeString])
+		for (let i = 0; i < regexs.length; ++i) {
+			const regex = regexs[i]
+			let month = String(i + 1)
+			// Add 0 before month
+			if (month.length == 1) {
+				month = '0' + month
+			}
+			date = date.replace(regex, month)
 		}
 
-		return code
+		if (!date.isValidIsoDate()) {
+			errors.push(EntityErrors.parserDateInputInvalid)
+		}
+
+		return date
 	}
 
-	private parseTotal(text: string): number {
-		const total = Parser.match(text, this.matcher.total)
+	private parseCurrencyCode(text: string, errors: string[]): Currency.Code | undefined {
+		const codeString = Parser.match(text, this.matcher.currencyCode, errors)
+
+		if (codeString.length > 0) {
+			const code = Currency.Codes.fromString(codeString)
+
+			if (!code) {
+				errors.push(EntityErrors.parserCurrencyCodeInvalid)
+				errors.push(codeString)
+				return
+			}
+
+			return code
+		}
+	}
+
+	private parseTotal(text: string, errors: string[]): number {
+		const total = Parser.match(text, this.matcher.total, errors)
 		return Parser.convertToValidAmount(total)
 	}
 
@@ -107,15 +210,17 @@ export class Parser extends Entity implements Parser.Option {
 	 * Matches the text with a find and replace info
 	 * @param text the text to parse
 	 * @param findAndReplaceInfo what to find and optionally replace the match with
-	 * @return the matched (and potentially replaced) string
+	 * @param errors errors will be appended to this array
+	 * @return the matched (and potentially replaced) string, empty string if errors were added
 	 */
-	private static match(text: string, findAndReplaceInfo: FindAndReplaceInfo): string {
+	private static match(text: string, findAndReplaceInfo: FindAndReplaceInfo, errors: string[]): string {
 		if (findAndReplaceInfo.find) {
 			const matched = text.match(findAndReplaceInfo.find)
 
 			if (!matched) {
-				const errors: string[] = [EntityErrors.parserPatternNotFound, String(findAndReplaceInfo.find)]
-				throw new OutputError(OutputError.Types.invalidInput, errors)
+				errors.push(EntityErrors.parserPatternNotFound)
+				errors.push(String(findAndReplaceInfo.find))
+				return ''
 			}
 			let value = matched[0]
 
@@ -129,7 +234,7 @@ export class Parser extends Entity implements Parser.Option {
 			return findAndReplaceInfo.replacement
 		}
 
-		throw new OutputError(OutputError.Types.internalError, [EntityErrors.parserInvalidMatcherFindAndReplace])
+		throw new OutputError(OutputError.Types.internalError, [EntityErrors.parserMatcherInvalid])
 	}
 
 	/**
@@ -153,6 +258,7 @@ export class Parser extends Entity implements Parser.Option {
 	private static convertToValidAmount(amount: string): number {
 		const regex = /^(\d{0,3})?[\. ,']?(\d{0,3})[.,](\d{2})$|^(\d{0,3})?[\.\ ,']?(\d{0,3})$/
 		const replacement = '$1$2$4$5.$3'
-		return Number.parseFloat(amount.replace(regex, replacement))
+		const converted = amount.replace(regex, replacement)
+		return Number.parseFloat(converted)
 	}
 }
