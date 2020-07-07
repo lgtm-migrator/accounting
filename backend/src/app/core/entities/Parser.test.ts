@@ -16,21 +16,44 @@ class ParserImpl extends Parser {
 }
 
 describe('Parser #cold #entity', () => {
+	// isOfType()
+	it('isOfType() test', () => {
+		const parser = new ParserImpl(
+			{
+				userId: 1,
+				name: '123',
+				identifier: /test/,
+			},
+			Parser.Types.single
+		)
+
+		expect(parser.isOfType('this is a test string')).toStrictEqual(true)
+		expect(parser.isOfType('not this type')).toStrictEqual(false)
+	})
+
 	// Name
 	it('Name long enough', () => {
-		const parser = new ParserImpl({
-			userId: 1,
-			name: '123',
-		})
+		const parser = new ParserImpl(
+			{
+				userId: 1,
+				name: '123',
+				identifier: /t/,
+			},
+			Parser.Types.single
+		)
 
 		expect(parser.validate()).toStrictEqual([])
 	})
 
 	it('Name too short', () => {
-		const parser = new ParserImpl({
-			userId: 1,
-			name: '12',
-		})
+		const parser = new ParserImpl(
+			{
+				userId: 1,
+				name: '12',
+				identifier: /t/,
+			},
+			Parser.Types.single
+		)
 
 		expect(parser.validate()).toStrictEqual([EntityErrors.nameTooShort])
 	})

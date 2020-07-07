@@ -5,30 +5,17 @@ import { EntityErrors } from '../definitions/EntityErrors'
 import { Consts } from '../definitions/Consts'
 import '../definitions/String'
 
-export namespace Parser {
-	export interface Option extends Entity.Option {
-		name: string
-	}
-
-	export interface VerificationInfo {
-		date: string
-		name: string
-		internalName: string
-		code: Currency.Code
-		type: Verification.Types
-		accountFrom: number
-		accountTo: number
-		amount: number
-	}
-}
-
 export abstract class Parser extends Entity implements Parser.Option {
 	name: string
+	type: Parser.Types
+	identifier: RegExp
 
-	constructor(data: Parser.Option) {
+	constructor(data: Parser.Option, type: Parser.Types) {
 		super(data)
 
 		this.name = data.name
+		this.identifier = data.identifier
+		this.type = type
 	}
 
 	/**
@@ -49,6 +36,15 @@ export abstract class Parser extends Entity implements Parser.Option {
 		}
 
 		return errors
+	}
+
+	/**
+	 * Checks whether this Parser is for the specified text
+	 * @param text the text to see if this Parser is of
+	 * @return true if the text should be parsed by this Parser, false otherwise
+	 */
+	isOfType(text: string): boolean {
+		return this.identifier.test(text)
 	}
 
 	protected static fixDate(date: string, errors: string[]): string {
@@ -107,5 +103,28 @@ export abstract class Parser extends Entity implements Parser.Option {
 		const replacement = '$1$2$4$5.$3'
 		const converted = amount.replace(regex, replacement)
 		return Number.parseFloat(converted)
+	}
+}
+
+export namespace Parser {
+	export enum Types {
+		single = 'single',
+		multi = 'multi',
+	}
+
+	export interface Option extends Entity.Option {
+		name: string
+		identifier: RegExp
+	}
+
+	export interface VerificationInfo {
+		date: string
+		name: string
+		internalName: string
+		code: Currency.Code
+		type: Verification.Types
+		accountFrom: number
+		accountTo: number
+		amount: number
 	}
 }

@@ -15,6 +15,7 @@ function getStringFromFile(filepath: string): string {
 function fakerValidParser(): ParserSingle {
 	return new ParserSingle({
 		name: 'Test parser',
+		identifier: /test/,
 		userId: 1,
 		verification: {
 			name: 'Name',
@@ -24,7 +25,6 @@ function fakerValidParser(): ParserSingle {
 			accountTo: 4330,
 		},
 		matcher: {
-			identifier: /test/,
 			date: {
 				find: /\d{4}-\d{2}-\d{2}/,
 			},
@@ -41,6 +41,7 @@ function fakerValidParser(): ParserSingle {
 describe('ParserSingle #cold #entity', () => {
 	const GOOGLE_INVOICE_PARSER_DATA: ParserSingle.Option = {
 		name: 'Google parser',
+		identifier: /1111-2222-3333/,
 		userId: 1,
 		verification: {
 			name: 'Google account',
@@ -50,7 +51,6 @@ describe('ParserSingle #cold #entity', () => {
 			accountTo: 4661,
 		},
 		matcher: {
-			identifier: /1111-2222-3333/,
 			date: {
 				find: /[JFMASOND][aepuco][nbrylgptvc]\ \d{2},\ 20\d{2}/,
 				replace: /(\w{3}) (\d{2}), (\d{4})/,
@@ -118,6 +118,7 @@ describe('ParserSingle #cold #entity', () => {
 	// Invalid
 	it('Test invalid parser', () => {
 		const data: ParserSingle.Option = {
+			identifier: /test/,
 			name: 'Parser name',
 			userId: 1,
 			verification: {
@@ -128,7 +129,6 @@ describe('ParserSingle #cold #entity', () => {
 				accountTo: 2100,
 			},
 			matcher: {
-				identifier: /test/,
 				date: {},
 				currencyCode: {},
 				total: {},

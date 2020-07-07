@@ -25,7 +25,6 @@ interface FindAndReplaceInfo {
 }
 
 interface MatcherInfo {
-	identifier: RegExp
 	date: FindAndReplaceInfo
 	currencyCode: FindAndReplaceInfo
 	total: FindAndReplaceInfo
@@ -46,7 +45,7 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 	matcher: MatcherInfo
 
 	constructor(data: ParserSingle.Option) {
-		super(data)
+		super(data, Parser.Types.single)
 		this.verification = data.verification
 		this.matcher = data.matcher
 	}
@@ -116,15 +115,6 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 		} else {
 			errors.push(EntityErrors.parserMatcherInvalid + '-' + name)
 		}
-	}
-
-	/**
-	 * Checks whether this Parser is for the specified text
-	 * @param text the text to see if this Parser is of
-	 * @return true if the text should be parsed by this Parser, false otherwise
-	 */
-	isOfType(text: string): boolean {
-		return this.matcher.identifier.test(text)
 	}
 
 	parse(text: string): Parser.VerificationInfo[] {
