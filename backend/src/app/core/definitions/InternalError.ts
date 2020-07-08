@@ -3,31 +3,10 @@
  */
 export class InternalError {
 	type: InternalError.Types
-	error?: object
-	constructor(type: InternalError.Types, error?: {}) {
+	error?: any
+	constructor(type: InternalError.Types, error?: any) {
 		this.type = type
 		this.error = error
-	}
-
-	/**
-	 * Check if the exception is of this type (or at least has the correct properties)
-	 * @param exception the exception to check if it's of this type
-	 * @return true if it is of this type, false otherwise
-	 */
-	static isInstanceOf(exception: Error): boolean {
-		const properties = Object.keys(exception)
-
-		// Type
-		if (!properties.includes('type')) {
-			return false
-		}
-
-		// Error
-		if (!properties.includes('error')) {
-			return false
-		}
-
-		return true
 	}
 }
 

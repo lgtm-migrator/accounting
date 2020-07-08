@@ -3,6 +3,7 @@ import { EntityErrors } from '../definitions/EntityErrors'
 import { Immutable } from '../definitions/Immutable'
 import { Currency } from './Currency'
 import { Consts } from '../definitions/Consts'
+import { OutputError } from '../definitions/OutputError'
 
 export namespace Transaction {
 	export interface Option extends Entity.Option {
@@ -49,22 +50,23 @@ export class Transaction extends Entity implements Transaction.Option {
 		return this.currency.code
 	}
 
-	validate(): EntityErrors[] {
+	validate(): OutputError.Info[] {
 		const errors = super.validate()
 
 		// Account number - Check that the account number is valid
 		if (this.accountNumber < Consts.ACCOUNT_NUMBER_START || this.accountNumber > Consts.ACCOUNT_NUMBER_END) {
-			errors.push(EntityErrors.accountNumberOutOfRange)
+			const data = `${this.accountNumber} < ${Consts.ACCOUNT_NUMBER_START} || ${this.accountNumber} > ${Consts.ACCOUNT_NUMBER_END}`
+			errors.push({ error: EntityErrors.accountNumberOutOfRange, data: data })
 		}
 
 		// Account number is floating point
 		if (!Number.isInteger(this.accountNumber)) {
-			errors.push(EntityErrors.accountNumberInvalidFormat)
+			errors.push({ error: EntityErrors.accountNumberInvalidFormat, data: `${this.accountNumber}` })
 		}
 
 		// Amount original - Checks so the amount isn't exactly 0
 		if (this.currency.isZero()) {
-			errors.push(EntityErrors.amountIsZero)
+			errors.push({ error: EntityErrors.amountIsZero })
 		}
 
 		return errors

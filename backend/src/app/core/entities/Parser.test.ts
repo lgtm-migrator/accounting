@@ -7,11 +7,11 @@ class ParserImpl extends Parser {
 	}
 
 	static testAmountConversion(amount: string): number {
-		return Parser.convertToValidAmount(amount)
+		return Parser.fixAmount(amount)
 	}
 
-	static testFixDate(date: string, errors: string[]): string {
-		return Parser.fixDate(date, errors)
+	static testFixDate(date: string): string {
+		return Parser.fixDate(date)
 	}
 }
 
@@ -55,7 +55,7 @@ describe('Parser #cold #entity', () => {
 			Parser.Types.single
 		)
 
-		expect(parser.validate()).toStrictEqual([EntityErrors.nameTooShort])
+		expect(parser.validate()).toStrictEqual([{ error: EntityErrors.nameTooShort, data: parser.name }])
 	})
 
 	// Amount conversion from string
@@ -175,23 +175,23 @@ describe('Parser #cold #entity', () => {
 		]
 
 		const dateTemplate = '2000-{}-15'
-		expect.assertions(12 * 9)
+		expect.assertions(12 * 5)
 		for (const month of months) {
 			const valid = dateTemplate.replace('{}', month.correct)
 
 			for (const variation of month.variations) {
 				const dateTest = dateTemplate.replace('{}', variation)
-				const errors: string[] = []
-				const output = ParserImpl.testFixDate(dateTest, errors)
+				const output = ParserImpl.testFixDate(dateTest)
 				expect(output).toStrictEqual(valid)
-				expect(errors).toStrictEqual([])
 			}
 
 			// Test invalid
 			const dateTest = dateTemplate.replace('{}', month.invalid)
-			const errors: string[] = []
-			ParserImpl.testFixDate(dateTest, errors)
-			expect(errors).toStrictEqual([EntityErrors.parserDateInputInvalid])
+			try {
+				ParserImpl.testFixDate(dateTest)
+			} catch (exception) {
+				expect(exception.errors).toMatchObject([{ error: EntityErrors.parserDateInputInvalid }])
+			}
 		}
 	})
 })

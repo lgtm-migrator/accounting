@@ -31,7 +31,7 @@ function fakerValidParser(): ParserSingle {
 			currencyCode: {
 				find: /(?<=code: )\w{3}/,
 			},
-			total: {
+			amount: {
 				find: /(?<=total: )\d{1,4}/,
 			},
 		},
@@ -59,7 +59,7 @@ describe('ParserSingle #cold #entity', () => {
 			currencyCode: {
 				find: /(?<=Total in )\w{3}/,
 			},
-			total: {
+			amount: {
 				find: /(?<=Total in \w{3} \s*.)\d{1,5}\.\d{2}/,
 			},
 		},
@@ -86,8 +86,8 @@ describe('ParserSingle #cold #entity', () => {
 		expect(parser.parse(text)).toStrictEqual([valid])
 	})
 
-	it('Test does not match', () => {
-		expect.assertions(9)
+	it('Does not match matcher', () => {
+		expect.assertions(7)
 
 		const data = GOOGLE_INVOICE_PARSER_DATA
 		const parser = new ParserSingle(data)
@@ -97,26 +97,25 @@ describe('ParserSingle #cold #entity', () => {
 
 		try {
 			parser.parse(text)
-		} catch (error) {
-			expect(error).toBeInstanceOf(OutputError)
-			expect(error.type).toStrictEqual(OutputError.Types.invalidInput)
+		} catch (exception) {
+			expect(exception).toBeInstanceOf(OutputError)
+			expect(exception.type).toStrictEqual(OutputError.Types.invalidInput)
 
-			const errors: string[] = [
-				EntityErrors.parserPatternNotFound,
-				EntityErrors.parserDateInputInvalid,
-				String(data.matcher.date.find),
-				String(data.matcher.currencyCode.find),
-				String(data.matcher.total.find),
+			const errors: OutputError.Info[] = [
+				{ error: EntityErrors.parserPatternNotFound, data: String(data.matcher.date.find) },
+				{ error: EntityErrors.parserPatternNotFound, data: String(data.matcher.currencyCode.find) },
+				{ error: EntityErrors.parserPatternNotFound, data: String(data.matcher.amount.find) },
 			]
-			expect(error.errors.length).toStrictEqual(errors.length)
-			for (const errorString of errors) {
-				expect(error.errors).toContainEqual(expect.stringContaining(errorString))
+
+			for (const error of errors) {
+				expect(exception.errors).toContainEqual(expect.objectContaining(error))
 			}
+			expect(exception.errors.length).toStrictEqual(errors.length)
 		}
 	})
 
 	// Invalid
-	it('Test invalid parser', () => {
+	it('Invalid parser', () => {
 		const data: ParserSingle.Option = {
 			identifier: /test/,
 			name: 'Parser name',
@@ -131,29 +130,29 @@ describe('ParserSingle #cold #entity', () => {
 			matcher: {
 				date: {},
 				currencyCode: {},
-				total: {},
+				amount: {},
 			},
 		}
 
 		const parser = new ParserSingle(data)
-		const errors = [
-			EntityErrors.nameTooShort,
-			EntityErrors.internalNameTooShort,
-			EntityErrors.verificationTypeInvalid,
-			EntityErrors.accountNumberOutOfRange,
-			EntityErrors.parserMatcherInvalid + '-date',
-			EntityErrors.parserMatcherInvalid + '-total',
-			EntityErrors.parserMatcherInvalid + '-code',
+		const errors: OutputError.Info[] = [
+			{ error: EntityErrors.nameTooShort },
+			{ error: EntityErrors.internalNameTooShort },
+			{ error: EntityErrors.verificationTypeInvalid },
+			{ error: EntityErrors.accountNumberOutOfRange },
+			{ error: EntityErrors.parserMatcherInvalid, data: 'date' },
+			{ error: EntityErrors.parserMatcherInvalid, data: 'total' },
+			{ error: EntityErrors.parserMatcherInvalid, data: 'code' },
 		]
 		expect.assertions(errors.length * 2)
 		for (const error of errors) {
-			expect(parser.validate()).toContainEqual(expect.stringContaining(error))
+			expect(parser.validate()).toContainEqual(expect.objectContaining(error))
 		}
 
 		data.verification.accountFrom = 2000
 		data.verification.accountTo = 100
 		for (const error of errors) {
-			expect(parser.validate()).toContainEqual(expect.stringContaining(error))
+			expect(parser.validate()).toContainEqual(expect.objectContaining(error))
 		}
 	})
 
@@ -247,10 +246,10 @@ describe('ParserSingle #cold #entity', () => {
 			} catch (error) {
 				const validError = {
 					type: OutputError.Types.invalidInput,
-					errors: [EntityErrors.parserDateInputInvalid],
+					errors: [{ error: EntityErrors.parserDateInputInvalid }],
 				}
 
-				expect(error).toEqual(validError)
+				expect(error).toMatchObject(validError)
 			}
 		}
 	})
@@ -259,8 +258,8 @@ describe('ParserSingle #cold #entity', () => {
 	it('Replace directly functionality', () => {
 		const parser = fakerValidParser()
 		const text = 'code: SEK, total: 45, date: 2020-01-15'
-		parser.matcher.total.find = undefined
-		parser.matcher.total.replacement = '1337'
+		parser.matcher.amount.find = undefined
+		parser.matcher.amount.replacement = '1337'
 
 		const valid: Parser.VerificationInfo = {
 			date: '2020-01-15',
@@ -296,7 +295,7 @@ describe('ParserSingle #cold #entity', () => {
 		parser.matcher.date.find = /\d{2}\/\d{2}\/\d{4}/
 		parser.matcher.date.replace = /(\d{2}).(\d{2}).(\d{4})/
 
-		expect(parser.validate()).toStrictEqual([EntityErrors.parserMatcherReplacementMissing + '-date'])
+		expect(parser.validate()).toStrictEqual([{ error: EntityErrors.parserMatcherReplacementMissing, data: 'date' }])
 	})
 
 	it('Matcher missing replace', () => {
@@ -305,7 +304,7 @@ describe('ParserSingle #cold #entity', () => {
 		parser.matcher.date.find = /\d{2}\/\d{2}\/\d{4}/
 		parser.matcher.date.replacement = '$3-$1-$2'
 
-		expect(parser.validate()).toStrictEqual([EntityErrors.parserMatcherReplaceMissing + '-date'])
+		expect(parser.validate()).toStrictEqual([{ error: EntityErrors.parserMatcherReplaceMissing, data: 'date' }])
 	})
 
 	it('Matcher missing find', () => {
@@ -315,7 +314,7 @@ describe('ParserSingle #cold #entity', () => {
 		parser.matcher.date.replace = /(\d{2}).(\d{2}).(\d{4})/
 		parser.matcher.date.replacement = '$3-$1-$2'
 
-		expect(parser.validate()).toStrictEqual([EntityErrors.parserMatcherFindMissing + '-date'])
+		expect(parser.validate()).toStrictEqual([{ error: EntityErrors.parserMatcherFindMissing, data: 'date' }])
 	})
 
 	// Total/Amount conversion
@@ -365,7 +364,7 @@ describe('ParserSingle #cold #entity', () => {
 
 		const parser = fakerValidParser()
 		const text = 'code: SEK; total: {}; date: 2020-01-31'
-		parser.matcher.total.find = /(?<=total: ).*?(?=;)/
+		parser.matcher.amount.find = /(?<=total: ).*?(?=;)/
 
 		for (const value of values) {
 			const inputText = text.replace('{}', value.in)

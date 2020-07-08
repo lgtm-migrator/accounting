@@ -57,7 +57,12 @@ describe('TransactionFactory tests #cold #helper', () => {
 
 		let error = {
 			type: OutputError.Types.invalidAccount,
-			errors: [EntityErrors.accountVatPercentageNotSet, String(Accounts.EXPENSE_LOCAL_MISSING_VAT.number)],
+			errors: [
+				{
+					error: EntityErrors.accountVatPercentageNotSet,
+					data: String(Accounts.EXPENSE_LOCAL_MISSING_VAT.number),
+				},
+			],
 		}
 
 		expect.assertions(1)

@@ -55,7 +55,7 @@ describe('Validate a transaction #cold #entity', () => {
 				min: Number.MIN_SAFE_INTEGER,
 				max: Consts.ACCOUNT_NUMBER_START - 1,
 			})
-			expect(transaction.validate()).toStrictEqual([EntityErrors.accountNumberOutOfRange])
+			expect(transaction.validate()).toMatchObject([{ error: EntityErrors.accountNumberOutOfRange }])
 		}
 	})
 
@@ -65,13 +65,15 @@ describe('Validate a transaction #cold #entity', () => {
 				min: Consts.ACCOUNT_NUMBER_END + 1,
 				max: Number.MAX_SAFE_INTEGER,
 			})
-			expect(transaction.validate()).toStrictEqual([EntityErrors.accountNumberOutOfRange])
+			expect(transaction.validate()).toMatchObject([{ error: EntityErrors.accountNumberOutOfRange }])
 		}
 	})
 
 	it('Account number is invalid format (floating point)', () => {
 		transaction.accountNumber = 1500.8
-		expect(transaction.validate()).toStrictEqual([EntityErrors.accountNumberInvalidFormat])
+		expect(transaction.validate()).toStrictEqual([
+			{ error: EntityErrors.accountNumberInvalidFormat, data: `${transaction.accountNumber}` },
+		])
 	})
 
 	// Currency
@@ -86,6 +88,6 @@ describe('Validate a transaction #cold #entity', () => {
 
 	it('Currency amount is 0', () => {
 		transaction.currency = new Currency({ amount: 0n, code: fakerValidCurrencyCode() })
-		expect(transaction.validate()).toStrictEqual([EntityErrors.amountIsZero])
+		expect(transaction.validate()).toStrictEqual([{ error: EntityErrors.amountIsZero }])
 	})
 })

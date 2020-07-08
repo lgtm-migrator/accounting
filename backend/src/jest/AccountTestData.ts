@@ -84,6 +84,6 @@ export class Accounts {
 				}
 			}
 		}
-		throw new InternalError(InternalError.Types.accountNumberNotFound)
+		throw new InternalError(InternalError.Types.accountNumberNotFound, accountNumber)
 	}
 }

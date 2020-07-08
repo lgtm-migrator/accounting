@@ -35,7 +35,11 @@ export class VerificationNewInteractor extends Interactor<
 
 		const code = Currency.Codes.fromString(this.input.verification.currencyCode)
 		if (!code) {
-			throw new OutputError(OutputError.Types.invalidInput, [EntityErrors.currencyCodeInvalid])
+			throw OutputError.create(
+				OutputError.Types.invalidInput,
+				EntityErrors.currencyCodeInvalid,
+				input.verification.currencyCode
+			)
 		}
 
 		const localCurrencyPromise = this.repository.getLocalCurrency(this.input.userId)
@@ -65,19 +69,14 @@ export class VerificationNewInteractor extends Interactor<
 				return this.createVerification(transactions)
 			})
 			.catch((reason) => {
-				let type: OutputError.Types = OutputError.Types.internalError
-				let errors: string[] | undefined
-
 				if (reason instanceof InternalError) {
 					if (reason.type === InternalError.Types.accountNumberNotFound) {
-						type = OutputError.Types.invalidInput
-						errors = [EntityErrors.accountNumberDoesNotExist]
+						const type = OutputError.Types.invalidInput
+						throw OutputError.create(type, EntityErrors.accountNumberDoesNotExist, String(reason.error))
 					}
-				} else if (reason instanceof OutputError) {
-					throw reason
 				}
 
-				throw new OutputError(type, errors)
+				throw reason
 			})
 	}
 

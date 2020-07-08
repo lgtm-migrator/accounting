@@ -1,5 +1,6 @@
 import { Id } from '../definitions/Id'
 import { EntityErrors } from '../definitions/EntityErrors'
+import { OutputError } from '../definitions/OutputError'
 
 /** Date: 2000-01-01 */
 const VALID_DATE_AFTER = 946684800000
@@ -45,30 +46,34 @@ export class Entity implements Entity.Option {
 	 * Validate the entity so it has correct values
 	 * @return all error, or empty list if the entity is valid
 	 */
-	validate(): EntityErrors[] {
-		let errors: EntityErrors[] = []
+	validate(): OutputError.Info[] {
+		let errors: OutputError.Info[] = []
+
 		// ID checks
 		if (typeof this.id === 'string') {
 			if (this.id.length <= 0) {
-				errors.push(EntityErrors.idIsEmpty)
+				errors.push({ error: EntityErrors.idIsEmpty })
 			}
 		}
 
 		if (typeof this.userId === 'string') {
 			if (this.userId.length <= 0) {
-				errors.push(EntityErrors.userIdIsEmpty)
+				errors.push({ error: EntityErrors.userIdIsEmpty })
 			}
 		}
 
 		// Date created
+		const now = new Date().getTime()
 		if (this.dateCreated) {
 			// Invalid before a specified date
 			if (this.dateCreated < VALID_DATE_AFTER) {
-				errors.push(EntityErrors.dateCreatedTooEarly)
+				const data = `${this.dateCreated} < ${VALID_DATE_AFTER}`
+				errors.push({ error: EntityErrors.dateCreatedTooEarly, data: data })
 			}
 			// In the future
-			else if (this.dateCreated > new Date().getTime()) {
-				errors.push(EntityErrors.dateCreatedInTheFuture)
+			else if (this.dateCreated > now) {
+				const data = `${this.dateCreated} > ${now}`
+				errors.push({ error: EntityErrors.dateCreatedInTheFuture, data: data })
 			}
 		}
 
@@ -76,15 +81,17 @@ export class Entity implements Entity.Option {
 		if (this.dateModified) {
 			// Requires date_created
 			if (!this.dateCreated) {
-				errors.push(EntityErrors.dateModifiedRequiresDateCreated)
+				errors.push({ error: EntityErrors.dateModifiedRequiresDateCreated })
 			}
 			// Before date created
 			else if (this.dateModified < this.dateCreated) {
-				errors.push(EntityErrors.dateModifiedBeforeCreated)
+				const data = `${this.dateModified} < ${this.dateCreated}`
+				errors.push({ error: EntityErrors.dateModifiedBeforeCreated, data: data })
 			}
 			// In the future
-			else if (this.dateModified > new Date().getTime()) {
-				errors.push(EntityErrors.dateModifiedInTheFuture)
+			else if (this.dateModified > now) {
+				const data = `${this.dateModified} > ${now}`
+				errors.push({ error: EntityErrors.dateModifiedInTheFuture, data: data })
 			}
 		}
 
@@ -92,11 +99,12 @@ export class Entity implements Entity.Option {
 		if (this.dateDeleted) {
 			// Requires date_modified
 			if (!this.dateModified) {
-				errors.push(EntityErrors.dateDeletedRequiresDateModified)
+				errors.push({ error: EntityErrors.dateDeletedRequiresDateModified })
 			}
 			// Not equal to modified
 			else if (this.dateDeleted !== this.dateModified) {
-				errors.push(EntityErrors.dateDeletedNotSameAsModified)
+				const data = `${this.dateDeleted} !== ${this.dateModified}`
+				errors.push({ error: EntityErrors.dateDeletedNotSameAsModified, data: data })
 			}
 		}
 

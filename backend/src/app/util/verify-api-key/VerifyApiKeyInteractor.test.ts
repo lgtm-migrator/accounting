@@ -31,7 +31,7 @@ describe('Verify Api Key #cold #use-case', () => {
 		return expect(interactor.execute(input)).resolves.toStrictEqual(output)
 	})
 
-	it(`Can't find a user with API key`, () => {
+	it(`Can't find a user with API key`, async () => {
 		repository = {
 			findUserWithApiKey: jest.fn(async () => {
 				throw new InternalError(InternalError.Types.userNotFound)
@@ -41,13 +41,13 @@ describe('Verify Api Key #cold #use-case', () => {
 		interactor = new VerifyApiKeyInteractor(repository)
 
 		expect.assertions(1)
-		return expect(interactor.execute(input)).rejects.toEqual({
+		await expect(interactor.execute(input)).rejects.toEqual({
 			type: OutputError.Types.userNotFound,
 			errors: [],
 		})
 	})
 
-	it('Repository throws an unknown internal error', () => {
+	it('Repository throws an unknown internal error', async () => {
 		repository = {
 			findUserWithApiKey: jest.fn(async () => {
 				throw new InternalError(InternalError.Types.unknown)
@@ -57,13 +57,13 @@ describe('Verify Api Key #cold #use-case', () => {
 		interactor = new VerifyApiKeyInteractor(repository)
 
 		expect.assertions(1)
-		return expect(interactor.execute(input)).rejects.toEqual({
+		await expect(interactor.execute(input)).rejects.toEqual({
 			type: OutputError.Types.internalError,
 			errors: [],
 		})
 	})
 
-	it(`Repository throws an error that isn't of the Internal Error type. Should still be treated as an internal error`, () => {
+	it(`Repository throws an error that isn't of the Internal Error type. Should still be treated as an internal error`, async () => {
 		repository = {
 			findUserWithApiKey: jest.fn(async () => {
 				throw new Error(faker.lorem.words(5))
@@ -73,7 +73,7 @@ describe('Verify Api Key #cold #use-case', () => {
 		interactor = new VerifyApiKeyInteractor(repository)
 
 		expect.assertions(1)
-		return expect(interactor.execute(input)).rejects.toEqual({
+		await expect(interactor.execute(input)).rejects.toEqual({
 			type: OutputError.Types.internalError,
 			errors: [],
 		})

@@ -96,8 +96,11 @@ export class TransactionFactory {
 			vatAccount = account.vatAccount
 
 			if (vatPercentage === undefined) {
-				const errors = [EntityErrors.accountVatPercentageNotSet, String(account.number)]
-				throw new OutputError(OutputError.Types.invalidAccount, errors)
+				throw OutputError.create(
+					OutputError.Types.invalidAccount,
+					EntityErrors.accountVatPercentageNotSet,
+					String(account.number)
+				)
 			}
 
 			// Reverse VAT

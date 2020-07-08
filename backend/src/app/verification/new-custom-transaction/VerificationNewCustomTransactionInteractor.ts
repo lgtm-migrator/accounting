@@ -63,7 +63,11 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
 	): Promise<Transaction> {
 		const code = Currency.Codes.fromString(transactionInputData.currencyCode)
 		if (!code) {
-			throw new OutputError(OutputError.Types.invalidInput, [EntityErrors.currencyCodeInvalid])
+			throw OutputError.create(
+				OutputError.Types.invalidInput,
+				EntityErrors.currencyCodeInvalid,
+				transactionInputData.currencyCode
+			)
 		}
 
 		let exchangeRatePromise: Promise<number | undefined> = Promise.resolve(undefined)

@@ -4,6 +4,7 @@ import { Verification } from './Verification'
 import { EntityErrors } from '../definitions/EntityErrors'
 import { Consts } from '../definitions/Consts'
 import '../definitions/String'
+import { OutputError } from '../definitions/OutputError'
 
 export abstract class Parser extends Entity implements Parser.Option {
 	name: string
@@ -27,12 +28,12 @@ export abstract class Parser extends Entity implements Parser.Option {
 	 */
 	abstract parse(text: string): Parser.VerificationInfo[]
 
-	validate(): EntityErrors[] {
+	validate(): OutputError.Info[] {
 		const errors = super.validate()
 
 		// Name
 		if (this.name.length < Consts.NAME_LENGTH_MIN) {
-			errors.push(EntityErrors.nameTooShort)
+			errors.push({ error: EntityErrors.nameTooShort, data: this.name })
 		}
 
 		return errors
@@ -47,7 +48,15 @@ export abstract class Parser extends Entity implements Parser.Option {
 		return this.identifier.test(text)
 	}
 
-	protected static fixDate(date: string, errors: string[]): string {
+	/**
+	 * Fix date to an ISO date (YYYY-MM-DD) by replacing month name to a number and adding YY if only two
+	 * numbers were used for the year.
+	 * @param date the date to fix
+	 * @param errors errors that were found in the date
+	 * @return year in correct ISO format (YYYY-MM-DD)
+	 * @throws {OutputError.Types.invalidInput} if the date is an invalid format
+	 */
+	protected static fixDate(date: string): string {
 		const regexs: RegExp[] = [
 			/[Jj]a(nuary|n)/,
 			/[Ff]e(bruary|b)/,
@@ -74,7 +83,7 @@ export abstract class Parser extends Entity implements Parser.Option {
 		}
 
 		if (!date.isValidIsoDate()) {
-			errors.push(EntityErrors.parserDateInputInvalid)
+			throw OutputError.create(OutputError.Types.invalidInput, EntityErrors.parserDateInputInvalid, date)
 		}
 
 		return date
@@ -98,11 +107,39 @@ export abstract class Parser extends Entity implements Parser.Option {
 	 * @param amount the amount to convert to a valid number
 	 * @return valid number
 	 */
-	protected static convertToValidAmount(amount: string): number {
+	protected static fixAmount(amount: string): number {
 		const regex = /^(\d{0,3})?[\. ,']?(\d{0,3})[.,](\d{2})$|^(\d{0,3})?[\.\ ,']?(\d{0,3})$/
 		const replacement = '$1$2$4$5.$3'
 		const converted = amount.replace(regex, replacement)
 		return Number.parseFloat(converted)
+	}
+
+	/**
+	 * Replaces all newlines and tabs with spaces and replaces multiple spaces with one space.
+	 * @param name the name to replace newline and tabs with spaces
+	 * @return fixed name without tabs and multiple spaces
+	 */
+	protected static fixName(name: string): string {
+		let fixed = name.replace(/\n\t/g, ' ')
+		fixed = fixed.replace(/\s\s+/g, ' ')
+		return fixed
+	}
+
+	/**
+	 * Handles an exception and adds invalidInput errors to errors, otherwise rethrows the error
+	 * @param exception the exception
+	 * @param errors add invalidInput exceptions to this array
+	 */
+	protected static addInvalidInputErrors(exception: any, errors: OutputError.Info[]) {
+		if (exception instanceof OutputError) {
+			if (exception.type == OutputError.Types.invalidInput) {
+				errors.push(...exception.errors)
+			} else {
+				throw exception
+			}
+		} else {
+			throw exception
+		}
 	}
 }
 

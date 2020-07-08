@@ -193,7 +193,7 @@ describe('New Verification #cold #use-case', () => {
 
 		await expect(output).rejects.toEqual({
 			type: OutputError.Types.invalidInput,
-			errors: [EntityErrors.accountNumberDoesNotExist],
+			errors: [{ error: EntityErrors.accountNumberDoesNotExist, data: `${inputData.accountFrom}` }],
 		})
 
 		inputData.accountFrom = Accounts.BANK_ACCOUNT.number
@@ -201,7 +201,10 @@ describe('New Verification #cold #use-case', () => {
 		output = interactor.execute(input)
 		await expect(output).rejects.toEqual({
 			type: OutputError.Types.invalidInput,
-			errors: [EntityErrors.verificationDateInvalidFormat, EntityErrors.amountIsZero],
+			errors: [
+				{ error: EntityErrors.verificationDateInvalidFormat, data: inputData.date },
+				{ error: EntityErrors.amountIsZero },
+			],
 		})
 	})
 })

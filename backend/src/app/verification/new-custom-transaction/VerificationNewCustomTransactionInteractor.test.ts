@@ -138,7 +138,11 @@ describe('New verification from custom transactions #cold #use-case', () => {
 		expect.assertions(1)
 		await expect(output).rejects.toEqual({
 			type: OutputError.Types.invalidInput,
-			errors: [EntityErrors.nameTooShort, EntityErrors.verificationDateInvalidFormat, EntityErrors.transactionsMissing],
+			errors: [
+				{ error: EntityErrors.nameTooShort, data: input.verification.name },
+				{ error: EntityErrors.verificationDateInvalidFormat, data: input.verification.date },
+				{ error: EntityErrors.transactionsMissing },
+			],
 		})
 	})
 })

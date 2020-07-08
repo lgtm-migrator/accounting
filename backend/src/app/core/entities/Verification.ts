@@ -5,6 +5,7 @@ import { EntityErrors } from '../definitions/EntityErrors'
 import { Currency } from './Currency'
 import { Consts } from '../definitions/Consts'
 import '../definitions/String'
+import { OutputError } from '../definitions/OutputError'
 
 export namespace Verification {
 	export interface Option extends Entity.Option {
@@ -72,40 +73,41 @@ export class Verification extends Entity implements Verification.Option {
 		}
 	}
 
-	validate(): EntityErrors[] {
+	validate(): OutputError.Info[] {
 		const errors = super.validate()
 
 		// Name
 		if (this.name.length < Consts.NAME_LENGTH_MIN) {
-			errors.push(EntityErrors.nameTooShort)
+			errors.push({ error: EntityErrors.nameTooShort, data: this.name })
 		}
 
 		// Internal name
 		if (this.internalName && this.internalName.length < Consts.NAME_LENGTH_MIN) {
-			errors.push(EntityErrors.internalNameTooShort)
+			errors.push({ error: EntityErrors.internalNameTooShort, data: this.internalName })
 		}
 
 		// Type
 		if (this.type == Verification.Types.INVALID) {
-			errors.push(EntityErrors.verificationTypeInvalid)
+			errors.push({ error: EntityErrors.verificationTypeInvalid })
 		}
 
 		// Verification number
 		if (typeof this.number === 'number') {
 			// Requires a filed date
 			if (typeof this.dateFiled === 'undefined') {
-				errors.push(EntityErrors.verificationDateFiledMissing)
+				errors.push({ error: EntityErrors.verificationDateFiledMissing })
 			}
 
 			if (this.number <= 0) {
-				errors.push(EntityErrors.verificationNumberInvalid)
+				const data = `${this.number} <= 0`
+				errors.push({ error: EntityErrors.verificationNumberInvalid, data: data })
 			}
 		}
 
 		// Date should be in ISO format
 		if (typeof this.date !== 'undefined') {
 			if (!this.date.isValidIsoDate()) {
-				errors.push(EntityErrors.verificationDateInvalidFormat)
+				errors.push({ error: EntityErrors.verificationDateInvalidFormat, data: this.date })
 			}
 		}
 
@@ -113,13 +115,14 @@ export class Verification extends Entity implements Verification.Option {
 		if (typeof this.dateFiled === 'number') {
 			// Requires verification number
 			if (typeof this.number === 'undefined') {
-				errors.push(EntityErrors.verificationNumberMissing)
+				errors.push({ error: EntityErrors.verificationNumberMissing })
 			}
 
 			if (typeof this.dateCreated === 'undefined') {
-				errors.push(EntityErrors.dateCreatedMissing)
+				errors.push({ error: EntityErrors.dateCreatedMissing })
 			} else if (this.dateFiled < this.dateCreated) {
-				errors.push(EntityErrors.verificationDateFiledBeforeCreated)
+				const data = `${this.dateFiled} < ${this.dateCreated}`
+				errors.push({ error: EntityErrors.verificationDateFiledBeforeCreated, data: data })
 			}
 		}
 
@@ -136,21 +139,21 @@ export class Verification extends Entity implements Verification.Option {
 			}
 
 			if (!found) {
-				errors.push(EntityErrors.verificationAmountDoesNotMatchAnyTransaction)
+				errors.push({ error: EntityErrors.verificationAmountDoesNotMatchAnyTransaction })
 			}
 		}
 
 		// Invoice Id
 		if (typeof this.invoiceId === 'string') {
 			if (this.invoiceId.length <= 0) {
-				errors.push(EntityErrors.verificationInvoiceIdIsEmpty)
+				errors.push({ error: EntityErrors.verificationInvoiceIdIsEmpty })
 			}
 		}
 
 		// Payment Id
 		if (typeof this.paymentId === 'string') {
 			if (this.paymentId.length <= 0) {
-				errors.push(EntityErrors.verificationPaymentIdIsEmpty)
+				errors.push({ error: EntityErrors.verificationPaymentIdIsEmpty })
 			}
 		}
 
@@ -160,12 +163,12 @@ export class Verification extends Entity implements Verification.Option {
 		return errors
 	}
 
-	private validateTransactions(errors: EntityErrors[]) {
+	private validateTransactions(errors: OutputError.Info[]) {
 		const localCurrencyCode = this.findLocalCurrencyCode()
 
 		// No transactions
 		if (this.transactions.length == 0) {
-			errors.push(EntityErrors.transactionsMissing)
+			errors.push({ error: EntityErrors.transactionsMissing })
 		}
 
 		// Check for errors in each transaction
@@ -180,7 +183,8 @@ export class Verification extends Entity implements Verification.Option {
 
 			// Local code doesn't match
 			if (localAmount.code != localCurrencyCode) {
-				errors.push(EntityErrors.transactionsCurrencyCodeLocalMismatch)
+				const data = `${localAmount.code.name} != ${localCurrencyCode.name}`
+				errors.push({ error: EntityErrors.transactionsCurrencyCodeLocalMismatch, data: data })
 				return
 			}
 
@@ -188,7 +192,7 @@ export class Verification extends Entity implements Verification.Option {
 		}
 
 		if (sum != 0n) {
-			errors.push(EntityErrors.transactionSumIsNotZero)
+			errors.push({ error: EntityErrors.transactionSumIsNotZero, data: `${sum}` })
 		}
 	}
 

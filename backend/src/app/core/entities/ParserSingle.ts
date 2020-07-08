@@ -27,7 +27,7 @@ interface FindAndReplaceInfo {
 interface MatcherInfo {
 	date: FindAndReplaceInfo
 	currencyCode: FindAndReplaceInfo
-	total: FindAndReplaceInfo
+	amount: FindAndReplaceInfo
 }
 
 export namespace ParserSingle {
@@ -53,22 +53,22 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 	/**
 	 * Validate the parser
 	 */
-	validate(): EntityErrors[] {
+	validate(): OutputError.Info[] {
 		const errors = super.validate()
 
 		// Verification name
 		if (this.verification.name.length < Consts.NAME_LENGTH_MIN) {
-			errors.push(EntityErrors.nameTooShort)
+			errors.push({ error: EntityErrors.nameTooShort })
 		}
 
 		// Verification internal name
 		if (this.verification.internalName.length < Consts.NAME_LENGTH_MIN) {
-			errors.push(EntityErrors.internalNameTooShort)
+			errors.push({ error: EntityErrors.internalNameTooShort })
 		}
 
 		// Verification type
 		if (this.verification.type == Verification.Types.INVALID) {
-			errors.push(EntityErrors.verificationTypeInvalid)
+			errors.push({ error: EntityErrors.verificationTypeInvalid })
 		}
 
 		// Account From
@@ -76,7 +76,7 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 			this.verification.accountFrom < Consts.ACCOUNT_NUMBER_START ||
 			this.verification.accountFrom > Consts.ACCOUNT_NUMBER_END
 		) {
-			errors.push(EntityErrors.accountNumberOutOfRange)
+			errors.push({ error: EntityErrors.accountNumberOutOfRange })
 		}
 
 		// Account To
@@ -84,13 +84,13 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 			this.verification.accountTo < Consts.ACCOUNT_NUMBER_START ||
 			this.verification.accountTo > Consts.ACCOUNT_NUMBER_END
 		) {
-			errors.push(EntityErrors.accountNumberOutOfRange)
+			errors.push({ error: EntityErrors.accountNumberOutOfRange })
 		}
 
 		// Matcher
 		ParserSingle.validateMatcher(this.matcher.date, 'date', errors)
 		ParserSingle.validateMatcher(this.matcher.currencyCode, 'code', errors)
-		ParserSingle.validateMatcher(this.matcher.total, 'total', errors)
+		ParserSingle.validateMatcher(this.matcher.amount, 'total', errors)
 
 		return errors
 	}
@@ -101,28 +101,43 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 	 * @param name the name of the matcher (for printing and logging errors)
 	 * @param errors all errors will be added to this array
 	 */
-	private static validateMatcher(matcher: FindAndReplaceInfo, name: string, errors: string[]) {
+	private static validateMatcher(matcher: FindAndReplaceInfo, name: string, errors: OutputError.Info[]) {
 		if (matcher.find) {
 			if (matcher.replace && !matcher.replacement) {
-				errors.push(EntityErrors.parserMatcherReplacementMissing + '-' + name)
+				errors.push({ error: EntityErrors.parserMatcherReplacementMissing, data: name })
 			} else if (matcher.replacement && !matcher.replace) {
-				errors.push(EntityErrors.parserMatcherReplaceMissing + '-' + name)
+				errors.push({ error: EntityErrors.parserMatcherReplaceMissing, data: name })
 			}
 		} else if (matcher.replacement) {
 			if (matcher.replace) {
-				errors.push(EntityErrors.parserMatcherFindMissing + '-' + name)
+				errors.push({ error: EntityErrors.parserMatcherFindMissing, data: name })
 			}
 		} else {
-			errors.push(EntityErrors.parserMatcherInvalid + '-' + name)
+			errors.push({ error: EntityErrors.parserMatcherInvalid, data: name })
 		}
 	}
 
 	parse(text: string): Parser.VerificationInfo[] {
-		const errors: string[] = []
+		const errors: OutputError.Info[] = []
+		let date!: string
+		let amount!: number
+		let code!: Currency.Code
 
-		const date = this.parseDate(text, errors)
-		const total = this.parseTotal(text, errors)
-		const code = this.parseCurrencyCode(text, errors)
+		try {
+			date = this.parseDate(text)
+		} catch (exception) {
+			Parser.addInvalidInputErrors(exception, errors)
+		}
+		try {
+			amount = this.parseAmount(text)
+		} catch (exception) {
+			Parser.addInvalidInputErrors(exception, errors)
+		}
+		try {
+			code = this.parseCurrencyCode(text)
+		} catch (exception) {
+			Parser.addInvalidInputErrors(exception, errors)
+		}
 
 		if (errors.length > 0) {
 			throw new OutputError(OutputError.Types.invalidInput, errors)
@@ -133,54 +148,57 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 		verificationInfo.push({
 			...this.verification,
 			date: date,
-			amount: total,
-			code: code!,
+			amount: amount,
+			code: code,
 		})
 
 		return verificationInfo
 	}
 
-	private parseDate(text: string, errors: string[]): string {
-		let date = ParserSingle.match(text, this.matcher.date, errors)
-		return Parser.fixDate(date, errors)
+	private parseDate(text: string): string {
+		let date = ParserSingle.match(text, this.matcher.date)
+		return Parser.fixDate(date)
 	}
 
-	private parseCurrencyCode(text: string, errors: string[]): Currency.Code | undefined {
-		const codeString = ParserSingle.match(text, this.matcher.currencyCode, errors)
+	private parseCurrencyCode(text: string): Currency.Code {
+		const codeString = ParserSingle.match(text, this.matcher.currencyCode)
 
 		if (codeString.length > 0) {
 			const code = Currency.Codes.fromString(codeString)
 
 			if (!code) {
-				errors.push(EntityErrors.parserCurrencyCodeInvalid)
-				errors.push(codeString)
-				return
+				throw OutputError.create(OutputError.Types.invalidInput, EntityErrors.parserCurrencyCodeInvalid, codeString)
 			}
 
 			return code
 		}
+
+		throw OutputError.create(OutputError.Types.invalidInput, EntityErrors.parserCurrencyCodeInvalid)
 	}
 
-	private parseTotal(text: string, errors: string[]): number {
-		const total = ParserSingle.match(text, this.matcher.total, errors)
-		return ParserSingle.convertToValidAmount(total)
+	private parseAmount(text: string): number {
+		const total = ParserSingle.match(text, this.matcher.amount)
+		return ParserSingle.fixAmount(total)
 	}
 
 	/**
 	 * Matches the text with a find and replace info
 	 * @param text the text to parse
 	 * @param findAndReplaceInfo what to find and optionally replace the match with
-	 * @param errors errors will be appended to this array
 	 * @return the matched (and potentially replaced) string, empty string if errors were added
+	 * @throws {OutputError.Types.internalError} if the matcher is invalid
+	 * @throws {OutputError.Types.invalidInput} if we couldn't find a match
 	 */
-	private static match(text: string, findAndReplaceInfo: FindAndReplaceInfo, errors: string[]): string {
+	private static match(text: string, findAndReplaceInfo: FindAndReplaceInfo): string {
 		if (findAndReplaceInfo.find) {
 			const matched = text.match(findAndReplaceInfo.find)
 
 			if (!matched) {
-				errors.push(EntityErrors.parserPatternNotFound)
-				errors.push(String(findAndReplaceInfo.find))
-				return ''
+				throw OutputError.create(
+					OutputError.Types.invalidInput,
+					EntityErrors.parserPatternNotFound,
+					String(findAndReplaceInfo.find)
+				)
 			}
 			let value = matched[0]
 
@@ -194,6 +212,6 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 			return findAndReplaceInfo.replacement
 		}
 
-		throw new OutputError(OutputError.Types.internalError, [EntityErrors.parserMatcherInvalid])
+		throw OutputError.create(OutputError.Types.internalError, EntityErrors.parserMatcherInvalid)
 	}
 }
