@@ -6,6 +6,7 @@ import { EntityErrors } from '../definitions/EntityErrors'
 import { Consts } from '../definitions/Consts'
 import '../definitions/String'
 import { Parser } from './Parser'
+import { Account } from './Account'
 
 interface VerificationInfo {
 	name: string
@@ -72,20 +73,10 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 		}
 
 		// Account From
-		if (
-			this.verification.accountFrom < Consts.ACCOUNT_NUMBER_START ||
-			this.verification.accountFrom > Consts.ACCOUNT_NUMBER_END
-		) {
-			errors.push({ error: EntityErrors.accountNumberOutOfRange })
-		}
+		Account.validateNumber(this.verification.accountFrom, errors)
 
 		// Account To
-		if (
-			this.verification.accountTo < Consts.ACCOUNT_NUMBER_START ||
-			this.verification.accountTo > Consts.ACCOUNT_NUMBER_END
-		) {
-			errors.push({ error: EntityErrors.accountNumberOutOfRange })
-		}
+		Account.validateNumber(this.verification.accountTo, errors)
 
 		// Matcher
 		ParserSingle.validateMatcher(this.matcher.date, 'date', errors)
