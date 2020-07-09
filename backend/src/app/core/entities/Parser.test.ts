@@ -1,5 +1,7 @@
 import { Parser } from './Parser'
 import { EntityErrors } from '../definitions/EntityErrors'
+import { exitCode } from 'process'
+import { exec } from 'child_process'
 
 class ParserImpl extends Parser {
 	parse(text: string): Parser.VerificationInfo[] {
@@ -175,7 +177,7 @@ describe('Parser #cold #entity', () => {
 		]
 
 		const dateTemplate = '2000-{}-15'
-		expect.assertions(12 * 5)
+		expect.assertions(12 * 5 + 1)
 		for (const month of months) {
 			const valid = dateTemplate.replace('{}', month.correct)
 
@@ -193,5 +195,7 @@ describe('Parser #cold #entity', () => {
 				expect(exception.errors).toMatchObject([{ error: EntityErrors.parserDateInputInvalid }])
 			}
 		}
+
+		expect(ParserImpl.testFixDate('20-01-01')).toStrictEqual('2020-01-01')
 	})
 })
