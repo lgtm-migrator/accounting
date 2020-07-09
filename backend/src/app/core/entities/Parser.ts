@@ -72,6 +72,7 @@ export abstract class Parser extends Entity implements Parser.Option {
 			/[Dd]e(cember|c)/,
 		]
 
+		// Fix month
 		for (let i = 0; i < regexs.length; ++i) {
 			const regex = regexs[i]
 			let month = String(i + 1)
@@ -82,6 +83,13 @@ export abstract class Parser extends Entity implements Parser.Option {
 			date = date.replace(regex, month)
 		}
 
+		// Fix year
+		if (/^\d{2}-\d{2}-\d{2}$/.test(date)) {
+			// Append 20 to the start of the year
+			date = '20' + date
+		}
+
+		// Validate
 		if (!date.isValidIsoDate()) {
 			throw OutputError.create(OutputError.Types.invalidInput, EntityErrors.parserDateInputInvalid, date)
 		}
