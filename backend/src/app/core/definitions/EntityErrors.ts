@@ -44,4 +44,6 @@ export enum EntityErrors {
 	parserMatcherReplaceMissing = 'parser-matcher-replace-missing',
 	parserDateInputInvalid = 'parser-date-input-invalid',
 	parserCurrencyCodeInvalid = 'parser-currency-code-invalid',
+	parserMatcherGroupMissing = 'parser-matcher-group-missing',
+	parserLineMatchersOrGenericRequired = 'parser-line-matcher-or-generic-required',
 }
