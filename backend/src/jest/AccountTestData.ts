@@ -12,6 +12,11 @@ export class Accounts {
 		number: 2440,
 	})
 
+	static readonly VISA_ACCOUNT = new Account({
+		userId: 1,
+		number: 2499,
+	})
+
 	static readonly INVOICE_OUT = new Account({
 		userId: 1,
 		number: 1511,
