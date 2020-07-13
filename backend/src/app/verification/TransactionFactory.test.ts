@@ -8,18 +8,22 @@ import { Accounts } from '../../jest/AccountTestData'
 
 describe('TransactionFactory tests #cold #helper', () => {
 	const LOCAL_CODE = Currency.Codes.SEK
+	let option: TransactionFactory.Option
+
+	beforeEach(() => {
+		option = {
+			userId: 1,
+			amount: 10,
+			code: LOCAL_CODE,
+			localCode: undefined,
+			accountFrom: Accounts.BANK_ACCOUNT,
+			accountTo: Accounts.EXPENSE_BANK,
+		}
+	})
 
 	// createTransaction()
 	it('createTransaction() -> Minimal info', async () => {
-		let transactionPromise = TransactionFactory.createTransactions(
-			1,
-			10,
-			LOCAL_CODE,
-			LOCAL_CODE,
-			undefined,
-			Accounts.BANK_ACCOUNT,
-			Accounts.EXPENSE_BANK
-		)
+		let transactionPromise = TransactionFactory.createTransactions(option)
 
 		let validTransactions: any[] = [
 			{
@@ -45,15 +49,8 @@ describe('TransactionFactory tests #cold #helper', () => {
 	})
 
 	it('createTransaction() -> Missing VAT for account', async () => {
-		let transactionPromise = TransactionFactory.createTransactions(
-			1,
-			10,
-			LOCAL_CODE,
-			LOCAL_CODE,
-			undefined,
-			Accounts.BANK_ACCOUNT,
-			Accounts.EXPENSE_LOCAL_MISSING_VAT
-		)
+		option.accountTo = Accounts.EXPENSE_LOCAL_MISSING_VAT
+		let transactionPromise = TransactionFactory.createTransactions(option)
 
 		let error = {
 			type: OutputError.Types.invalidAccount,
@@ -70,15 +67,9 @@ describe('TransactionFactory tests #cold #helper', () => {
 	})
 
 	it('createTransaction() -> Missing exchangeRate', async () => {
-		let transactionPromise = TransactionFactory.createTransactions(
-			1,
-			10,
-			Currency.Codes.USD,
-			LOCAL_CODE,
-			undefined,
-			Accounts.BANK_ACCOUNT,
-			Accounts.EXPENSE_BANK
-		)
+		option.code = Currency.Codes.USD
+		option.localCode = Currency.Codes.SEK
+		let transactionPromise = TransactionFactory.createTransactions(option)
 
 		let error = {
 			type: InternalError.Types.exchangeRateNotSet,
@@ -89,15 +80,8 @@ describe('TransactionFactory tests #cold #helper', () => {
 	})
 
 	it('createTransaction() -> Local expense', async () => {
-		let transactionPromise = TransactionFactory.createTransactions(
-			1,
-			10,
-			LOCAL_CODE,
-			undefined,
-			undefined,
-			Accounts.BANK_ACCOUNT,
-			Accounts.EXPENSE_LOCAL
-		)
+		option.accountTo = Accounts.EXPENSE_LOCAL
+		let transactionPromise = TransactionFactory.createTransactions(option)
 
 		let validTransactions: any[] = [
 			{
@@ -130,15 +114,10 @@ describe('TransactionFactory tests #cold #helper', () => {
 	})
 
 	it('createTransaction() -> Abroad expense (with local code)', async () => {
-		let transactionPromise = TransactionFactory.createTransactions(
-			1,
-			10,
-			LOCAL_CODE,
-			LOCAL_CODE,
-			undefined,
-			Accounts.INVOICE_IN,
-			Accounts.EXPENSE_ABROAD
-		)
+		option.accountFrom = Accounts.INVOICE_IN
+		option.accountTo = Accounts.EXPENSE_ABROAD
+		option.localCode = LOCAL_CODE
+		let transactionPromise = TransactionFactory.createTransactions(option)
 
 		let validTransactions: any[] = [
 			{
@@ -178,17 +157,12 @@ describe('TransactionFactory tests #cold #helper', () => {
 	})
 
 	it('createTransaction() -> Abroad expense (with exchangeRate)', async () => {
-		const code = Currency.Codes.USD
-		const exchangeRate = 10
-		let transactionPromise = TransactionFactory.createTransactions(
-			1,
-			10,
-			code,
-			LOCAL_CODE,
-			exchangeRate,
-			Accounts.INVOICE_IN,
-			Accounts.EXPENSE_ABROAD
-		)
+		option.exchangeRate = 10
+		option.code = Currency.Codes.USD
+		option.localCode = Currency.Codes.SEK
+		option.accountFrom = Accounts.INVOICE_IN
+		option.accountTo = Accounts.EXPENSE_ABROAD
+		let transactionPromise = TransactionFactory.createTransactions(option)
 
 		let validTransactions: any[] = [
 			{
@@ -196,9 +170,9 @@ describe('TransactionFactory tests #cold #helper', () => {
 				currency: {
 					amount: -1000n,
 					localAmount: -10000n,
-					code: code,
+					code: option.code,
 					localCode: LOCAL_CODE,
-					exchangeRate: exchangeRate,
+					exchangeRate: option.exchangeRate,
 				},
 			},
 			{
@@ -206,9 +180,9 @@ describe('TransactionFactory tests #cold #helper', () => {
 				currency: {
 					amount: 1000n,
 					localAmount: 10000n,
-					code: code,
+					code: option.code,
 					localCode: LOCAL_CODE,
-					exchangeRate: exchangeRate,
+					exchangeRate: option.exchangeRate,
 				},
 			},
 			{
@@ -216,9 +190,9 @@ describe('TransactionFactory tests #cold #helper', () => {
 				currency: {
 					amount: 250n,
 					localAmount: 2500n,
-					code: code,
+					code: option.code,
 					localCode: LOCAL_CODE,
-					exchangeRate: exchangeRate,
+					exchangeRate: option.exchangeRate,
 				},
 			},
 			{
@@ -226,9 +200,9 @@ describe('TransactionFactory tests #cold #helper', () => {
 				currency: {
 					amount: -250n,
 					localAmount: -2500n,
-					code: code,
+					code: option.code,
 					localCode: LOCAL_CODE,
-					exchangeRate: exchangeRate,
+					exchangeRate: option.exchangeRate,
 				},
 			},
 		]
@@ -240,15 +214,9 @@ describe('TransactionFactory tests #cold #helper', () => {
 	})
 
 	it('createTransaction() -> Local income', async () => {
-		let transactionPromise = TransactionFactory.createTransactions(
-			1,
-			10,
-			LOCAL_CODE,
-			undefined,
-			undefined,
-			Accounts.INCOME_LOCAL,
-			Accounts.INVOICE_OUT
-		)
+		option.accountFrom = Accounts.INCOME_LOCAL
+		option.accountTo = Accounts.INVOICE_OUT
+		let transactionPromise = TransactionFactory.createTransactions(option)
 
 		let validTransactions: any[] = [
 			{

@@ -9,6 +9,18 @@ import { Id } from '../core/definitions/Id'
 type CurrencyOrUndefined = Currency | undefined
 type TransactionOrUndefined = Transaction | undefined
 
+export namespace TransactionFactory {
+	export interface Option {
+		userId: Id
+		amount: number /** How much was transfered (positive amount will deduct from accountFrom, negative amount will add to accountFrom) */
+		code: Currency.Code /** Currency of the amount */
+		localCode?: Currency.Code /** The local currency */
+		exchangeRate?: number /** exchange rate from code to localCode. If code and localcode is the same this is not used */
+		accountFrom: Account /** -amount from this account */
+		accountTo: Account /** +amount from this account */
+	}
+}
+
 export class TransactionFactory {
 	/**
 	 * Create transactions from the
@@ -24,15 +36,9 @@ export class TransactionFactory {
 	 * @throws {InternalError.Types.exchangeRateNotSet} if exchangeRate isn't set when code and localCode differs
 	 * @throws {OutputError.Types.invalidAccount} if the VAT percentage is missing and VAT account has been set
 	 */
-	static async createTransactions(
-		userId: Id,
-		amount: number,
-		code: Currency.Code,
-		localCode: Currency.Code | undefined,
-		exchangeRate: number | undefined,
-		accountFrom: Account,
-		accountTo: Account
-	): Promise<Transaction[]> {
+	static async createTransactions(option: TransactionFactory.Option): Promise<Transaction[]> {
+		let { userId, amount, code, localCode, exchangeRate, accountFrom, accountTo } = option
+
 		let exchangeRatePromise: Promise<number | undefined> = Promise.resolve(undefined)
 
 		if (localCode !== undefined && code !== localCode && exchangeRate === undefined) {

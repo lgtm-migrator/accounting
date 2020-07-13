@@ -55,15 +55,15 @@ export class VerificationNewInteractor extends Interactor<
 				}
 
 				const exchangeRate = await exchangeRatePromise
-				return TransactionFactory.createTransactions(
-					this.input.userId,
-					this.input.verification.amount,
-					code,
-					localCurrencyCode,
-					exchangeRate,
-					accountFrom,
-					accountTo
-				)
+				return TransactionFactory.createTransactions({
+					userId: this.input.userId,
+					amount: this.input.verification.amount,
+					code: code,
+					localCode: localCurrencyCode,
+					exchangeRate: exchangeRate,
+					accountFrom: accountFrom,
+					accountTo: accountTo,
+				})
 			})
 			.then(async (transactions) => {
 				return this.createVerification(transactions)
@@ -73,6 +73,7 @@ export class VerificationNewInteractor extends Interactor<
 					if (reason.type === InternalError.Types.accountNumberNotFound) {
 						const type = OutputError.Types.invalidInput
 						throw OutputError.create(type, EntityErrors.accountNumberDoesNotExist, String(reason.error))
+						// TODO log error
 					}
 				}
 
