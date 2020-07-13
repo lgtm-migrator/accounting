@@ -24,7 +24,7 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
 	 * Create a valid verification for the specified input
 	 * @param input
 	 * @return {Promise.<VerificationNewCustomTransactionOutput>}
-	 * @throws {OutputError} when the input data is invalid. See the errors for what was invalid
+	 * @throws {OutputError.Types.invalidInput} when the input data is invalid. See the errors for what was invalid
 	 */
 	async execute(input: VerificationNewCustomTransactionInput): Promise<VerificationNewCustomTransactionOutput> {
 		this.input = input
