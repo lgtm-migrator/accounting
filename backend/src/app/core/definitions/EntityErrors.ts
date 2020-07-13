@@ -38,6 +38,7 @@ export enum EntityErrors {
 	transactionsMissing = 'transactions-missing',
 	transactionsCurrencyCodeLocalMismatch = 'transactions-currency-code-local-mismatch',
 	parserPatternNotFound = 'parser-pattern-not-found',
+	parserNotFound = 'parser-not-found',
 	parserMatcherInvalid = 'parser-matcher-invalid',
 	parserMatcherFindMissing = 'parser-matcher-find-missing',
 	parserMatcherReplacementMissing = 'parser-matcher-replacement-missing',
