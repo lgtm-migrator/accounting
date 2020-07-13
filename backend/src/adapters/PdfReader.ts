@@ -9,7 +9,7 @@ export class PdfReader implements FileReader {
 		try {
 			dataBuffer = readFileSync(file)
 		} catch (error) {
-			throw new InternalError(InternalError.Types.fileDoesNotExist, error)
+			throw new InternalError(InternalError.Types.fileNotFound, file)
 		}
 
 		return pdfParse(dataBuffer)
@@ -17,7 +17,7 @@ export class PdfReader implements FileReader {
 				return Promise.resolve(data.text)
 			})
 			.catch((error) => {
-				throw new InternalError(InternalError.Types.errorReadingFile, error)
+				throw new InternalError(InternalError.Types.readingFile, error)
 			})
 	}
 }

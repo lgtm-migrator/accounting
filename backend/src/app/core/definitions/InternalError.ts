@@ -23,8 +23,8 @@ export namespace InternalError {
 		tooFewElements = 'too-few-elements',
 		exchangeRateNotSet = 'exchange-rate-not-set',
 		notImplemented = 'not-implemented',
-		errorReadingFile = 'error-reading-file',
-		fileDoesNotExist = 'file-does-not-exist',
+		readingFile = 'reading-file',
+		fileNotFound = 'file-not-found',
 		unknown = 'internal-error',
 	}
 }

@@ -8,7 +8,7 @@ export class TxtReader implements FileReader {
 			const data = readFileSync(file, 'utf8')
 			return data
 		} catch (error) {
-			throw new InternalError(InternalError.Types.fileDoesNotExist, error)
+			throw new InternalError(InternalError.Types.fileNotFound, error)
 		}
 	}
 }

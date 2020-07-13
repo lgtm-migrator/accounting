@@ -20,7 +20,7 @@ describe('PdfReader #cold #adapter', () => {
 	it('File does not exist', async () => {
 		const promise = reader.read('FILE_DOES_NOT_EXIST.pdf')
 		const error = {
-			type: InternalError.Types.fileDoesNotExist,
+			type: InternalError.Types.fileNotFound,
 		}
 
 		expect.assertions(1)
