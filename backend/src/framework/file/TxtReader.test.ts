@@ -1,6 +1,5 @@
 import { TxtReader } from './TxtReader'
-import { exitCode, execPath } from 'process'
-import { InternalError } from '../app/core/definitions/InternalError'
+import { InternalError } from '../../app/core/definitions/InternalError'
 
 describe('TxtReader #cold #adapter', () => {
 	const GOOGLE_INVOICE_FILE = 'src/jest/test-files/Google-invoice.txt'

@@ -1,5 +1,5 @@
 import { PdfReader } from './PdfReader'
-import { InternalError } from '../app/core/definitions/InternalError'
+import { InternalError } from '../../app/core/definitions/InternalError'
 
 describe('PdfReader #cold #adapter', () => {
 	const DUMMY_FILE = 'src/jest/test-files/dummy.pdf'

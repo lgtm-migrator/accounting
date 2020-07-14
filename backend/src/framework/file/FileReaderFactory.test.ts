@@ -1,7 +1,7 @@
 import { FileReader } from './FileReader'
 import { FileReaderFactory } from './FileReaderFactory'
 import { PdfReader } from './PdfReader'
-import { InternalError } from '../app/core/definitions/InternalError'
+import { InternalError } from '../../app/core/definitions/InternalError'
 import { TxtReader } from './TxtReader'
 
 describe('FileReaderFactory #cold #adapter', () => {

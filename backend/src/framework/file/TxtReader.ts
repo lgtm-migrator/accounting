@@ -1,6 +1,6 @@
 import { FileReader } from './FileReader'
 import { readFileSync } from 'fs'
-import { InternalError } from '../app/core/definitions/InternalError'
+import { InternalError } from '../../app/core/definitions/InternalError'
 
 export class TxtReader implements FileReader {
 	async read(file: string): Promise<string> {

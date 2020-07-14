@@ -1,6 +1,6 @@
 import { FileReader } from './FileReader'
 import { PdfReader } from './PdfReader'
-import { InternalError } from '../app/core/definitions/InternalError'
+import { InternalError } from '../../app/core/definitions/InternalError'
 import { TxtReader } from './TxtReader'
 
 export class FileReaderFactory {

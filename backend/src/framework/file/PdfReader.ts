@@ -1,7 +1,7 @@
 import { FileReader } from './FileReader'
 import pdfParse from 'pdf-parse'
 import { readFileSync } from 'fs'
-import { InternalError } from '../app/core/definitions/InternalError'
+import { InternalError } from '../../app/core/definitions/InternalError'
 
 export class PdfReader implements FileReader {
 	async read(file: string): Promise<string> {
