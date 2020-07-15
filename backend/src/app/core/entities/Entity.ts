@@ -43,6 +43,22 @@ export class Entity implements Entity.Option {
 	}
 
 	/**
+	 * Update modified date
+	 */
+	updateModified() {
+		this.dateModified = new Date().getTime()
+	}
+
+	/**
+	 * Set as deleted (and updates modified)
+	 */
+	setAsDeleted() {
+		const time = new Date().getTime()
+		this.dateModified = time
+		this.dateDeleted = time
+	}
+
+	/**
 	 * Validate the entity so it has correct values
 	 * @return all error, or empty list if the entity is valid
 	 */
