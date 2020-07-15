@@ -8,7 +8,8 @@
 		"dev": "nodemon src/index.ts",
 		"build": "tsc -p .",
 		"test": "npx jest",
-		"coverage": "jest --coverage --silent"
+		"coverage": "jest --coverage --silent",
+		"clear-jest": "jest --clearCache"
 	},
 	"author": "Matteus Magnusson <matteus.magnusson@gmail.com>",
 	"license": "MIT",
