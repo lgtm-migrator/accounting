@@ -10,7 +10,6 @@ function fakerValidDate(): number {
 
 function fakerTransaction(): Transaction.Option {
 	return {
-		userId: faker.random.number(),
 		accountNumber: faker.random.number({ min: 1000, max: 2000 }),
 		currency: new Currency({
 			amount: BigInt(faker.random.number({ min: 1, max: 10000000 })),
@@ -21,10 +20,21 @@ function fakerTransaction(): Transaction.Option {
 
 function fakerValidTransactionPair(): Transaction.Option[] {
 	const transaction = fakerTransaction()
+
+	let localAmount: undefined | bigint
+	if (transaction.currency.localAmount) {
+		localAmount = -transaction.currency.localAmount
+	}
+
 	const opposite: Transaction.Option = {
-		userId: transaction.userId,
 		accountNumber: faker.random.number({ min: 3000, max: 4000 }),
-		currency: transaction.currency.negate(),
+		currency: {
+			amount: -transaction.currency.amount,
+			localAmount: localAmount,
+			code: transaction.currency.code,
+			localCode: transaction.currency.localCode,
+			exchangeRate: transaction.currency.exchangeRate,
+		},
 	}
 
 	return [transaction, opposite]
@@ -157,7 +167,6 @@ describe('Verification test #cold #entity', () => {
 	it('Transaction sum is not zero', () => {
 		verification.transactions.push(
 			new Transaction({
-				userId: faker.random.number(),
 				accountNumber: 2666,
 				currency: new Currency({
 					amount: 1n,
@@ -178,7 +187,6 @@ describe('Verification test #cold #entity', () => {
 	// Mismatch local code for transactions
 	it('Transaction local code mismatch', () => {
 		const firstTransaction = new Transaction({
-			userId: faker.random.number(),
 			accountNumber: 3000,
 			currency: new Currency({
 				amount: 10n,
@@ -190,7 +198,6 @@ describe('Verification test #cold #entity', () => {
 		verification.transactions = [
 			firstTransaction,
 			new Transaction({
-				userId: faker.random.number(),
 				accountNumber: 6000,
 				currency: new Currency({
 					amount: -1n,
@@ -200,7 +207,6 @@ describe('Verification test #cold #entity', () => {
 				}),
 			}),
 			new Transaction({
-				userId: faker.random.number(),
 				accountNumber: 5000,
 				currency: new Currency({
 					amount: 50n,

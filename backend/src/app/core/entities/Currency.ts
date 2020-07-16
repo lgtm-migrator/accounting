@@ -1,12 +1,11 @@
 import { InternalError } from '../definitions/InternalError'
 import { EntityErrors } from '../definitions/EntityErrors'
-import { isUndefined } from 'util'
 
 /**
  * Holds the currency amount, code, and also an optional exchange rate with a local code.
  * If no local code is initialized it
  */
-export class Currency {
+export class Currency implements Currency.Option {
 	readonly amount: bigint
 	readonly code!: Currency.Code
 	readonly localAmount?: bigint
@@ -888,7 +887,8 @@ export namespace Currency {
 		/**
 		 * Convert a string currency code into an {Code} object
 		 * @param code currency code to convert to a Code if it exists (case-insensitive)
-		 * @return the Correct {Code} object if found or undefined if not found
+		 * @return the Correct {Code} object if found
+		 * @throws {InternalError.Types.currencyCodeNotFound} if the currency code wasn't found
 		 */
 		static fromString(code: string): Code | undefined {
 			const values = Object.values(Codes)

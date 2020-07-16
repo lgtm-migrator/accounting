@@ -19,8 +19,8 @@ function fakerValidAmount(): bigint {
 	return number
 }
 
-function fakerValidCurrencyAmount(): Currency {
-	return new Currency({ amount: fakerValidAmount(), code: fakerValidCurrencyCode() })
+function fakerValidCurrencyAmount(): Currency.Option {
+	return { amount: fakerValidAmount(), code: fakerValidCurrencyCode() }
 }
 
 function fakerValidCurrencyCode(): string {
@@ -37,7 +37,6 @@ describe('Validate a transaction #cold #entity', () => {
 
 	beforeEach(() => {
 		const data: Transaction.Option = {
-			userId: 1,
 			accountNumber: fakerValidAccountNumber(),
 			currency: fakerValidCurrencyAmount(),
 		}
@@ -79,7 +78,7 @@ describe('Validate a transaction #cold #entity', () => {
 	// Currency
 	it('Valid amount for the currency', () => {
 		for (let i = 0; i < TEST_TIMES; ++i) {
-			transaction.currency = fakerValidCurrencyAmount()
+			transaction.currency = new Currency(fakerValidCurrencyAmount())
 			if (!transaction.currency.isZero()) {
 				expect(transaction.validate()).toStrictEqual([])
 			}

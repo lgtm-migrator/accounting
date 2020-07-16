@@ -8,7 +8,7 @@ import { Account } from './Account'
 export namespace Transaction {
 	export interface Option extends Entity.Option {
 		accountNumber: number
-		currency: Currency
+		currency: Currency.Option
 	}
 }
 
@@ -21,7 +21,12 @@ export class Transaction extends Entity implements Transaction.Option {
 	constructor(data: Transaction.Option) {
 		super(data)
 		this.accountNumber = data.accountNumber
-		this.currency = data.currency
+
+		if (data.currency instanceof Currency) {
+			this.currency = data.currency
+		} else {
+			this.currency = new Currency(data.currency)
+		}
 	}
 
 	/**

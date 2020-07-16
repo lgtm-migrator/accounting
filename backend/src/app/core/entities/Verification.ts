@@ -16,7 +16,7 @@ export namespace Verification {
 		dateFiled?: number
 		type: Types
 		description?: string
-		totalAmount?: Currency
+		totalAmount?: Currency.Option
 		files?: string[]
 		invoiceId?: Id
 		paymentId?: Id
@@ -62,14 +62,24 @@ export class Verification extends UserEntity implements Verification.Option {
 
 		// Deep copy transactions
 		for (let transaction of data.transactions) {
-			this.transactions.push(new Transaction(transaction))
+			let transactionInstance: Transaction
+			if (transaction instanceof Transaction) {
+				transactionInstance = transaction
+			} else {
+				transactionInstance = new Transaction(transaction)
+			}
+			this.transactions.push(transactionInstance)
 		}
 
 		// Calculate total amount
 		if (typeof data.totalAmount === 'undefined') {
 			this.totalAmount = this.getLargestAmount()
 		} else {
-			this.totalAmount = data.totalAmount
+			if (data.totalAmount instanceof Currency) {
+				this.totalAmount = data.totalAmount
+			} else {
+				this.totalAmount = new Currency(data.totalAmount)
+			}
 		}
 	}
 
