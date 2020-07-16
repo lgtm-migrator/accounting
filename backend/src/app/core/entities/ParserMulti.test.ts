@@ -6,6 +6,7 @@ import { Currency } from './Currency'
 import * as faker from 'faker'
 import { Consts } from '../definitions/Consts'
 import { EntityErrors } from '../definitions/EntityErrors'
+import { OutputError } from '../definitions/OutputError'
 
 const TAX_FILE = 'src/jest/test-files/Skattekonto.txt'
 
@@ -15,7 +16,7 @@ function fakerParserOption(): ParserMulti.Option {
 		name: faker.finance.accountName(),
 		identifier: /this/,
 		accountFrom: faker.random.number({ min: Consts.ACCOUNT_NUMBER_START, max: Consts.ACCOUNT_NUMBER_END }),
-		currencyCodeDefault: Currency.Codes.SEK,
+		currencyCodeDefault: 'SEK',
 		matcher: /(?<date>\d{4}-\d{2}-\d{2}); (?<name>.*?); (?<amount>-?\d*?\s?\d*)(; (?<currency>\w{3});|;)/g,
 		lineMatchers: [fakerLineMatcher(/line/)],
 	}
@@ -36,7 +37,7 @@ describe('Parser Multi #cold #entity', () => {
 		name: 'Skattekonto',
 		identifier: /Omfattar transaktionstyp/,
 		accountFrom: 1630,
-		currencyCodeDefault: Currency.Codes.SEK,
+		currencyCodeDefault: 'SEK',
 		matcher: /(?<year>\d{2})(?<month>\d{2})(?<day>\d{2})\s+(?<name>.*?)\s{4}\s+(?<amount>-?\d*?\s?\d*)\s{4}/g,
 		lineMatchers: [
 			{
@@ -107,7 +108,7 @@ describe('Parser Multi #cold #entity', () => {
 	// Default currency codes
 	it('Default currency codes', () => {
 		let lineMatcher = fakerLineMatcher(/Line/)
-		lineMatcher.currencyCodeDefault = Currency.Codes.USD
+		lineMatcher.currencyCodeDefault = 'USD'
 		parser.lineMatchers = [lineMatcher, fakerLineMatcher(/Parser/)]
 
 		const text =
@@ -476,5 +477,21 @@ describe('Parser Multi #cold #entity', () => {
 				data: `${lineInfo.accountTo}`,
 			},
 		])
+	})
+
+	it('Test for invalid currency code', () => {
+		const text =
+			'2020-01-0; line shit; 1;\n' + // Invalid date
+			'2020-01-02; line; face; XTU\n' + // Invalid amount and currency
+			'2020-01-03; line; 3; XTT;' + // Invalid currency
+			'2020-01-04; line; 4; XTS;' // valid
+
+		expect.assertions(2)
+		try {
+			parser.parse(text)
+		} catch (exception) {
+			expect(exception).toBeInstanceOf(OutputError)
+			expect(exception.errors).toStrictEqual([{ error: EntityErrors.currencyCodeInvalid, data: 'XTT' }])
+		}
 	})
 })

@@ -5,10 +5,11 @@ import { Currency } from './Currency'
 import { OutputError } from '../definitions/OutputError'
 import { Consts } from '../definitions/Consts'
 import { Account } from './Account'
+import { InternalError } from '../definitions/InternalError'
 
 interface MatcherResult {
 	date: string
-	currencyCode?: Currency.Code
+	currencyCode?: string
 	amount: number
 	name: string
 }
@@ -22,7 +23,7 @@ export namespace ParserMulti {
 	export interface Option extends Parser.Option {
 		matcher: RegExp
 		lineMatchers: ParserMulti.LineInfo[]
-		currencyCodeDefault: Currency.Code
+		currencyCodeDefault: string
 		accountFrom: number
 		generic?: ParserMulti.LineInfo
 	}
@@ -30,7 +31,7 @@ export namespace ParserMulti {
 	export interface LineInfo {
 		identifier: RegExp
 		nameReplacement?: string
-		currencyCodeDefault?: Currency.Code
+		currencyCodeDefault?: string
 		internalName: string
 		type: Verification.Types
 		accountTo: number
@@ -40,7 +41,7 @@ export namespace ParserMulti {
 export class ParserMulti extends Parser implements ParserMulti.Option {
 	matcher: RegExp
 	lineMatchers: ParserMulti.LineInfo[]
-	currencyCodeDefault: Currency.Code
+	currencyCodeDefault: string
 	accountFrom: number
 	generic?: ParserMulti.LineInfo
 
@@ -49,8 +50,8 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 
 		this.matcher = data.matcher
 		this.lineMatchers = data.lineMatchers
-		this.generic = data.generic
 		this.currencyCodeDefault = data.currencyCodeDefault
+		this.generic = data.generic
 		this.accountFrom = data.accountFrom
 
 		// TODO Make sure matcher has the 'g' flag set to match multiple occurrences
@@ -70,6 +71,15 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 		// Needs line matchers or a generic
 		if (!this.generic && this.lineMatchers.length == 0) {
 			errors.push({ error: EntityErrors.parserLineMatchersOrGenericRequired })
+		}
+
+		// Default currency code
+		const foundCode = Currency.Codes.fromString(this.currencyCodeDefault)
+		if (!foundCode) {
+			errors.push({
+				error: EntityErrors.currencyCodeInvalid,
+				data: this.currencyCodeDefault,
+			})
 		}
 
 		// Account From
@@ -133,6 +143,17 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 			})
 		}
 
+		// Currency code
+		if (line.currencyCodeDefault) {
+			const foundCode = Currency.Codes.fromString(line.currencyCodeDefault)
+			if (!foundCode) {
+				errors.push({
+					error: EntityErrors.currencyCodeInvalid,
+					data: line.currencyCodeDefault,
+				})
+			}
+		}
+
 		// Account number
 		Account.validateNumber(line.accountTo, errors)
 	}
@@ -175,10 +196,22 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 		// Populate verification info
 		const verifications: Parser.VerificationInfo[] = []
 		for (const allInfo of completeInfos) {
-			const verification = this.createVerificationInfo(allInfo)
-			if (verification) {
-				verifications.push(verification)
+			try {
+				const verification = this.createVerificationInfo(allInfo)
+				if (verification) {
+					verifications.push(verification)
+				}
+			} catch (exception) {
+				if (exception instanceof OutputError) {
+					errors.push(...exception.errors)
+				} else {
+					throw exception
+				}
 			}
+		}
+
+		if (errors.length > 0) {
+			throw new OutputError(OutputError.Types.invalidInput, errors)
 		}
 
 		return verifications
@@ -204,6 +237,12 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 			}
 		}
 
+		// Get the currency code object
+		const foundCode = Currency.Codes.fromString(code)
+		if (!foundCode) {
+			throw OutputError.create(OutputError.Types.invalidInput, EntityErrors.currencyCodeInvalid, code)
+		}
+
 		// Negating amount since a positive amount would mean we take from the 'accountFrom'
 		// But it's reversed. A positive amount means that amount was added to the account.
 		const verification: Parser.VerificationInfo = {
@@ -213,7 +252,7 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 			accountFrom: this.accountFrom,
 			accountTo: completeInfo.info.accountTo,
 			amount: -completeInfo.result.amount,
-			code: code,
+			code: foundCode,
 			name: name,
 		}
 
@@ -257,16 +296,6 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 			}
 		}
 
-		// Currency
-		let currencyCode: Currency.Code | undefined
-		if (currency) {
-			currencyCode = Currency.Codes.fromString(currency)
-
-			if (!currencyCode) {
-				errors.push({ error: EntityErrors.currencyCodeInvalid, data: currency })
-			}
-		}
-
 		if (errors.length > 0) {
 			return errors
 		}
@@ -275,7 +304,7 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 			date: date,
 			name: name,
 			amount: fixedAmount,
-			currencyCode: currencyCode,
+			currencyCode: currency,
 		}
 
 		return result

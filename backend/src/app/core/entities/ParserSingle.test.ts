@@ -5,6 +5,7 @@ import { Currency } from './Currency'
 import { OutputError } from '../definitions/OutputError'
 import { EntityErrors } from '../definitions/EntityErrors'
 import { Parser } from './Parser'
+import * as faker from 'faker'
 
 const GOOGLE_INVOICE_FILE = 'src/jest/test-files/google-invoice.txt'
 
@@ -111,6 +112,119 @@ describe('ParserSingle #cold #entity', () => {
 				expect(exception.errors).toContainEqual(expect.objectContaining(error))
 			}
 			expect(exception.errors.length).toStrictEqual(errors.length)
+		}
+	})
+
+	// Parsing text
+	it('Invalid currency code in parsed text', () => {
+		expect.assertions(13)
+
+		const parser = new ParserSingle({
+			userId: 1,
+			name: faker.commerce.productName(),
+			identifier: /the name/,
+			verification: {
+				name: faker.commerce.productMaterial(),
+				internalName: faker.commerce.product(),
+				type: Verification.Types.INVOICE_IN,
+				accountFrom: 1000,
+				accountTo: 2000,
+			},
+			matcher: {
+				date: {
+					find: /(?<=Date: )\d{4}-\d{2}-\d{2}(?=;)/,
+				},
+				currencyCode: {
+					find: /(?<=Code: )\w{3}(?=;)/,
+				},
+				amount: {
+					find: /(?<=Amount: )\d+(?=;)/,
+				},
+			},
+		})
+
+		let text = 'Date: 2020-01-01; Code: SEK; Amount: 123;'
+		expect(parser.parse(text)).toBeInstanceOf(Array)
+
+		// Not found date
+		try {
+			text = 'Date: 2020-01-1; Code: SEK; Amount: 123;'
+			parser.parse(text)
+		} catch (exception) {
+			expect(exception.type).toStrictEqual(OutputError.Types.invalidInput)
+			expect(exception.errors).toStrictEqual([
+				{
+					error: EntityErrors.parserPatternNotFound,
+					data: String(parser.matcher.date.find),
+				},
+			])
+		}
+
+		// Not found amount
+		try {
+			text = 'Date: 2020-01-01; Code: SEK; Amount: 15Euu;'
+			parser.parse(text)
+		} catch (exception) {
+			expect(exception.type).toStrictEqual(OutputError.Types.invalidInput)
+			expect(exception.errors).toStrictEqual([
+				{
+					error: EntityErrors.parserPatternNotFound,
+					data: String(parser.matcher.amount.find),
+				},
+			])
+		}
+
+		// Not found currency code
+		try {
+			text = 'Date: 2020-01-01; Code: XTTe; Amount: 123;'
+			parser.parse(text)
+		} catch (exception) {
+			expect(exception.type).toStrictEqual(OutputError.Types.invalidInput)
+			expect(exception.errors).toStrictEqual([
+				{
+					error: EntityErrors.parserPatternNotFound,
+					data: String(parser.matcher.currencyCode.find),
+				},
+			])
+		}
+
+		// Not found all
+		try {
+			text = 'Date: 2020-01-0; Code: XTTe; Amount: ..;'
+			parser.parse(text)
+		} catch (exception) {
+			expect(exception.type).toStrictEqual(OutputError.Types.invalidInput)
+			const validErrors = [
+				{
+					error: EntityErrors.parserPatternNotFound,
+					data: String(parser.matcher.date.find),
+				},
+				{
+					error: EntityErrors.parserPatternNotFound,
+					data: String(parser.matcher.amount.find),
+				},
+				{
+					error: EntityErrors.parserPatternNotFound,
+					data: String(parser.matcher.currencyCode.find),
+				},
+			]
+			for (const validError of validErrors) {
+				expect(exception.errors).toContainEqual(expect.objectContaining(validError))
+			}
+		}
+
+		// Currency code invalid
+		try {
+			text = 'Date: 2020-01-01; Code: XTT; Amount: 123;'
+			parser.parse(text)
+		} catch (exception) {
+			expect(exception.type).toStrictEqual(OutputError.Types.invalidInput)
+			expect(exception.errors).toStrictEqual([
+				{
+					error: EntityErrors.parserCurrencyCodeInvalid,
+					data: 'XTT',
+				},
+			])
 		}
 	})
 
