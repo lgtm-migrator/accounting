@@ -23,7 +23,6 @@ function validFromInput(input: VerificationNewInput): Verification.Option {
 		type: Verification.Types.fromString(input.verification.type),
 		transactions: [
 			{
-				userId: 1,
 				accountNumber: Accounts.BANK_ACCOUNT.number,
 				currency: new Currency({
 					amount: -input.verification.amount,
@@ -31,7 +30,6 @@ function validFromInput(input: VerificationNewInput): Verification.Option {
 				}),
 			},
 			{
-				userId: 1,
 				accountNumber: Accounts.EXPENSE_BANK.number,
 				currency: new Currency({
 					amount: input.verification.amount,
@@ -128,7 +126,6 @@ describe('New Verification #cold #use-case', () => {
 		const valid = validFromInput(input)
 		valid.transactions = [
 			{
-				userId: 1,
 				accountNumber: Accounts.INVOICE_IN.number,
 				currency: new Currency({
 					amount: -1000n,
@@ -139,7 +136,6 @@ describe('New Verification #cold #use-case', () => {
 				}),
 			},
 			{
-				userId: 1,
 				accountNumber: Accounts.EXPENSE_ABROAD.number,
 				currency: new Currency({
 					amount: 1000n,
@@ -150,7 +146,6 @@ describe('New Verification #cold #use-case', () => {
 				}),
 			},
 			{
-				userId: 1,
 				accountNumber: Accounts.VAT_ABROAD_IN.number,
 				currency: new Currency({
 					amount: 250n,
@@ -161,7 +156,6 @@ describe('New Verification #cold #use-case', () => {
 				}),
 			},
 			{
-				userId: 1,
 				accountNumber: Accounts.VAT_ABROAD_OUT.number,
 				currency: new Currency({
 					amount: -250n,

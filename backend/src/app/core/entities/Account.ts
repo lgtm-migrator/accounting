@@ -1,10 +1,10 @@
-import { Entity } from './Entity'
 import { OutputError } from '../definitions/OutputError'
 import { Consts } from '../definitions/Consts'
 import { EntityErrors } from '../definitions/EntityErrors'
+import { UserEntity } from './UserEntity'
 
 export namespace Account {
-	export interface Option extends Entity.Option {
+	export interface Option extends UserEntity.Option {
 		number: number
 		vatCode?: number
 		vatPercentage?: number
@@ -13,7 +13,7 @@ export namespace Account {
 	}
 }
 
-export class Account extends Entity implements Account.Option {
+export class Account extends UserEntity implements Account.Option {
 	number: number
 	vatCode?: number
 	vatPercentage?: number

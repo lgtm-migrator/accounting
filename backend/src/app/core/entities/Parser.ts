@@ -1,12 +1,12 @@
-import { Entity } from './Entity'
 import { Currency } from './Currency'
 import { Verification } from './Verification'
 import { EntityErrors } from '../definitions/EntityErrors'
 import { Consts } from '../definitions/Consts'
 import '../definitions/String'
 import { OutputError } from '../definitions/OutputError'
+import { UserEntity } from './UserEntity'
 
-export abstract class Parser extends Entity implements Parser.Option {
+export abstract class Parser extends UserEntity implements Parser.Option {
 	name: string
 	type: Parser.Types
 	identifier: RegExp
@@ -157,7 +157,7 @@ export namespace Parser {
 		multi = 'multi',
 	}
 
-	export interface Option extends Entity.Option {
+	export interface Option extends UserEntity.Option {
 		name: string
 		identifier: RegExp
 	}

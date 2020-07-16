@@ -16,14 +16,11 @@ describe('Validate entity #cold #entity', () => {
 	let entity: Entity
 
 	beforeEach(() => {
-		entity = new Entity({
-			userId: faker.random.number(),
-		})
+		entity = new Entity({})
 	})
 
 	it('All fields set', () => {
 		const data: Entity.Option = {
-			userId: 1,
 			id: 2,
 			dateCreated: 123,
 			dateDeleted: 1234,
@@ -52,22 +49,6 @@ describe('Validate entity #cold #entity', () => {
 	it('Id is of type string and invalid (empty)', () => {
 		entity.id = ''
 		expect(entity.validate()).toStrictEqual([{ error: EntityErrors.idIsEmpty }])
-	})
-
-	// User ID
-	it('User id is of type number and valid', () => {
-		entity.userId = faker.random.number()
-		expect(entity.validate()).toStrictEqual([])
-	})
-
-	it('User id is of type string and valid', () => {
-		entity.userId = faker.random.uuid()
-		expect(entity.validate()).toStrictEqual([])
-	})
-
-	it('User id is of type string and invalid (empty)', () => {
-		entity.userId = ''
-		expect(entity.validate()).toStrictEqual([{ error: EntityErrors.userIdIsEmpty }])
 	})
 
 	// date_created

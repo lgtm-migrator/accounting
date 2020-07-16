@@ -1,4 +1,3 @@
-import { Entity } from './Entity'
 import { Transaction } from './Transaction'
 import { Id } from '../definitions/Id'
 import { EntityErrors } from '../definitions/EntityErrors'
@@ -6,9 +5,10 @@ import { Currency } from './Currency'
 import { Consts } from '../definitions/Consts'
 import '../definitions/String'
 import { OutputError } from '../definitions/OutputError'
+import { UserEntity } from './UserEntity'
 
 export namespace Verification {
-	export interface Option extends Entity.Option {
+	export interface Option extends UserEntity.Option {
 		name: string
 		internalName?: string
 		number?: number
@@ -25,7 +25,7 @@ export namespace Verification {
 	}
 }
 
-export class Verification extends Entity implements Verification.Option {
+export class Verification extends UserEntity implements Verification.Option {
 	name: string
 	internalName?: string
 	number?: number
