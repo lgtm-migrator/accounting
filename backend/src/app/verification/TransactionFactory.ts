@@ -144,7 +144,6 @@ export class TransactionFactory {
 		}
 
 		let transaction = new Transaction({
-			userId: userId,
 			accountNumber: account.number,
 			currency: currency,
 		})
@@ -152,7 +151,6 @@ export class TransactionFactory {
 		let vatTransaction: TransactionOrUndefined
 		if (vatCurrency && vatAccount) {
 			vatTransaction = new Transaction({
-				userId: userId,
 				accountNumber: vatAccount.number,
 				currency: vatCurrency,
 			})
@@ -161,7 +159,6 @@ export class TransactionFactory {
 		let reverseVatTransaction: TransactionOrUndefined
 		if (reverseVatCurrency && reverseVatAccount) {
 			reverseVatTransaction = new Transaction({
-				userId: userId,
 				accountNumber: reverseVatAccount.number,
 				currency: reverseVatCurrency,
 			})

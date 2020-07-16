@@ -83,7 +83,6 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
 			}
 
 			let transactionData: Transaction.Option = {
-				userId: this.input.userId,
 				accountNumber: transactionInputData.accountNumber,
 				currency: new Currency({
 					amount: transactionInputData.amount,
