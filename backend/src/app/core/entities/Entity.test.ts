@@ -4,11 +4,11 @@ import { EntityErrors } from '../definitions/EntityErrors'
 
 const TEST_TIMES = 1000
 
-function faker_get_time_too_early(): number {
+function fakerTimeTooEarly(): number {
 	return faker.date.between('1900-01-01', '1999-12-31').getTime()
 }
 
-function faker_get_valid_time(): number {
+function fakerTime(): number {
 	return faker.date.between('2000-01-01', new Date()).getTime()
 }
 
@@ -54,7 +54,7 @@ describe('Validate entity #cold #entity', () => {
 	// date_created
 	it('Date created too early', () => {
 		for (let i = 0; i < TEST_TIMES; ++i) {
-			entity.dateCreated = faker_get_time_too_early()
+			entity.dateCreated = fakerTimeTooEarly()
 			expect(entity.validate()).toMatchObject([{ error: EntityErrors.dateCreatedTooEarly }])
 		}
 	})
@@ -71,7 +71,7 @@ describe('Validate entity #cold #entity', () => {
 
 	it('Date created is valid', () => {
 		for (let i = 0; i < TEST_TIMES; ++i) {
-			entity.dateCreated = faker_get_valid_time()
+			entity.dateCreated = fakerTime()
 			expect(entity.validate()).toStrictEqual([])
 		}
 	})
@@ -84,7 +84,7 @@ describe('Validate entity #cold #entity', () => {
 
 	// date_modified
 	it('Date modified in the future', () => {
-		entity.dateCreated = faker_get_valid_time()
+		entity.dateCreated = fakerTime()
 		for (let i = 0; i < TEST_TIMES; ++i) {
 			entity.dateModified = faker.date.future().getTime()
 			expect(entity.validate()).toMatchObject([{ error: EntityErrors.dateModifiedInTheFuture }])
@@ -100,7 +100,7 @@ describe('Validate entity #cold #entity', () => {
 	})
 
 	it('Date modified is valid when same as the creation date', () => {
-		entity.dateCreated = faker_get_valid_time()
+		entity.dateCreated = fakerTime()
 		entity.dateModified = entity.dateCreated
 		expect(entity.validate()).toStrictEqual([])
 	})

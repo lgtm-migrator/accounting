@@ -140,10 +140,12 @@ export class Verification extends UserEntity implements Verification.Option {
 		if (this.transactions.length > 0) {
 			let found = false
 			for (let transaction of this.transactions) {
-				if (this.totalAmount.isComparableTo(transaction.currency)) {
-					if (this.totalAmount.isEqualTo(transaction.currency)) {
-						found = true
-						break
+				if (!transaction.isDeleted()) {
+					if (this.totalAmount.isComparableTo(transaction.currency)) {
+						if (this.totalAmount.isEqualTo(transaction.currency)) {
+							found = true
+							break
+						}
 					}
 				}
 			}
@@ -189,16 +191,18 @@ export class Verification extends UserEntity implements Verification.Option {
 		// Make sure all transaction amounts add up to 0 (locally)
 		let sum = 0n
 		for (let transaction of this.transactions) {
-			const localAmount = transaction.getLocalAmount()
+			if (!transaction.isDeleted()) {
+				const localAmount = transaction.getLocalAmount()
 
-			// Local code doesn't match
-			if (localAmount.code != localCurrencyCode) {
-				const data = `${localAmount.code.name} != ${localCurrencyCode.name}`
-				errors.push({ error: EntityErrors.transactionsCurrencyCodeLocalMismatch, data: data })
-				return
+				// Local code doesn't match
+				if (localAmount.code != localCurrencyCode) {
+					const data = `${localAmount.code.name} != ${localCurrencyCode.name}`
+					errors.push({ error: EntityErrors.transactionsCurrencyCodeLocalMismatch, data: data })
+					return
+				}
+
+				sum += localAmount.amount
 			}
-
-			sum += localAmount.amount
 		}
 
 		if (sum != 0n) {

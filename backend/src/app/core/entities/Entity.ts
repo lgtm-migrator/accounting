@@ -56,6 +56,13 @@ export class Entity implements Entity.Option {
 	}
 
 	/**
+	 * @return true if this entity has been set as deleted
+	 */
+	isDeleted(): boolean {
+		return this.dateDeleted !== undefined
+	}
+
+	/**
 	 * Validate the entity so it has correct values
 	 * @return all error, or empty list if the entity is valid
 	 */

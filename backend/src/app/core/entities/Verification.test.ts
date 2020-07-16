@@ -3,6 +3,7 @@ import { Verification } from './Verification'
 import { Transaction } from './Transaction'
 import { EntityErrors } from '../definitions/EntityErrors'
 import { Currency } from './Currency'
+import { date } from 'faker'
 
 function fakerValidDate(): number {
 	return faker.date.between('2010-01-01', '2020-01-01').getTime()
@@ -155,6 +156,32 @@ describe('Verification test #cold #entity', () => {
 		])
 	})
 
+	it('Total original amount does not exist in any non-deleted transaction', () => {
+		const currency = verification.transactions[0].currency
+		const dateDeleted = verification.transactions[0].dateModified
+		verification.transactions.push(...verification.transactions)
+		verification.transactions[2].currency = new Currency({
+			amount: 1337n,
+			code: currency.code,
+		})
+		verification.transactions[3].currency = new Currency({
+			amount: -1337n,
+			code: currency.code,
+		})
+		// Valid
+		verification.totalAmount = verification.transactions[0].currency
+		expect(verification.validate()).toStrictEqual([])
+
+		// Invalid
+		verification.transactions[0].dateDeleted = dateDeleted
+		verification.transactions[1].dateDeleted = dateDeleted
+		expect(verification.validate()).toStrictEqual([
+			{
+				error: EntityErrors.verificationAmountDoesNotMatchAnyTransaction,
+			},
+		])
+	})
+
 	it('Total amount does not exist in any transaction (currency code)', () => {
 		const currency = verification.transactions[0].currency
 		verification.totalAmount = new Currency({ amount: currency.amount, code: Currency.Codes.BBD })
@@ -176,6 +203,17 @@ describe('Verification test #cold #entity', () => {
 		)
 
 		expect(verification.validate()).toStrictEqual([{ error: EntityErrors.transactionSumIsNotZero, data: '1' }])
+	})
+
+	it('Transaction sum (do not count deleted transactions)', () => {
+		verification.transactions[1].setAsDeleted()
+
+		expect(verification.validate()).toStrictEqual([
+			{
+				error: EntityErrors.transactionSumIsNotZero,
+				data: String(verification.transactions[0].currency.amount),
+			},
+		])
 	})
 
 	// Missing transactions
