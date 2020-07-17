@@ -105,7 +105,7 @@ export class MongoDbGateway implements DbGateway {
 				}
 			})
 			.catch((reason) => {
-				if (reason instanceof InternalError) {
+				if (reason instanceof InternalError || reason instanceof OutputError) {
 					throw reason
 				}
 				throw new InternalError(InternalError.Types.dbError, reason)
@@ -117,7 +117,28 @@ export class MongoDbGateway implements DbGateway {
 	}
 
 	async getLocalCurrency(userId: Id): Promise<Currency.Code> {
-		throw new Error('Method not implemented.')
+		return this.collection(Collections.User)
+			.then((collection) => {
+				return collection.findOne({ _id: new ObjectId(userId) }, { projection: { localCurrencyCode: 1 } })
+			})
+			.then((foundObject) => {
+				if (foundObject && foundObject.localCurrencyCode) {
+					const code = Currency.Codes.fromString(foundObject.localCurrencyCode)
+					if (code) {
+						return code
+					} else {
+						throw OutputError.create(OutputError.Types.currencyCodeInvalid, foundObject.localCurrencyCode)
+					}
+				} else {
+					throw OutputError.create(OutputError.Types.userNotFound, String(userId))
+				}
+			})
+			.catch((reason) => {
+				if (reason instanceof InternalError || reason instanceof OutputError) {
+					throw reason
+				}
+				throw new InternalError(InternalError.Types.dbError, reason)
+			})
 	}
 
 	async getAccount(userId: Id, accountNumber: number): Promise<Account> {

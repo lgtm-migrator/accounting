@@ -10,6 +10,8 @@ import { ParserSingle } from '../../app/core/entities/ParserSingle'
 import { resolve } from 'path'
 import { ParserMulti } from '../../app/core/entities/ParserMulti'
 import { Parser } from '../../app/core/entities/Parser'
+import { User } from '../../app/core/entities/User'
+import { Currency } from '../../app/core/entities/Currency'
 
 const USER_ID = new ObjectId().toHexString()
 
@@ -264,6 +266,30 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 		await expect(promise).resolves.toContainEqual(expect.objectContaining(userParserSingle))
 		await expect(promise).resolves.toContainEqual(expect.objectContaining(userParserMulti))
 	})
+
+	it('getLocalCurrency()', async () => {
+		const user = fakerUser()
+		await db.collection(Collections.User).insertOne(MongoConverter.toDbObject(user))
+
+		let promise = gateway.getLocalCurrency(USER_ID)
+		await expect(promise).resolves.toStrictEqual(Currency.Codes.SEK)
+
+		// Not found user
+		const otherId = new ObjectId().toHexString()
+		promise = gateway.getLocalCurrency(otherId)
+		await expect(promise).rejects.toStrictEqual(OutputError.create(OutputError.Types.userNotFound, otherId))
+	})
+
+	it('getLocalCurrency() invalid currency code', async () => {
+		const user = fakerUser()
+		user.localCurrencyCode = 'INVALID'
+		await db.collection(Collections.User).insertOne(MongoConverter.toDbObject(user))
+
+		const promise = gateway.getLocalCurrency(USER_ID)
+		await expect(promise).rejects.toStrictEqual(
+			OutputError.create(OutputError.Types.currencyCodeInvalid, user.localCurrencyCode)
+		)
+	})
 })
 
 /////////////////////
@@ -419,4 +445,15 @@ function fakerParserMulti(): Parser {
 			},
 		],
 	})
+}
+
+function fakerUser(): User.Option {
+	return {
+		id: USER_ID,
+		username: faker.internet.userName(),
+		firstName: faker.name.firstName(),
+		lastName: faker.name.lastName(),
+		localCurrencyCode: 'SEK',
+		apiKey: new ObjectId().toHexString(),
+	}
 }
