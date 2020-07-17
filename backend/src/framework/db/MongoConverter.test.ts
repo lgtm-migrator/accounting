@@ -8,6 +8,8 @@ import { Verification } from '../../app/core/entities/Verification'
 import { Account } from '../../app/core/entities/Account'
 import { ParserSingle } from '../../app/core/entities/ParserSingle'
 import { ParserMulti } from '../../app/core/entities/ParserMulti'
+import { Consts } from '../../app/core/definitions/Consts'
+import { FiscalYear } from '../../app/core/entities/FiscalYear'
 
 describe('MongoConverter #cold #helper', () => {
 	// toDbObject()
@@ -521,5 +523,23 @@ describe('MongoConverter #cold #helper', () => {
 		})
 
 		expect(MongoConverter.toParser(MongoConverter.toDbObject(parser))).toStrictEqual(parser)
+	})
+
+	it('toFiscalYear()', () => {
+		const fiscalYear = new FiscalYear({
+			id: new ObjectId().toHexString(),
+			userId: new ObjectId().toHexString(),
+			simpleName: faker.date.past().toISOString(),
+			from: '2000-01-01',
+			to: '2000-12-31',
+			startingBalances: [
+				{
+					accountNumber: faker.random.number({ min: Consts.ACCOUNT_NUMBER_START, max: Consts.ACCOUNT_NUMBER_END }),
+					amount: BigInt(faker.random.number()),
+				},
+			],
+		})
+
+		expect(MongoConverter.toFiscalYear(MongoConverter.toDbObject(fiscalYear))).toStrictEqual(fiscalYear)
 	})
 })

@@ -6,6 +6,7 @@ import { Parser } from '../../app/core/entities/Parser'
 import { User } from '../../app/core/entities/User'
 import { ParserSingle } from '../../app/core/entities/ParserSingle'
 import { ParserMulti } from '../../app/core/entities/ParserMulti'
+import { FiscalYear } from '../../app/core/entities/FiscalYear'
 
 type AddId = 'add-id' | 'dont-add-id'
 type RemoveUndefined = 'remove-undefined' | 'keep-undefined'
@@ -156,7 +157,10 @@ export namespace MongoConverter {
 		return new User(entityOption)
 	}
 
-	// TODO fiscal year
+	export function toFiscalYear(object: {}): FiscalYear {
+		const entityOption = toOption(object)
+		return new FiscalYear(entityOption)
+	}
 
 	function deserialize(object: {}): {} {
 		const entity: any = object instanceof Array ? [] : {}

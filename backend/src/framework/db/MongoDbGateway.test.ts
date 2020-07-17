@@ -13,6 +13,8 @@ import { Parser } from '../../app/core/entities/Parser'
 import { User } from '../../app/core/entities/User'
 import { Currency } from '../../app/core/entities/Currency'
 import { fake } from 'faker'
+import { FiscalYear } from '../../app/core/entities/FiscalYear'
+import { Consts } from '../../app/core/definitions/Consts'
 
 const USER_ID = new ObjectId().toHexString()
 
@@ -303,6 +305,78 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 		promise = gateway.getUser('invalid')
 		await expect(promise).rejects.toStrictEqual(OutputError.create(OutputError.Types.userNotFound))
 	})
+
+	it('getFiscalYear()', async () => {
+		const fiscal2012 = fakerFiscalYear(2012)
+		const fiscal2013 = fakerFiscalYear(2013)
+		const fiscal2014 = fakerFiscalYear(2014)
+
+		const objects = [
+			MongoConverter.toDbObject(fiscal2012),
+			MongoConverter.toDbObject(fiscal2013),
+			MongoConverter.toDbObject(fiscal2014),
+		]
+
+		await db.collection(Collections.FiscalYear).insertMany(objects)
+
+		// 2012
+		await expect(gateway.getFiscalYear(USER_ID, '2012-01-01')).resolves.toStrictEqual(fiscal2012)
+		await expect(gateway.getFiscalYear(USER_ID, '2012-05-31')).resolves.toStrictEqual(fiscal2012)
+		await expect(gateway.getFiscalYear(USER_ID, '2012-12-31')).resolves.toStrictEqual(fiscal2012)
+
+		// 2013
+		await expect(gateway.getFiscalYear(USER_ID, '2013-01-01')).resolves.toStrictEqual(fiscal2013)
+		await expect(gateway.getFiscalYear(USER_ID, '2013-05-31')).resolves.toStrictEqual(fiscal2013)
+		await expect(gateway.getFiscalYear(USER_ID, '2013-12-31')).resolves.toStrictEqual(fiscal2013)
+
+		// 2014
+		await expect(gateway.getFiscalYear(USER_ID, '2014-01-01')).resolves.toStrictEqual(fiscal2014)
+		await expect(gateway.getFiscalYear(USER_ID, '2014-05-31')).resolves.toStrictEqual(fiscal2014)
+		await expect(gateway.getFiscalYear(USER_ID, '2014-12-31')).resolves.toStrictEqual(fiscal2014)
+
+		// 2011 - Not found
+		await expect(gateway.getFiscalYear(USER_ID, '2011-01-01')).rejects.toStrictEqual(
+			OutputError.create(OutputError.Types.fiscalYearNotFound, '2011-01-01')
+		)
+		await expect(gateway.getFiscalYear(USER_ID, '2011-05-31')).rejects.toStrictEqual(
+			OutputError.create(OutputError.Types.fiscalYearNotFound, '2011-05-31')
+		)
+		await expect(gateway.getFiscalYear(USER_ID, '2011-12-31')).rejects.toStrictEqual(
+			OutputError.create(OutputError.Types.fiscalYearNotFound, '2011-12-31')
+		)
+
+		// 2015 - Not found
+		await expect(gateway.getFiscalYear(USER_ID, '2015-01-01')).rejects.toStrictEqual(
+			OutputError.create(OutputError.Types.fiscalYearNotFound, '2015-01-01')
+		)
+		await expect(gateway.getFiscalYear(USER_ID, '2015-05-31')).rejects.toStrictEqual(
+			OutputError.create(OutputError.Types.fiscalYearNotFound, '2015-05-31')
+		)
+		await expect(gateway.getFiscalYear(USER_ID, '2015-12-31')).rejects.toStrictEqual(
+			OutputError.create(OutputError.Types.fiscalYearNotFound, '2015-12-31')
+		)
+
+		// Not Found, different user id
+		const otherId = new ObjectId().toHexString()
+		// 2012
+		await expect(gateway.getFiscalYear(otherId, '2012-01-01')).rejects.toStrictEqual(
+			OutputError.create(OutputError.Types.fiscalYearNotFound, '2012-01-01')
+		)
+		await expect(gateway.getFiscalYear(otherId, '2012-05-31')).rejects.toStrictEqual(
+			OutputError.create(OutputError.Types.fiscalYearNotFound, '2012-05-31')
+		)
+		await expect(gateway.getFiscalYear(otherId, '2012-12-31')).rejects.toStrictEqual(
+			OutputError.create(OutputError.Types.fiscalYearNotFound, '2012-12-31')
+		)
+
+		// Invalid date format
+		await expect(gateway.getFiscalYear(USER_ID, '2016-u1-12')).rejects.toStrictEqual(
+			OutputError.create(OutputError.Types.dateFormatInvalid, '2016-u1-12')
+		)
+		await expect(gateway.getFiscalYear(USER_ID, '2017-02-29')).rejects.toStrictEqual(
+			OutputError.create(OutputError.Types.dateFormatInvalid, '2017-02-29')
+		)
+	})
 })
 
 /////////////////////
@@ -469,4 +543,20 @@ function fakerUser(): User.Option {
 		localCurrencyCode: 'SEK',
 		apiKey: new ObjectId().toHexString(),
 	}
+}
+
+function fakerFiscalYear(year: number): FiscalYear {
+	return new FiscalYear({
+		id: new ObjectId().toHexString(),
+		userId: USER_ID,
+		simpleName: faker.date.past().toISOString(),
+		from: `${year}-01-01`,
+		to: `${year}-12-31`,
+		startingBalances: [
+			{
+				accountNumber: faker.random.number({ min: Consts.ACCOUNT_NUMBER_START, max: Consts.ACCOUNT_NUMBER_END }),
+				amount: BigInt(faker.random.number()),
+			},
+		],
+	})
 }

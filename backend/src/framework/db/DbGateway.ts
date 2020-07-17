@@ -4,6 +4,7 @@ import { Currency } from '../../app/core/entities/Currency'
 import { Account } from '../../app/core/entities/Account'
 import { User } from '../../app/core/entities/User'
 import { Parser } from '../../app/core/entities/Parser'
+import { FiscalYear } from '../../app/core/entities/FiscalYear'
 
 export interface DbGateway {
 	/**
@@ -33,7 +34,7 @@ export interface DbGateway {
 	 * @param userId the user which the account belongs to
 	 * @param accountNumber get the account with this account number
 	 * @return The account with the specified account number
-	 * @throws {OutputErrors.accountNumberNotFound} if the account number does not exist
+	 * @throws {OutputErrors.Types.accountNumberNotFound} if the account number does not exist
 	 */
 	getAccount(userId: Id, accountNumber: number): Promise<Account>
 
@@ -42,7 +43,7 @@ export interface DbGateway {
 	 * @param userId the user which the verification belongs to
 	 * @param verificationId the verification id to get
 	 * @return The verification with the specified Id
-	 * @throws {OutputErrors.verificationNotFound} if the verification does not exist
+	 * @throws {OutputErrors.Types.verificationNotFound} if the verification does not exist
 	 */
 	getVerification(userId: Id, verificationId: Id): Promise<Verification>
 
@@ -50,7 +51,7 @@ export interface DbGateway {
 	 * Get the user for the specified API key
 	 * @param apiKey the user's API key
 	 * @return user found with the specified API key
-	 * @throws {OutputErrors.userNotFound} if no user with the specified API key was found
+	 * @throws {OutputErrors.Types.userNotFound} if no user with the specified API key was found
 	 */
 	getUser(apiKey: string): Promise<User>
 
@@ -68,6 +69,16 @@ export interface DbGateway {
 	 */
 	saveParser(parser: Parser): Promise<Id>
 
-	// TODO getFiscalYear()
+	/**
+	 * Get the fiscal year that would contain the specified date
+	 * @param userId the user id to get the fiscal year from
+	 * @param date a YYYY-MM-DD date
+	 * @return the fiscal year that contains the specified date. I.e. the date will
+	 * be between fiscalYear.from and fiscalYear.to
+	 * @throws {OutputErrors.Types.fiscalYearNotFound} if no fiscal year was found between these dates
+	 * @throws {OutputErrors.Types.dateFormatInvalid} if date has an invalid format
+	 */
+	getFiscalYear(userId: Id, date: string): Promise<FiscalYear>
+
 	// TODO getVerifications(FiscalYear)
 }

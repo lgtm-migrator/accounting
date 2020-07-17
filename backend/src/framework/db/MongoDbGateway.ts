@@ -11,6 +11,8 @@ import { InternalError } from '../../app/core/definitions/InternalError'
 import { Entity } from '../../app/core/entities/Entity'
 import { MongoConverter } from './MongoConverter'
 import { OutputError } from '../../app/core/definitions/OutputError'
+import { FiscalYear } from '../../app/core/entities/FiscalYear'
+import '../../app/core/definitions/String'
 
 export enum Collections {
 	Verification = 'Verification',
@@ -126,9 +128,8 @@ export class MongoDbGateway implements DbGateway {
 					const code = Currency.Codes.fromString(foundObject.localCurrencyCode)
 					if (code) {
 						return code
-					} else {
-						throw OutputError.create(OutputError.Types.currencyCodeInvalid, foundObject.localCurrencyCode)
 					}
+					throw OutputError.create(OutputError.Types.currencyCodeInvalid, foundObject.localCurrencyCode)
 				} else {
 					throw OutputError.create(OutputError.Types.userNotFound, String(userId))
 				}
@@ -152,9 +153,8 @@ export class MongoDbGateway implements DbGateway {
 			.then((foundObject) => {
 				if (foundObject) {
 					return MongoConverter.toAccount(foundObject)
-				} else {
-					throw OutputError.create(OutputError.Types.accountNumberNotFound, String(accountNumber))
 				}
+				throw OutputError.create(OutputError.Types.accountNumberNotFound, String(accountNumber))
 			})
 			.catch((reason) => {
 				if (reason instanceof InternalError || reason instanceof OutputError) {
@@ -175,9 +175,8 @@ export class MongoDbGateway implements DbGateway {
 			.then((foundObject) => {
 				if (foundObject) {
 					return MongoConverter.toVerification(foundObject)
-				} else {
-					throw OutputError.create(OutputError.Types.verificationNotFound, String(verificationId))
 				}
+				throw OutputError.create(OutputError.Types.verificationNotFound, String(verificationId))
 			})
 			.catch((reason) => {
 				if (reason instanceof InternalError || reason instanceof OutputError) {
@@ -216,12 +215,42 @@ export class MongoDbGateway implements DbGateway {
 			.then((foundParsers) => {
 				const parsers = new Array<Parser>()
 
-				for (const object of foundParsers) {
-					const parser = MongoConverter.toParser(object)
-					parsers.push(parser)
+				if (foundParsers) {
+					for (const object of foundParsers) {
+						const parser = MongoConverter.toParser(object)
+						parsers.push(parser)
+					}
 				}
 
 				return parsers
+			})
+			.catch((reason) => {
+				if (reason instanceof InternalError || reason instanceof OutputError) {
+					throw reason
+				}
+				throw new InternalError(InternalError.Types.dbError, reason)
+			})
+	}
+
+	async getFiscalYear(userId: Id, date: string): Promise<FiscalYear> {
+		if (!date.isValidIsoDate()) {
+			throw OutputError.create(OutputError.Types.dateFormatInvalid, date)
+		}
+
+		return this.collection(Collections.FiscalYear)
+			.then(async (collection) => {
+				const query = {
+					userId: new ObjectId(userId),
+					from: { $lte: date },
+					to: { $gte: date },
+				}
+				return collection.findOne(query)
+			})
+			.then((foundObject) => {
+				if (foundObject) {
+					return MongoConverter.toFiscalYear(foundObject)
+				}
+				throw OutputError.create(OutputError.Types.fiscalYearNotFound, date)
 			})
 			.catch((reason) => {
 				if (reason instanceof InternalError || reason instanceof OutputError) {

@@ -80,5 +80,6 @@ export namespace OutputError {
 		internalError = 'internal-error',
 		dateFormatInvalid = 'date-format-invalid',
 		fiscalYearToBeforeFrom = 'fiscal-year-to-before-from',
+		fiscalYearNotFound = 'fiscal-year-not-found',
 	}
 }
