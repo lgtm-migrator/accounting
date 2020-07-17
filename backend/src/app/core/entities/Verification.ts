@@ -126,7 +126,7 @@ export class Verification extends UserEntity implements Verification.Option {
 		// Date should be in ISO format
 		if (typeof this.date !== 'undefined') {
 			if (!this.date.isValidIsoDate()) {
-				errors.push({ type: OutputError.Types.verificationDateInvalidFormat, data: this.date })
+				errors.push({ type: OutputError.Types.dateFormatInvalid, data: this.date })
 			}
 		}
 

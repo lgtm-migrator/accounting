@@ -130,19 +130,19 @@ describe('Verification test #cold #entity', () => {
 	it('Invalid date formats', () => {
 		verification.date = ''
 		expect(verification.validate()).toStrictEqual([
-			{ type: OutputError.Types.verificationDateInvalidFormat, data: verification.date },
+			{ type: OutputError.Types.dateFormatInvalid, data: verification.date },
 		])
 		verification.date = '20'
 		expect(verification.validate()).toStrictEqual([
-			{ type: OutputError.Types.verificationDateInvalidFormat, data: verification.date },
+			{ type: OutputError.Types.dateFormatInvalid, data: verification.date },
 		])
 		verification.date = '2019-13-01'
 		expect(verification.validate()).toStrictEqual([
-			{ type: OutputError.Types.verificationDateInvalidFormat, data: verification.date },
+			{ type: OutputError.Types.dateFormatInvalid, data: verification.date },
 		])
 		verification.date = '2019-02-29'
 		expect(verification.validate()).toStrictEqual([
-			{ type: OutputError.Types.verificationDateInvalidFormat, data: verification.date },
+			{ type: OutputError.Types.dateFormatInvalid, data: verification.date },
 		])
 	})
 

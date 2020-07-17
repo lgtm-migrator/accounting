@@ -193,7 +193,7 @@ describe('New Verification #cold #use-case', () => {
 		output = interactor.execute(input)
 		await expect(output).rejects.toEqual({
 			errors: [
-				{ type: OutputError.Types.verificationDateInvalidFormat, data: inputData.date },
+				{ type: OutputError.Types.dateFormatInvalid, data: inputData.date },
 				{ type: OutputError.Types.amountIsZero },
 			],
 		})

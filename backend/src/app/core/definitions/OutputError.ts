@@ -57,7 +57,6 @@ export namespace OutputError {
 		verificationNotFound = 'verification-not-found',
 		verificationNumberInvalid = 'verification-number-invalid',
 		verificationNumberMissing = 'verification-number-missing',
-		verificationDateInvalidFormat = 'verification-date-invalid-format',
 		verificationDateFiledMissing = 'verification-date-filed-missing',
 		verificationDateFiledBeforeCreated = 'verification-date-filed-before-created',
 		verificationInvoiceIdIsEmpty = 'verification-invoice-id-is-empty',
@@ -79,5 +78,7 @@ export namespace OutputError {
 		parserLineMatchersOrGenericRequired = 'parser-line-matcher-or-generic-required',
 		userNotFound = 'user-not-found',
 		internalError = 'internal-error',
+		dateFormatInvalid = 'date-format-invalid',
+		fiscalYearToBeforeFrom = 'fiscal-year-to-before-from',
 	}
 }
