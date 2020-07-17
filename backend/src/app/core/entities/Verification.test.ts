@@ -106,12 +106,6 @@ describe('Verification test #cold #entity', () => {
 		expect(verification.validate()).toStrictEqual([{ type: OutputError.Types.verificationNumberMissing }])
 	})
 
-	// it('Date filed but missing creation date', () => {
-	// 	verification.dateFiled = faker_valid_date()
-	// 	verification.number = 1
-	// 	expect(verification.validate()).toStrictEqual([{type:OutputError.Types.dateCreatedMissing}])
-	// })
-
 	it('Date filed before creation date', () => {
 		verification.number = 1
 		verification.dateFiled = faker.date.between('2010-01-01', '2014-12-31').getTime()
@@ -144,6 +138,31 @@ describe('Verification test #cold #entity', () => {
 		expect(verification.validate()).toStrictEqual([
 			{ type: OutputError.Types.dateFormatInvalid, data: verification.date },
 		])
+	})
+
+	// Other ids
+	it('Validate other ids', () => {
+		const validError = [{ type: OutputError.Types.verificationPaymentIdIsEmpty }]
+
+		// Payment id
+		verification.paymentId = ''
+		expect(verification.validate()).toStrictEqual(validError)
+		verification.paymentId = '1'
+
+		// Invoice id
+		verification.invoiceId = ''
+		validError[0].type = OutputError.Types.verificationInvoiceIdIsEmpty
+		expect(verification.validate()).toStrictEqual(validError)
+		verification.invoiceId = '2'
+
+		// Fiscal Id
+		verification.fiscalYearId = ''
+		validError[0].type = OutputError.Types.verificationFiscalYearIdIsEmpty
+		expect(verification.validate()).toStrictEqual(validError)
+		verification.fiscalYearId = '3'
+
+		// Valid
+		expect(verification.validate()).toStrictEqual([])
 	})
 
 	// Total amount

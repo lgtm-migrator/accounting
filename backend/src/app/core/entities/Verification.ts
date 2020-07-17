@@ -19,6 +19,7 @@ export namespace Verification {
 		files?: string[]
 		invoiceId?: Id
 		paymentId?: Id
+		fiscalYearId?: Id
 		requireConfirmation?: boolean
 		transactions: Transaction.Option[]
 	}
@@ -46,6 +47,7 @@ export class Verification extends UserEntity implements Verification.Option {
 	files?: string[]
 	invoiceId?: Id
 	paymentId?: Id
+	fiscalYearId?: Id
 	requireConfirmation?: boolean
 	transactions: Transaction[]
 
@@ -175,6 +177,13 @@ export class Verification extends UserEntity implements Verification.Option {
 		if (typeof this.paymentId === 'string') {
 			if (this.paymentId.length <= 0) {
 				errors.push({ type: OutputError.Types.verificationPaymentIdIsEmpty })
+			}
+		}
+
+		// Fiscal Year Id
+		if (typeof this.fiscalYearId === 'string') {
+			if (this.fiscalYearId.length <= 0) {
+				errors.push({ type: OutputError.Types.verificationFiscalYearIdIsEmpty })
 			}
 		}
 

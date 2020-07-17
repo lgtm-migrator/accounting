@@ -63,6 +63,7 @@ export namespace OutputError {
 		verificationPaymentIdIsEmpty = 'verification-payment-id-is-empty',
 		verificationAmountDoesNotMatchAnyTransaction = 'verification-amount-does-not-match-any-transaction',
 		verificationTypeInvalid = 'verification-type-invalid',
+		verificationFiscalYearIdIsEmpty = 'verification-fiscal-year-id-is-empty',
 		transactionSumIsNotZero = 'transaction-sum-is-not-zero',
 		transactionsMissing = 'transactions-missing',
 		transactionsCurrencyCodeLocalMismatch = 'transactions-currency-code-local-mismatch',
