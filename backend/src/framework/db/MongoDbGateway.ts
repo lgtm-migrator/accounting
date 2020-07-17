@@ -188,7 +188,23 @@ export class MongoDbGateway implements DbGateway {
 	}
 
 	async getUser(apiKey: string): Promise<User> {
-		throw new Error('Method not implemented.')
+		return this.collection(Collections.User)
+			.then(async (collection) => {
+				return collection.findOne({ apiKey: apiKey })
+			})
+			.then((foundObject) => {
+				if (foundObject) {
+					return MongoConverter.toUser(foundObject)
+				} else {
+					throw OutputError.create(OutputError.Types.userNotFound)
+				}
+			})
+			.catch((reason) => {
+				if (reason instanceof InternalError || reason instanceof OutputError) {
+					throw reason
+				}
+				throw new InternalError(InternalError.Types.dbError, reason)
+			})
 	}
 
 	async getParsers(userId: Id): Promise<Parser[]> {

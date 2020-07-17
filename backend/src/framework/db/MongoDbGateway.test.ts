@@ -12,6 +12,7 @@ import { ParserMulti } from '../../app/core/entities/ParserMulti'
 import { Parser } from '../../app/core/entities/Parser'
 import { User } from '../../app/core/entities/User'
 import { Currency } from '../../app/core/entities/Currency'
+import { fake } from 'faker'
 
 const USER_ID = new ObjectId().toHexString()
 
@@ -289,6 +290,18 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 		await expect(promise).rejects.toStrictEqual(
 			OutputError.create(OutputError.Types.currencyCodeInvalid, user.localCurrencyCode)
 		)
+	})
+
+	it('getUser()', async () => {
+		const user = new User(fakerUser())
+		await db.collection(Collections.User).insertOne(MongoConverter.toDbObject(user))
+
+		let promise = gateway.getUser(user.apiKey)
+		await expect(promise).resolves.toStrictEqual(user)
+
+		// Not found
+		promise = gateway.getUser('invalid')
+		await expect(promise).rejects.toStrictEqual(OutputError.create(OutputError.Types.userNotFound))
 	})
 })
 

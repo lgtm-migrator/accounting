@@ -1,6 +1,7 @@
 import { Entity } from './Entity'
 import { Currency } from './Currency'
 import { OutputError } from '../definitions/OutputError'
+import { v4 as uuidv4 } from 'uuid'
 
 export namespace User {
 	export interface Option extends Entity.Option {
@@ -17,7 +18,7 @@ export class User extends Entity implements User.Option {
 	firstName: string
 	lastName: string
 	localCurrencyCode: Currency.Code
-	apiKey?: string
+	apiKey: string
 
 	constructor(data: User.Option) {
 		super(data)
@@ -25,7 +26,12 @@ export class User extends Entity implements User.Option {
 		this.username = data.username
 		this.firstName = data.firstName
 		this.lastName = data.lastName
-		this.apiKey = data.apiKey
+
+		if (data.apiKey) {
+			this.apiKey = data.apiKey
+		} else {
+			this.apiKey = uuidv4()
+		}
 
 		if (typeof data.localCurrencyCode === 'string') {
 			const code = Currency.Codes.fromString(data.localCurrencyCode)
