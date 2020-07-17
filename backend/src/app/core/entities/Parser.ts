@@ -1,6 +1,5 @@
 import { Currency } from './Currency'
 import { Verification } from './Verification'
-import { EntityErrors } from '../definitions/EntityErrors'
 import { Consts } from '../definitions/Consts'
 import '../definitions/String'
 import { OutputError } from '../definitions/OutputError'
@@ -33,7 +32,7 @@ export abstract class Parser extends UserEntity implements Parser.Option {
 
 		// Name
 		if (this.name.length < Consts.NAME_LENGTH_MIN) {
-			errors.push({ error: EntityErrors.nameTooShort, data: this.name })
+			errors.push({ type: OutputError.Types.nameTooShort, data: this.name })
 		}
 
 		return errors
@@ -91,7 +90,7 @@ export abstract class Parser extends UserEntity implements Parser.Option {
 
 		// Validate
 		if (!date.isValidIsoDate()) {
-			throw OutputError.create(OutputError.Types.invalidInput, EntityErrors.parserDateInputInvalid, date)
+			throw OutputError.create(OutputError.Types.parserDateInputInvalid, date)
 		}
 
 		return date
@@ -140,11 +139,7 @@ export abstract class Parser extends UserEntity implements Parser.Option {
 	 */
 	protected static addInvalidInputErrors(exception: any, errors: OutputError.Info[]) {
 		if (exception instanceof OutputError) {
-			if (exception.type == OutputError.Types.invalidInput) {
-				errors.push(...exception.errors)
-			} else {
-				throw exception
-			}
+			errors.push(...exception.errors)
 		} else {
 			throw exception
 		}

@@ -11,7 +11,6 @@ import { InternalError } from '../../app/core/definitions/InternalError'
 import { Entity } from '../../app/core/entities/Entity'
 import { MongoConverter } from './MongoConverter'
 import { OutputError } from '../../app/core/definitions/OutputError'
-import { EntityErrors } from '../../app/core/definitions/EntityErrors'
 
 export enum Collections {
 	Verification = 'Verification',
@@ -59,7 +58,7 @@ export class MongoDbGateway implements DbGateway {
 		const validation = entity.validate()
 
 		if (validation.length > 0) {
-			throw new OutputError(OutputError.Types.invalidInput, validation)
+			throw new OutputError(validation)
 		}
 
 		const dbObject = MongoConverter.toDbObject(entity)
@@ -133,11 +132,7 @@ export class MongoDbGateway implements DbGateway {
 				if (foundObject) {
 					return MongoConverter.toAccount(foundObject)
 				} else {
-					throw OutputError.create(
-						OutputError.Types.invalidInput,
-						EntityErrors.accountNumberNotFound,
-						String(accountNumber)
-					)
+					throw OutputError.create(OutputError.Types.accountNumberNotFound, String(accountNumber))
 				}
 			})
 			.catch((reason) => {
@@ -160,11 +155,7 @@ export class MongoDbGateway implements DbGateway {
 				if (foundObject) {
 					return MongoConverter.toVerification(foundObject)
 				} else {
-					throw OutputError.create(
-						OutputError.Types.invalidInput,
-						EntityErrors.verificationNotFound,
-						String(verificationId)
-					)
+					throw OutputError.create(OutputError.Types.verificationNotFound, String(verificationId))
 				}
 			})
 			.catch((reason) => {

@@ -4,7 +4,6 @@ import { VerificationNewFromParserOutput } from './VerificationNewFromParserOutp
 import { VerificationNewFromParserRepository } from './VerificationNewFromParserRepository'
 import { Parser } from '../../core/entities/Parser'
 import { OutputError } from '../../core/definitions/OutputError'
-import { EntityErrors } from '../../core/definitions/EntityErrors'
 import { Currency } from '../../core/entities/Currency'
 import { Verification } from '../../core/entities/Verification'
 import { TransactionFactory } from '../TransactionFactory'
@@ -78,7 +77,7 @@ export class VerificationNewFromParserInteractor extends Interactor<
 			}
 		}
 
-		throw OutputError.create(OutputError.Types.invalidInput, EntityErrors.parserNotFound)
+		throw OutputError.create(OutputError.Types.parserNotFound)
 	}
 
 	private async createVerificationFromInfo(

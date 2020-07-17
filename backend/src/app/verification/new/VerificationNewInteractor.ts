@@ -7,7 +7,6 @@ import { Currency } from '../../core/entities/Currency'
 import { Verification } from '../../core/entities/Verification'
 import { OutputError } from '../../core/definitions/OutputError'
 import { InternalError } from '../../core/definitions/InternalError'
-import { EntityErrors } from '../../core/definitions/EntityErrors'
 import { TransactionFactory } from '../TransactionFactory'
 
 /**
@@ -35,11 +34,7 @@ export class VerificationNewInteractor extends Interactor<
 
 		const code = Currency.Codes.fromString(this.input.verification.currencyCode)
 		if (!code) {
-			throw OutputError.create(
-				OutputError.Types.invalidInput,
-				EntityErrors.currencyCodeInvalid,
-				input.verification.currencyCode
-			)
+			throw OutputError.create(OutputError.Types.currencyCodeInvalid, input.verification.currencyCode)
 		}
 
 		const localCurrencyPromise = this.repository.getLocalCurrency(input.userId)
@@ -70,11 +65,7 @@ export class VerificationNewInteractor extends Interactor<
 			})
 			.catch((reason) => {
 				if (reason instanceof InternalError) {
-					if (reason.type === InternalError.Types.accountNumberNotFound) {
-						const type = OutputError.Types.invalidInput
-						throw OutputError.create(type, EntityErrors.accountNumberNotFound, String(reason.error))
-						// TODO log error
-					}
+					throw OutputError.create(OutputError.Types.internalError, String(reason.error))
 				}
 
 				throw reason
@@ -101,7 +92,7 @@ export class VerificationNewInteractor extends Interactor<
 
 		const errors = verification.validate()
 		if (errors.length > 0) {
-			throw new OutputError(OutputError.Types.invalidInput, errors)
+			throw new OutputError(errors)
 		}
 
 		return Promise.resolve(verification)

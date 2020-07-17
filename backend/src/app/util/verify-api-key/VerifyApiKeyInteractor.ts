@@ -17,8 +17,8 @@ export class VerifyApiKeyInteractor extends Interactor<VerifyApiKeyInput, Verify
 	 * Verifies if there is a user with the specified API key
 	 * @param input an object containing the API key
 	 * @return An object containing the user id if successful
-	 * @throws {OutputErrorTypes.userNotFound} if no user was found with the specified APi key
-	 * @throws {OutputErrorTypes.internalError} if an internal error occurred
+	 * @throws {OutputError.Types.userNotFound} if no user was found with the specified APi key
+	 * @throws {OutputError.Types.internalError} if an internal error occurred
 	 */
 	async execute(input: VerifyApiKeyInput): Promise<VerifyApiKeyOutput> {
 		const findUserPromise = this.repository.findUserWithApiKey(input.apiKey)

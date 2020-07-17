@@ -7,7 +7,7 @@ export interface VerificationNewRepository extends VerificationNewRepositoryBase
 	 * Get account details
 	 * @param accountNumber the account number to get the details from
 	 * @return A promise with all the account details
-	 * @throws {OutputErrors.accountNumberNotFound} if the account number does not exist
+	 * @throws {OutputErrors.Types.accountNumberNotFound} if the account number does not exist
 	 * @throws {InternalError} if something unknown went wrong
 	 */
 	getAccountDetails(userId: Id, accountNumber: number): Promise<Account>

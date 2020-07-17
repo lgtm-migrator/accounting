@@ -1,7 +1,5 @@
 import { Parser } from './Parser'
-import { EntityErrors } from '../definitions/EntityErrors'
-import { exitCode } from 'process'
-import { exec } from 'child_process'
+import { OutputError } from '../definitions/OutputError'
 
 class ParserImpl extends Parser {
 	parse(text: string): Parser.VerificationInfo[] {
@@ -57,7 +55,7 @@ describe('Parser #cold #entity', () => {
 			Parser.Types.single
 		)
 
-		expect(parser.validate()).toStrictEqual([{ error: EntityErrors.nameTooShort, data: parser.name }])
+		expect(parser.validate()).toStrictEqual([{ type: OutputError.Types.nameTooShort, data: parser.name }])
 	})
 
 	// Amount conversion from string
@@ -192,7 +190,7 @@ describe('Parser #cold #entity', () => {
 			try {
 				ParserImpl.testFixDate(dateTest)
 			} catch (exception) {
-				expect(exception.errors).toMatchObject([{ error: EntityErrors.parserDateInputInvalid }])
+				expect(exception.errors).toMatchObject([{ type: OutputError.Types.parserDateInputInvalid }])
 			}
 		}
 

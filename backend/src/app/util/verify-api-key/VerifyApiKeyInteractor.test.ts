@@ -41,10 +41,7 @@ describe('Verify Api Key #cold #use-case', () => {
 		interactor = new VerifyApiKeyInteractor(repository)
 
 		expect.assertions(1)
-		await expect(interactor.execute(input)).rejects.toEqual({
-			type: OutputError.Types.userNotFound,
-			errors: [],
-		})
+		await expect(interactor.execute(input)).rejects.toStrictEqual(OutputError.create(OutputError.Types.userNotFound))
 	})
 
 	it('Repository throws an unknown internal error', async () => {
@@ -57,10 +54,7 @@ describe('Verify Api Key #cold #use-case', () => {
 		interactor = new VerifyApiKeyInteractor(repository)
 
 		expect.assertions(1)
-		await expect(interactor.execute(input)).rejects.toEqual({
-			type: OutputError.Types.internalError,
-			errors: [],
-		})
+		await expect(interactor.execute(input)).rejects.toStrictEqual(OutputError.create(OutputError.Types.internalError))
 	})
 
 	it(`Repository throws an error that isn't of the Internal Error type. Should still be treated as an internal error`, async () => {
@@ -73,9 +67,6 @@ describe('Verify Api Key #cold #use-case', () => {
 		interactor = new VerifyApiKeyInteractor(repository)
 
 		expect.assertions(1)
-		await expect(interactor.execute(input)).rejects.toEqual({
-			type: OutputError.Types.internalError,
-			errors: [],
-		})
+		await expect(interactor.execute(input)).rejects.toStrictEqual(OutputError.create(OutputError.Types.internalError))
 	})
 })

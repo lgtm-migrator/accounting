@@ -1,6 +1,6 @@
 import * as faker from 'faker'
 import { Entity } from './Entity'
-import { EntityErrors } from '../definitions/EntityErrors'
+import { OutputError } from '../definitions/OutputError'
 
 const TEST_TIMES = 1000
 
@@ -48,14 +48,14 @@ describe('Validate entity #cold #entity', () => {
 
 	it('Id is of type string and invalid (empty)', () => {
 		entity.id = ''
-		expect(entity.validate()).toStrictEqual([{ error: EntityErrors.idIsEmpty }])
+		expect(entity.validate()).toStrictEqual([{ type: OutputError.Types.idIsEmpty }])
 	})
 
 	// date_created
 	it('Date created too early', () => {
 		for (let i = 0; i < TEST_TIMES; ++i) {
 			entity.dateCreated = fakerTimeTooEarly()
-			expect(entity.validate()).toMatchObject([{ error: EntityErrors.dateCreatedTooEarly }])
+			expect(entity.validate()).toMatchObject([{ type: OutputError.Types.dateCreatedTooEarly }])
 		}
 	})
 
@@ -63,8 +63,8 @@ describe('Validate entity #cold #entity', () => {
 		for (let i = 0; i < TEST_TIMES; ++i) {
 			entity.dateCreated = faker.date.future().getTime()
 			expect(entity.validate()).toMatchObject([
-				{ error: EntityErrors.dateCreatedInTheFuture },
-				{ error: EntityErrors.dateModifiedBeforeCreated },
+				{ type: OutputError.Types.dateCreatedInTheFuture },
+				{ type: OutputError.Types.dateModifiedBeforeCreated },
 			])
 		}
 	})
@@ -87,7 +87,7 @@ describe('Validate entity #cold #entity', () => {
 		entity.dateCreated = fakerTime()
 		for (let i = 0; i < TEST_TIMES; ++i) {
 			entity.dateModified = faker.date.future().getTime()
-			expect(entity.validate()).toMatchObject([{ error: EntityErrors.dateModifiedInTheFuture }])
+			expect(entity.validate()).toMatchObject([{ type: OutputError.Types.dateModifiedInTheFuture }])
 		}
 	})
 
@@ -109,13 +109,13 @@ describe('Validate entity #cold #entity', () => {
 		for (let i = 0; i < TEST_TIMES; ++i) {
 			entity.dateCreated = faker.date.between('2010-01-01', '2010-12-31').getTime()
 			entity.dateModified = faker.date.between('2000-01-01', '2009-12-31').getTime()
-			expect(entity.validate()).toMatchObject([{ error: EntityErrors.dateModifiedBeforeCreated }])
+			expect(entity.validate()).toMatchObject([{ type: OutputError.Types.dateModifiedBeforeCreated }])
 		}
 	})
 
 	// it('Date modified exists but not date created', () => {
 	// 	entity.dateModified = faker_get_valid_time()
-	// 	expect(entity.validate()).toStrictEqual([{error:EntityErrors.dateModifiedRequiresDateCreated}])
+	// 	expect(entity.validate()).toStrictEqual([{type:OutputError.Types.dateModifiedRequiresDateCreated}])
 	// })
 
 	// date_deleted
@@ -124,7 +124,7 @@ describe('Validate entity #cold #entity', () => {
 		for (let i = 0; i < TEST_TIMES; ++i) {
 			entity.dateModified = faker.date.between('2010-01-01', '2015-12-31').getTime()
 			entity.dateDeleted = faker.date.between('2016-01-01', new Date()).getTime()
-			expect(entity.validate()).toMatchObject([{ error: EntityErrors.dateDeletedNotSameAsModified }])
+			expect(entity.validate()).toMatchObject([{ type: OutputError.Types.dateDeletedNotSameAsModified }])
 		}
 	})
 
@@ -139,6 +139,6 @@ describe('Validate entity #cold #entity', () => {
 
 	// it('Date deleted requires date modified', () => {
 	// 	entity.dateDeleted = faker_get_valid_time()
-	// 	expect(entity.validate()).toStrictEqual([{error:EntityErrors.dateDeletedRequiresDateModified}])
+	// 	expect(entity.validate()).toStrictEqual([{type:OutputError.Types.dateDeletedRequiresDateModified}])
 	// })
 })

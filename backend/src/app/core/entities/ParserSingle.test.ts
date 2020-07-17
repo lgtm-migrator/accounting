@@ -3,7 +3,6 @@ import { Verification } from './Verification'
 import { readFileSync } from 'fs'
 import { Currency } from './Currency'
 import { OutputError } from '../definitions/OutputError'
-import { EntityErrors } from '../definitions/EntityErrors'
 import { Parser } from './Parser'
 import * as faker from 'faker'
 
@@ -88,7 +87,7 @@ describe('ParserSingle #cold #entity', () => {
 	})
 
 	it('Does not match matcher', () => {
-		expect.assertions(7)
+		expect.assertions(6)
 
 		const data = GOOGLE_INVOICE_PARSER_DATA
 		const parser = new ParserSingle(data)
@@ -100,12 +99,11 @@ describe('ParserSingle #cold #entity', () => {
 			parser.parse(text)
 		} catch (exception) {
 			expect(exception).toBeInstanceOf(OutputError)
-			expect(exception.type).toStrictEqual(OutputError.Types.invalidInput)
 
 			const errors: OutputError.Info[] = [
-				{ error: EntityErrors.parserPatternNotFound, data: String(data.matcher.date.find) },
-				{ error: EntityErrors.parserPatternNotFound, data: String(data.matcher.currencyCode.find) },
-				{ error: EntityErrors.parserPatternNotFound, data: String(data.matcher.amount.find) },
+				{ type: OutputError.Types.parserPatternNotFound, data: String(data.matcher.date.find) },
+				{ type: OutputError.Types.parserPatternNotFound, data: String(data.matcher.currencyCode.find) },
+				{ type: OutputError.Types.parserPatternNotFound, data: String(data.matcher.amount.find) },
 			]
 
 			for (const error of errors) {
@@ -117,7 +115,7 @@ describe('ParserSingle #cold #entity', () => {
 
 	// Parsing text
 	it('Invalid currency code in parsed text', () => {
-		expect.assertions(13)
+		expect.assertions(8)
 
 		const parser = new ParserSingle({
 			userId: 1,
@@ -151,10 +149,9 @@ describe('ParserSingle #cold #entity', () => {
 			text = 'Date: 2020-01-1; Code: SEK; Amount: 123;'
 			parser.parse(text)
 		} catch (exception) {
-			expect(exception.type).toStrictEqual(OutputError.Types.invalidInput)
 			expect(exception.errors).toStrictEqual([
 				{
-					error: EntityErrors.parserPatternNotFound,
+					type: OutputError.Types.parserPatternNotFound,
 					data: String(parser.matcher.date.find),
 				},
 			])
@@ -165,10 +162,9 @@ describe('ParserSingle #cold #entity', () => {
 			text = 'Date: 2020-01-01; Code: SEK; Amount: 15Euu;'
 			parser.parse(text)
 		} catch (exception) {
-			expect(exception.type).toStrictEqual(OutputError.Types.invalidInput)
 			expect(exception.errors).toStrictEqual([
 				{
-					error: EntityErrors.parserPatternNotFound,
+					type: OutputError.Types.parserPatternNotFound,
 					data: String(parser.matcher.amount.find),
 				},
 			])
@@ -179,10 +175,9 @@ describe('ParserSingle #cold #entity', () => {
 			text = 'Date: 2020-01-01; Code: XTTe; Amount: 123;'
 			parser.parse(text)
 		} catch (exception) {
-			expect(exception.type).toStrictEqual(OutputError.Types.invalidInput)
 			expect(exception.errors).toStrictEqual([
 				{
-					error: EntityErrors.parserPatternNotFound,
+					type: OutputError.Types.parserPatternNotFound,
 					data: String(parser.matcher.currencyCode.find),
 				},
 			])
@@ -193,18 +188,17 @@ describe('ParserSingle #cold #entity', () => {
 			text = 'Date: 2020-01-0; Code: XTTe; Amount: ..;'
 			parser.parse(text)
 		} catch (exception) {
-			expect(exception.type).toStrictEqual(OutputError.Types.invalidInput)
 			const validErrors = [
 				{
-					error: EntityErrors.parserPatternNotFound,
+					type: OutputError.Types.parserPatternNotFound,
 					data: String(parser.matcher.date.find),
 				},
 				{
-					error: EntityErrors.parserPatternNotFound,
+					type: OutputError.Types.parserPatternNotFound,
 					data: String(parser.matcher.amount.find),
 				},
 				{
-					error: EntityErrors.parserPatternNotFound,
+					type: OutputError.Types.parserPatternNotFound,
 					data: String(parser.matcher.currencyCode.find),
 				},
 			]
@@ -218,10 +212,9 @@ describe('ParserSingle #cold #entity', () => {
 			text = 'Date: 2020-01-01; Code: XTT; Amount: 123;'
 			parser.parse(text)
 		} catch (exception) {
-			expect(exception.type).toStrictEqual(OutputError.Types.invalidInput)
 			expect(exception.errors).toStrictEqual([
 				{
-					error: EntityErrors.parserCurrencyCodeInvalid,
+					type: OutputError.Types.parserCurrencyCodeInvalid,
 					data: 'XTT',
 				},
 			])
@@ -250,13 +243,13 @@ describe('ParserSingle #cold #entity', () => {
 
 		const parser = new ParserSingle(data)
 		const errors: OutputError.Info[] = [
-			{ error: EntityErrors.nameTooShort },
-			{ error: EntityErrors.internalNameTooShort },
-			{ error: EntityErrors.verificationTypeInvalid },
-			{ error: EntityErrors.accountNumberOutOfRange },
-			{ error: EntityErrors.parserMatcherInvalid, data: 'date' },
-			{ error: EntityErrors.parserMatcherInvalid, data: 'total' },
-			{ error: EntityErrors.parserMatcherInvalid, data: 'code' },
+			{ type: OutputError.Types.nameTooShort },
+			{ type: OutputError.Types.internalNameTooShort },
+			{ type: OutputError.Types.verificationTypeInvalid },
+			{ type: OutputError.Types.accountNumberOutOfRange },
+			{ type: OutputError.Types.parserMatcherInvalid, data: 'date' },
+			{ type: OutputError.Types.parserMatcherInvalid, data: 'total' },
+			{ type: OutputError.Types.parserMatcherInvalid, data: 'code' },
 		]
 		expect.assertions(errors.length * 2)
 		for (const error of errors) {
@@ -359,8 +352,7 @@ describe('ParserSingle #cold #entity', () => {
 				parser.parse(text.replace('{}', month.invalid))
 			} catch (error) {
 				const validError = {
-					type: OutputError.Types.invalidInput,
-					errors: [{ error: EntityErrors.parserDateInputInvalid }],
+					errors: [{ type: OutputError.Types.parserDateInputInvalid }],
 				}
 
 				expect(error).toMatchObject(validError)
@@ -409,7 +401,7 @@ describe('ParserSingle #cold #entity', () => {
 		parser.matcher.date.find = /\d{2}\/\d{2}\/\d{4}/
 		parser.matcher.date.replace = /(\d{2}).(\d{2}).(\d{4})/
 
-		expect(parser.validate()).toStrictEqual([{ error: EntityErrors.parserMatcherReplacementMissing, data: 'date' }])
+		expect(parser.validate()).toStrictEqual([{ type: OutputError.Types.parserMatcherReplacementMissing, data: 'date' }])
 	})
 
 	it('Matcher missing replace', () => {
@@ -418,7 +410,7 @@ describe('ParserSingle #cold #entity', () => {
 		parser.matcher.date.find = /\d{2}\/\d{2}\/\d{4}/
 		parser.matcher.date.replacement = '$3-$1-$2'
 
-		expect(parser.validate()).toStrictEqual([{ error: EntityErrors.parserMatcherReplaceMissing, data: 'date' }])
+		expect(parser.validate()).toStrictEqual([{ type: OutputError.Types.parserMatcherReplaceMissing, data: 'date' }])
 	})
 
 	it('Matcher missing find', () => {
@@ -428,7 +420,7 @@ describe('ParserSingle #cold #entity', () => {
 		parser.matcher.date.replace = /(\d{2}).(\d{2}).(\d{4})/
 		parser.matcher.date.replacement = '$3-$1-$2'
 
-		expect(parser.validate()).toStrictEqual([{ error: EntityErrors.parserMatcherFindMissing, data: 'date' }])
+		expect(parser.validate()).toStrictEqual([{ type: OutputError.Types.parserMatcherFindMissing, data: 'date' }])
 	})
 
 	// Total/Amount conversion

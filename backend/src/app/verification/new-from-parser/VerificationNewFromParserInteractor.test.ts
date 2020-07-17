@@ -9,7 +9,6 @@ import { ParserSingle } from '../../core/entities/ParserSingle'
 import { Verification } from '../../core/entities/Verification'
 import { InternalError } from '../../core/definitions/InternalError'
 import { OutputError } from '../../core/definitions/OutputError'
-import { EntityErrors } from '../../core/definitions/EntityErrors'
 import { Currency } from '../../core/entities/Currency'
 
 const GOOGLE_INVOICE_PARSER_DATA: ParserSingle.Option = {
@@ -151,29 +150,19 @@ describe('Verification new from parser #cold #use-case', () => {
 	it('Could not find parser', async () => {
 		input.files = ['no parser']
 		output = interactor.execute(input)
-		await expect(output).rejects.toBeInstanceOf(OutputError)
-		await expect(output).rejects.toMatchObject({
-			type: OutputError.Types.invalidInput,
-			errors: [{ error: EntityErrors.parserNotFound }],
-		})
+		await expect(output).rejects.toStrictEqual(OutputError.create(OutputError.Types.parserNotFound))
 	})
 
 	it('File not found', async () => {
 		input.files = ['gibberish aoeuaseuaoeus']
 		output = interactor.execute(input)
-		await expect(output).rejects.toBeInstanceOf(OutputError)
-		await expect(output).rejects.toMatchObject({
-			type: OutputError.Types.internalError,
-		})
+		await expect(output).rejects.toStrictEqual(OutputError.create(OutputError.Types.internalError))
 	})
 
 	it('Could not read file', async () => {
 		input.files = ['reading error']
 		output = interactor.execute(input)
-		await expect(output).rejects.toBeInstanceOf(OutputError)
-		await expect(output).rejects.toMatchObject({
-			type: OutputError.Types.internalError,
-		})
+		await expect(output).rejects.toStrictEqual(OutputError.create(OutputError.Types.internalError))
 	})
 })
 

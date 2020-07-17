@@ -5,7 +5,6 @@ import { Parser } from './Parser'
 import { Currency } from './Currency'
 import * as faker from 'faker'
 import { Consts } from '../definitions/Consts'
-import { EntityErrors } from '../definitions/EntityErrors'
 import { OutputError } from '../definitions/OutputError'
 
 const TAX_FILE = 'src/jest/test-files/Skattekonto.txt'
@@ -180,7 +179,7 @@ describe('Parser Multi #cold #entity', () => {
 
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.parserMatcherGroupMissing,
+				type: OutputError.Types.parserMatcherGroupMissing,
 				data: 'name',
 			},
 		])
@@ -188,7 +187,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.matcher = /(?<date>\d{4}-\d{2}-\d{2}); .*?; (?<amount>-?\d*?\s?\d*)(; (?<currency>\w{3});|;)/g
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.parserMatcherGroupMissing,
+				type: OutputError.Types.parserMatcherGroupMissing,
 				data: 'name',
 			},
 		])
@@ -200,7 +199,7 @@ describe('Parser Multi #cold #entity', () => {
 
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.parserMatcherGroupMissing,
+				type: OutputError.Types.parserMatcherGroupMissing,
 				data: 'amount',
 			},
 		])
@@ -208,7 +207,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.matcher = /(?<date>\d{4}-\d{2}-\d{2}); (?<name>.*?); (-?\d*?\s?\d*)(; (?<currency>\w{3});|;)/g
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.parserMatcherGroupMissing,
+				type: OutputError.Types.parserMatcherGroupMissing,
 				data: 'amount',
 			},
 		])
@@ -217,19 +216,19 @@ describe('Parser Multi #cold #entity', () => {
 	// Validate matcher date
 	it('Validate matcher date', () => {
 		const errorDate = {
-			error: EntityErrors.parserMatcherGroupMissing,
+			type: OutputError.Types.parserMatcherGroupMissing,
 			data: 'date',
 		}
 		const errorYear = {
-			error: EntityErrors.parserMatcherGroupMissing,
+			type: OutputError.Types.parserMatcherGroupMissing,
 			data: 'year',
 		}
 		const errorDay = {
-			error: EntityErrors.parserMatcherGroupMissing,
+			type: OutputError.Types.parserMatcherGroupMissing,
 			data: 'day',
 		}
 		const errorMonth = {
-			error: EntityErrors.parserMatcherGroupMissing,
+			type: OutputError.Types.parserMatcherGroupMissing,
 			data: 'month',
 		}
 
@@ -264,7 +263,7 @@ describe('Parser Multi #cold #entity', () => {
 		expect(parser.validate()).toStrictEqual([])
 
 		parser.name = '12'
-		expect(parser.validate()).toStrictEqual([{ error: EntityErrors.nameTooShort, data: parser.name }])
+		expect(parser.validate()).toStrictEqual([{ type: OutputError.Types.nameTooShort, data: parser.name }])
 	})
 
 	// Validate account from
@@ -279,7 +278,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.accountFrom = 999
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.accountNumberOutOfRange,
+				type: OutputError.Types.accountNumberOutOfRange,
 				data: `${parser.accountFrom}`,
 			},
 		])
@@ -287,7 +286,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.accountFrom = -100
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.accountNumberOutOfRange,
+				type: OutputError.Types.accountNumberOutOfRange,
 				data: `${parser.accountFrom}`,
 			},
 		])
@@ -295,7 +294,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.accountFrom = 10000
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.accountNumberOutOfRange,
+				type: OutputError.Types.accountNumberOutOfRange,
 				data: `${parser.accountFrom}`,
 			},
 		])
@@ -304,7 +303,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.accountFrom = 5555.5
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.accountNumberInvalidFormat,
+				type: OutputError.Types.accountNumberInvalidFormat,
 				data: `${parser.accountFrom}`,
 			},
 		])
@@ -313,7 +312,7 @@ describe('Parser Multi #cold #entity', () => {
 	// Validate required line matchers or generic
 	it('Validate required line matchers or generic', () => {
 		parser.lineMatchers = []
-		expect(parser.validate()).toStrictEqual([{ error: EntityErrors.parserLineMatchersOrGenericRequired }])
+		expect(parser.validate()).toStrictEqual([{ type: OutputError.Types.parserLineMatchersOrGenericRequired }])
 
 		parser.generic = fakerLineMatcher(/generic/)
 		expect(parser.validate()).toStrictEqual([])
@@ -340,7 +339,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.generic = lineInfo
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.nameTooShort,
+				type: OutputError.Types.nameTooShort,
 				data: lineInfo.nameReplacement,
 			},
 		])
@@ -349,7 +348,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.generic = undefined
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.nameTooShort,
+				type: OutputError.Types.nameTooShort,
 				data: lineInfo.nameReplacement,
 			},
 		])
@@ -376,7 +375,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.generic = lineInfo
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.internalNameTooShort,
+				type: OutputError.Types.internalNameTooShort,
 				data: lineInfo.internalName,
 			},
 		])
@@ -385,7 +384,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.generic = undefined
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.internalNameTooShort,
+				type: OutputError.Types.internalNameTooShort,
 				data: lineInfo.internalName,
 			},
 		])
@@ -423,7 +422,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.generic = lineInfo
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.accountNumberOutOfRange,
+				type: OutputError.Types.accountNumberOutOfRange,
 				data: `${lineInfo.accountTo}`,
 			},
 		])
@@ -432,7 +431,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.generic = undefined
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.accountNumberOutOfRange,
+				type: OutputError.Types.accountNumberOutOfRange,
 				data: `${lineInfo.accountTo}`,
 			},
 		])
@@ -443,7 +442,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.generic = lineInfo
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.accountNumberOutOfRange,
+				type: OutputError.Types.accountNumberOutOfRange,
 				data: `${lineInfo.accountTo}`,
 			},
 		])
@@ -452,7 +451,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.generic = undefined
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.accountNumberOutOfRange,
+				type: OutputError.Types.accountNumberOutOfRange,
 				data: `${lineInfo.accountTo}`,
 			},
 		])
@@ -464,7 +463,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.generic = lineInfo
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.accountNumberInvalidFormat,
+				type: OutputError.Types.accountNumberInvalidFormat,
 				data: `${lineInfo.accountTo}`,
 			},
 		])
@@ -473,7 +472,7 @@ describe('Parser Multi #cold #entity', () => {
 		parser.generic = undefined
 		expect(parser.validate()).toStrictEqual([
 			{
-				error: EntityErrors.accountNumberInvalidFormat,
+				type: OutputError.Types.accountNumberInvalidFormat,
 				data: `${lineInfo.accountTo}`,
 			},
 		])
@@ -491,7 +490,7 @@ describe('Parser Multi #cold #entity', () => {
 			parser.parse(text)
 		} catch (exception) {
 			expect(exception).toBeInstanceOf(OutputError)
-			expect(exception.errors).toStrictEqual([{ error: EntityErrors.currencyCodeInvalid, data: 'XTT' }])
+			expect(exception.errors).toStrictEqual([{ type: OutputError.Types.currencyCodeInvalid, data: 'XTT' }])
 		}
 	})
 })

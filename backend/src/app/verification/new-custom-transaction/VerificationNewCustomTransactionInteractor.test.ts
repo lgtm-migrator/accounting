@@ -1,13 +1,10 @@
 import { VerificationNewCustomTransactionInteractor } from './VerificationNewCustomTransactionInteractor'
-import { VerificationNewCustomTransactionRepository } from './VerificationNewCustomTransactionRepository'
 import { VerificationNewCustomTransactionInput } from './VerificationNewCustomTransactionInput'
 import { VerificationNewCustomTransactionOutput } from './VerificationNewCustomTransactionOutput'
-import { Id } from '../../core/definitions/Id'
 import { Currency } from '../../core/entities/Currency'
 import { OutputError } from '../../core/definitions/OutputError'
 import { Verification } from '../../core/entities/Verification'
 import { VerificationRepositoryTest } from '../../../jest/VerificationRepositoryTest'
-import { EntityErrors } from '../../core/definitions/EntityErrors'
 
 const localCurrency: Currency.Code = Currency.Codes.SEK
 
@@ -137,11 +134,10 @@ describe('New verification from custom transactions #cold #use-case', () => {
 
 		expect.assertions(1)
 		await expect(output).rejects.toEqual({
-			type: OutputError.Types.invalidInput,
 			errors: [
-				{ error: EntityErrors.nameTooShort, data: input.verification.name },
-				{ error: EntityErrors.verificationDateInvalidFormat, data: input.verification.date },
-				{ error: EntityErrors.transactionsMissing },
+				{ type: OutputError.Types.nameTooShort, data: input.verification.name },
+				{ type: OutputError.Types.verificationDateInvalidFormat, data: input.verification.date },
+				{ type: OutputError.Types.transactionsMissing },
 			],
 		})
 	})

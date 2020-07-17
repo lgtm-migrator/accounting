@@ -1,6 +1,5 @@
 import { Transaction } from './Transaction'
 import { Id } from '../definitions/Id'
-import { EntityErrors } from '../definitions/EntityErrors'
 import { Currency } from './Currency'
 import { Consts } from '../definitions/Consts'
 import '../definitions/String'
@@ -98,36 +97,36 @@ export class Verification extends UserEntity implements Verification.Option {
 
 		// Name
 		if (this.name.length < Consts.NAME_LENGTH_MIN) {
-			errors.push({ error: EntityErrors.nameTooShort, data: this.name })
+			errors.push({ type: OutputError.Types.nameTooShort, data: this.name })
 		}
 
 		// Internal name
 		if (this.internalName && this.internalName.length < Consts.NAME_LENGTH_MIN) {
-			errors.push({ error: EntityErrors.internalNameTooShort, data: this.internalName })
+			errors.push({ type: OutputError.Types.internalNameTooShort, data: this.internalName })
 		}
 
 		// Type
 		if (this.type == Verification.Types.INVALID) {
-			errors.push({ error: EntityErrors.verificationTypeInvalid })
+			errors.push({ type: OutputError.Types.verificationTypeInvalid })
 		}
 
 		// Verification number
 		if (typeof this.number === 'number') {
 			// Requires a filed date
 			if (typeof this.dateFiled === 'undefined') {
-				errors.push({ error: EntityErrors.verificationDateFiledMissing })
+				errors.push({ type: OutputError.Types.verificationDateFiledMissing })
 			}
 
 			if (this.number <= 0) {
 				const data = `${this.number} <= 0`
-				errors.push({ error: EntityErrors.verificationNumberInvalid, data: data })
+				errors.push({ type: OutputError.Types.verificationNumberInvalid, data: data })
 			}
 		}
 
 		// Date should be in ISO format
 		if (typeof this.date !== 'undefined') {
 			if (!this.date.isValidIsoDate()) {
-				errors.push({ error: EntityErrors.verificationDateInvalidFormat, data: this.date })
+				errors.push({ type: OutputError.Types.verificationDateInvalidFormat, data: this.date })
 			}
 		}
 
@@ -135,14 +134,14 @@ export class Verification extends UserEntity implements Verification.Option {
 		if (typeof this.dateFiled === 'number') {
 			// Requires verification number
 			if (typeof this.number === 'undefined') {
-				errors.push({ error: EntityErrors.verificationNumberMissing })
+				errors.push({ type: OutputError.Types.verificationNumberMissing })
 			}
 
 			if (typeof this.dateCreated === 'undefined') {
-				errors.push({ error: EntityErrors.dateCreatedMissing })
+				errors.push({ type: OutputError.Types.dateCreatedMissing })
 			} else if (this.dateFiled < this.dateCreated) {
 				const data = `${this.dateFiled} < ${this.dateCreated}`
-				errors.push({ error: EntityErrors.verificationDateFiledBeforeCreated, data: data })
+				errors.push({ type: OutputError.Types.verificationDateFiledBeforeCreated, data: data })
 			}
 		}
 
@@ -161,21 +160,21 @@ export class Verification extends UserEntity implements Verification.Option {
 			}
 
 			if (!found) {
-				errors.push({ error: EntityErrors.verificationAmountDoesNotMatchAnyTransaction })
+				errors.push({ type: OutputError.Types.verificationAmountDoesNotMatchAnyTransaction })
 			}
 		}
 
 		// Invoice Id
 		if (typeof this.invoiceId === 'string') {
 			if (this.invoiceId.length <= 0) {
-				errors.push({ error: EntityErrors.verificationInvoiceIdIsEmpty })
+				errors.push({ type: OutputError.Types.verificationInvoiceIdIsEmpty })
 			}
 		}
 
 		// Payment Id
 		if (typeof this.paymentId === 'string') {
 			if (this.paymentId.length <= 0) {
-				errors.push({ error: EntityErrors.verificationPaymentIdIsEmpty })
+				errors.push({ type: OutputError.Types.verificationPaymentIdIsEmpty })
 			}
 		}
 
@@ -190,7 +189,7 @@ export class Verification extends UserEntity implements Verification.Option {
 
 		// No transactions
 		if (this.transactions.length == 0) {
-			errors.push({ error: EntityErrors.transactionsMissing })
+			errors.push({ type: OutputError.Types.transactionsMissing })
 		}
 
 		// Check for errors in each transaction
@@ -207,7 +206,7 @@ export class Verification extends UserEntity implements Verification.Option {
 				// Local code doesn't match
 				if (localAmount.code != localCurrencyCode) {
 					const data = `${localAmount.code.name} != ${localCurrencyCode.name}`
-					errors.push({ error: EntityErrors.transactionsCurrencyCodeLocalMismatch, data: data })
+					errors.push({ type: OutputError.Types.transactionsCurrencyCodeLocalMismatch, data: data })
 					return
 				}
 
@@ -216,7 +215,7 @@ export class Verification extends UserEntity implements Verification.Option {
 		}
 
 		if (sum != 0n) {
-			errors.push({ error: EntityErrors.transactionSumIsNotZero, data: `${sum}` })
+			errors.push({ type: OutputError.Types.transactionSumIsNotZero, data: `${sum}` })
 		}
 	}
 

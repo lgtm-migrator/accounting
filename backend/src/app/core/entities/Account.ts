@@ -1,6 +1,5 @@
 import { OutputError } from '../definitions/OutputError'
 import { Consts } from '../definitions/Consts'
-import { EntityErrors } from '../definitions/EntityErrors'
 import { UserEntity } from './UserEntity'
 
 export namespace Account {
@@ -33,7 +32,7 @@ export class Account extends UserEntity implements Account.Option {
 		// Account number - Check that the account number is valid
 		if (accountNumber < Consts.ACCOUNT_NUMBER_START || accountNumber > Consts.ACCOUNT_NUMBER_END) {
 			errors.push({
-				error: EntityErrors.accountNumberOutOfRange,
+				type: OutputError.Types.accountNumberOutOfRange,
 				data: `${accountNumber}`,
 			})
 		}
@@ -41,7 +40,7 @@ export class Account extends UserEntity implements Account.Option {
 		// Account number is floating point
 		if (!Number.isInteger(accountNumber)) {
 			errors.push({
-				error: EntityErrors.accountNumberInvalidFormat,
+				type: OutputError.Types.accountNumberInvalidFormat,
 				data: `${accountNumber}`,
 			})
 		}

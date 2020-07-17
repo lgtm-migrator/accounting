@@ -1,8 +1,6 @@
-import { Entity } from './Entity'
 import { Verification } from './Verification'
 import { Currency } from './Currency'
 import { OutputError } from '../definitions/OutputError'
-import { EntityErrors } from '../definitions/EntityErrors'
 import { Consts } from '../definitions/Consts'
 import '../definitions/String'
 import { Parser } from './Parser'
@@ -59,17 +57,17 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 
 		// Verification name
 		if (this.verification.name.length < Consts.NAME_LENGTH_MIN) {
-			errors.push({ error: EntityErrors.nameTooShort })
+			errors.push({ type: OutputError.Types.nameTooShort })
 		}
 
 		// Verification internal name
 		if (this.verification.internalName.length < Consts.NAME_LENGTH_MIN) {
-			errors.push({ error: EntityErrors.internalNameTooShort })
+			errors.push({ type: OutputError.Types.internalNameTooShort })
 		}
 
 		// Verification type
 		if (this.verification.type == Verification.Types.INVALID) {
-			errors.push({ error: EntityErrors.verificationTypeInvalid })
+			errors.push({ type: OutputError.Types.verificationTypeInvalid })
 		}
 
 		// Account From
@@ -95,16 +93,16 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 	private static validateMatcher(matcher: FindAndReplaceInfo, name: string, errors: OutputError.Info[]) {
 		if (matcher.find) {
 			if (matcher.replace && !matcher.replacement) {
-				errors.push({ error: EntityErrors.parserMatcherReplacementMissing, data: name })
+				errors.push({ type: OutputError.Types.parserMatcherReplacementMissing, data: name })
 			} else if (matcher.replacement && !matcher.replace) {
-				errors.push({ error: EntityErrors.parserMatcherReplaceMissing, data: name })
+				errors.push({ type: OutputError.Types.parserMatcherReplaceMissing, data: name })
 			}
 		} else if (matcher.replacement) {
 			if (matcher.replace) {
-				errors.push({ error: EntityErrors.parserMatcherFindMissing, data: name })
+				errors.push({ type: OutputError.Types.parserMatcherFindMissing, data: name })
 			}
 		} else {
-			errors.push({ error: EntityErrors.parserMatcherInvalid, data: name })
+			errors.push({ type: OutputError.Types.parserMatcherInvalid, data: name })
 		}
 	}
 
@@ -131,7 +129,7 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 		}
 
 		if (errors.length > 0) {
-			throw new OutputError(OutputError.Types.invalidInput, errors)
+			throw new OutputError(errors)
 		}
 
 		const verificationInfo: Parser.VerificationInfo[] = []
@@ -158,13 +156,13 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 			const code = Currency.Codes.fromString(codeString)
 
 			if (!code) {
-				throw OutputError.create(OutputError.Types.invalidInput, EntityErrors.parserCurrencyCodeInvalid, codeString)
+				throw OutputError.create(OutputError.Types.parserCurrencyCodeInvalid, codeString)
 			}
 
 			return code
 		}
 
-		throw OutputError.create(OutputError.Types.invalidInput, EntityErrors.parserCurrencyCodeInvalid)
+		throw OutputError.create(OutputError.Types.parserCurrencyCodeInvalid)
 	}
 
 	private parseAmount(text: string): number {
@@ -177,7 +175,7 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 	 * @param text the text to parse
 	 * @param findAndReplaceInfo what to find and optionally replace the match with
 	 * @return the matched (and potentially replaced) string, empty string if errors were added
-	 * @throws {OutputError.Types.internalError} if the matcher is invalid
+	 * @throws {OutputError.Types.parserMatcherInvalid} if the matcher is invalid
 	 * @throws {OutputError.Types.invalidInput} if we couldn't find a match
 	 */
 	private static match(text: string, findAndReplaceInfo: FindAndReplaceInfo): string {
@@ -185,11 +183,7 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 			const matched = text.match(findAndReplaceInfo.find)
 
 			if (!matched) {
-				throw OutputError.create(
-					OutputError.Types.invalidInput,
-					EntityErrors.parserPatternNotFound,
-					String(findAndReplaceInfo.find)
-				)
+				throw OutputError.create(OutputError.Types.parserPatternNotFound, String(findAndReplaceInfo.find))
 			}
 			let value = matched[0]
 
@@ -203,6 +197,6 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 			return findAndReplaceInfo.replacement
 		}
 
-		throw OutputError.create(OutputError.Types.internalError, EntityErrors.parserMatcherInvalid)
+		throw OutputError.create(OutputError.Types.parserMatcherInvalid)
 	}
 }

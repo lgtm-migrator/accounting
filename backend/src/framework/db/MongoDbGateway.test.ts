@@ -4,9 +4,7 @@ import { MongoClient, Db, ObjectId } from 'mongodb'
 import { config } from '../../config'
 import * as faker from 'faker'
 import { MongoConverter } from './MongoConverter'
-import { InternalError } from '../../app/core/definitions/InternalError'
 import { OutputError } from '../../app/core/definitions/OutputError'
-import { EntityErrors } from '../../app/core/definitions/EntityErrors'
 import { Account } from '../../app/core/entities/Account'
 
 const USER_ID = new ObjectId().toHexString()
@@ -217,7 +215,7 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 
 		const otherId = new ObjectId().toHexString()
 		const promise = gateway.getVerification(USER_ID, otherId)
-		const validError = OutputError.create(OutputError.Types.invalidInput, EntityErrors.verificationNotFound, otherId)
+		const validError = OutputError.create(OutputError.Types.verificationNotFound, otherId)
 		await expect(promise).rejects.toStrictEqual(validError)
 	})
 
@@ -228,11 +226,7 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 		await db.collection(Collections.Verification).insertOne(object)
 
 		const promise = gateway.getVerification(new ObjectId().toHexString(), verification.id)
-		const validError = OutputError.create(
-			OutputError.Types.invalidInput,
-			EntityErrors.verificationNotFound,
-			verification.id
-		)
+		const validError = OutputError.create(OutputError.Types.verificationNotFound, verification.id)
 		await expect(promise).rejects.toStrictEqual(validError)
 	})
 
@@ -281,16 +275,12 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 
 		// Not found - other user id
 		promise = gateway.getAccount(new ObjectId().toHexString(), 1234)
-		let validError = OutputError.create(
-			OutputError.Types.invalidInput,
-			EntityErrors.accountNumberNotFound,
-			String(1234)
-		)
+		let validError = OutputError.create(OutputError.Types.accountNumberNotFound, String(1234))
 		await expect(promise).rejects.toStrictEqual(validError)
 
 		// Not found - no account number
 		promise = gateway.getAccount(account.userId, 1235)
-		validError = OutputError.create(OutputError.Types.invalidInput, EntityErrors.accountNumberNotFound, String(1235))
+		validError = OutputError.create(OutputError.Types.accountNumberNotFound, String(1235))
 		await expect(promise).rejects.toStrictEqual(validError)
 	})
 })

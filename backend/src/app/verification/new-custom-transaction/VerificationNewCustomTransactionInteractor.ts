@@ -5,7 +5,6 @@ import { VerificationNewCustomTransactionRepository } from './VerificationNewCus
 import { Transaction } from '../../core/entities/Transaction'
 import { Currency } from '../../core/entities/Currency'
 import { Verification } from '../../core/entities/Verification'
-import { EntityErrors } from '../../core/definitions/EntityErrors'
 import { OutputError } from '../../core/definitions/OutputError'
 
 /**
@@ -63,11 +62,7 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
 	): Promise<Transaction> {
 		const code = Currency.Codes.fromString(transactionInputData.currencyCode)
 		if (!code) {
-			throw OutputError.create(
-				OutputError.Types.invalidInput,
-				EntityErrors.currencyCodeInvalid,
-				transactionInputData.currencyCode
-			)
+			throw OutputError.create(OutputError.Types.currencyCodeInvalid, transactionInputData.currencyCode)
 		}
 
 		let exchangeRatePromise: Promise<number | undefined> = Promise.resolve(undefined)
@@ -112,7 +107,7 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
 
 		const errors = verification.validate()
 		if (errors.length > 0) {
-			throw new OutputError(OutputError.Types.invalidInput, errors)
+			throw new OutputError(errors)
 		}
 
 		return Promise.resolve(verification)

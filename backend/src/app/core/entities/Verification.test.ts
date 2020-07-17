@@ -1,9 +1,8 @@
 import * as faker from 'faker'
 import { Verification } from './Verification'
 import { Transaction } from './Transaction'
-import { EntityErrors } from '../definitions/EntityErrors'
+import { OutputError } from '../definitions/OutputError'
 import { Currency } from './Currency'
-import { date } from 'faker'
 
 function fakerValidDate(): number {
 	return faker.date.between('2010-01-01', '2020-01-01').getTime()
@@ -68,7 +67,7 @@ describe('Verification test #cold #entity', () => {
 
 	it('Too short name', () => {
 		verification.name = '12'
-		expect(verification.validate()).toStrictEqual([{ error: EntityErrors.nameTooShort, data: verification.name }])
+		expect(verification.validate()).toStrictEqual([{ type: OutputError.Types.nameTooShort, data: verification.name }])
 	})
 
 	// Internal name
@@ -80,7 +79,7 @@ describe('Verification test #cold #entity', () => {
 	it('Too short internal name', () => {
 		verification.internalName = '12'
 		expect(verification.validate()).toStrictEqual([
-			{ error: EntityErrors.internalNameTooShort, data: verification.internalName },
+			{ type: OutputError.Types.internalNameTooShort, data: verification.internalName },
 		])
 	})
 
@@ -90,34 +89,34 @@ describe('Verification test #cold #entity', () => {
 		verification.dateFiled = verification.dateCreated
 
 		verification.number = 0
-		expect(verification.validate()).toMatchObject([{ error: EntityErrors.verificationNumberInvalid }])
+		expect(verification.validate()).toMatchObject([{ type: OutputError.Types.verificationNumberInvalid }])
 		verification.number = faker.random.number({ min: -99999, max: 0 })
-		expect(verification.validate()).toMatchObject([{ error: EntityErrors.verificationNumberInvalid }])
+		expect(verification.validate()).toMatchObject([{ type: OutputError.Types.verificationNumberInvalid }])
 	})
 
 	it('Verification number set, but missing date filed', () => {
 		verification.number = 1
-		expect(verification.validate()).toStrictEqual([{ error: EntityErrors.verificationDateFiledMissing }])
+		expect(verification.validate()).toStrictEqual([{ type: OutputError.Types.verificationDateFiledMissing }])
 	})
 
 	// Date Filed
 	it('Date filed but missing verification number', () => {
 		verification.dateCreated = fakerValidDate()
 		verification.dateFiled = verification.dateCreated
-		expect(verification.validate()).toStrictEqual([{ error: EntityErrors.verificationNumberMissing }])
+		expect(verification.validate()).toStrictEqual([{ type: OutputError.Types.verificationNumberMissing }])
 	})
 
 	// it('Date filed but missing creation date', () => {
 	// 	verification.dateFiled = faker_valid_date()
 	// 	verification.number = 1
-	// 	expect(verification.validate()).toStrictEqual([{error:EntityErrors.dateCreatedMissing}])
+	// 	expect(verification.validate()).toStrictEqual([{type:OutputError.Types.dateCreatedMissing}])
 	// })
 
 	it('Date filed before creation date', () => {
 		verification.number = 1
 		verification.dateFiled = faker.date.between('2010-01-01', '2014-12-31').getTime()
 		verification.dateCreated = faker.date.between('2015-01-01', '2019-12-31').getTime()
-		expect(verification.validate()).toMatchObject([{ error: EntityErrors.verificationDateFiledBeforeCreated }])
+		expect(verification.validate()).toMatchObject([{ type: OutputError.Types.verificationDateFiledBeforeCreated }])
 	})
 
 	// Date
@@ -131,19 +130,19 @@ describe('Verification test #cold #entity', () => {
 	it('Invalid date formats', () => {
 		verification.date = ''
 		expect(verification.validate()).toStrictEqual([
-			{ error: EntityErrors.verificationDateInvalidFormat, data: verification.date },
+			{ type: OutputError.Types.verificationDateInvalidFormat, data: verification.date },
 		])
 		verification.date = '20'
 		expect(verification.validate()).toStrictEqual([
-			{ error: EntityErrors.verificationDateInvalidFormat, data: verification.date },
+			{ type: OutputError.Types.verificationDateInvalidFormat, data: verification.date },
 		])
 		verification.date = '2019-13-01'
 		expect(verification.validate()).toStrictEqual([
-			{ error: EntityErrors.verificationDateInvalidFormat, data: verification.date },
+			{ type: OutputError.Types.verificationDateInvalidFormat, data: verification.date },
 		])
 		verification.date = '2019-02-29'
 		expect(verification.validate()).toStrictEqual([
-			{ error: EntityErrors.verificationDateInvalidFormat, data: verification.date },
+			{ type: OutputError.Types.verificationDateInvalidFormat, data: verification.date },
 		])
 	})
 
@@ -152,7 +151,7 @@ describe('Verification test #cold #entity', () => {
 		const currency = verification.transactions[0].currency
 		verification.totalAmount = new Currency({ amount: currency.amount + 1n, code: currency.code })
 		expect(verification.validate()).toStrictEqual([
-			{ error: EntityErrors.verificationAmountDoesNotMatchAnyTransaction },
+			{ type: OutputError.Types.verificationAmountDoesNotMatchAnyTransaction },
 		])
 	})
 
@@ -177,7 +176,7 @@ describe('Verification test #cold #entity', () => {
 		verification.transactions[1].dateDeleted = dateDeleted
 		expect(verification.validate()).toStrictEqual([
 			{
-				error: EntityErrors.verificationAmountDoesNotMatchAnyTransaction,
+				type: OutputError.Types.verificationAmountDoesNotMatchAnyTransaction,
 			},
 		])
 	})
@@ -186,7 +185,7 @@ describe('Verification test #cold #entity', () => {
 		const currency = verification.transactions[0].currency
 		verification.totalAmount = new Currency({ amount: currency.amount, code: Currency.Codes.BBD })
 		expect(verification.validate()).toStrictEqual([
-			{ error: EntityErrors.verificationAmountDoesNotMatchAnyTransaction },
+			{ type: OutputError.Types.verificationAmountDoesNotMatchAnyTransaction },
 		])
 	})
 
@@ -202,7 +201,7 @@ describe('Verification test #cold #entity', () => {
 			})
 		)
 
-		expect(verification.validate()).toStrictEqual([{ error: EntityErrors.transactionSumIsNotZero, data: '1' }])
+		expect(verification.validate()).toStrictEqual([{ type: OutputError.Types.transactionSumIsNotZero, data: '1' }])
 	})
 
 	it('Transaction sum (do not count deleted transactions)', () => {
@@ -210,7 +209,7 @@ describe('Verification test #cold #entity', () => {
 
 		expect(verification.validate()).toStrictEqual([
 			{
-				error: EntityErrors.transactionSumIsNotZero,
+				type: OutputError.Types.transactionSumIsNotZero,
 				data: String(verification.transactions[0].currency.amount),
 			},
 		])
@@ -219,7 +218,7 @@ describe('Verification test #cold #entity', () => {
 	// Missing transactions
 	it('Missing transactions', () => {
 		verification.transactions = []
-		expect(verification.validate()).toStrictEqual([{ error: EntityErrors.transactionsMissing }])
+		expect(verification.validate()).toStrictEqual([{ type: OutputError.Types.transactionsMissing }])
 	})
 
 	// Mismatch local code for transactions
@@ -257,7 +256,7 @@ describe('Verification test #cold #entity', () => {
 
 		verification.totalAmount = firstTransaction.currency
 
-		expect(verification.validate()).toMatchObject([{ error: EntityErrors.transactionsCurrencyCodeLocalMismatch }])
+		expect(verification.validate()).toMatchObject([{ type: OutputError.Types.transactionsCurrencyCodeLocalMismatch }])
 	})
 
 	it('Types.fromString() -> Check so that it works', () => {

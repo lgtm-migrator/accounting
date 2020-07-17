@@ -1,5 +1,5 @@
 import { InternalError } from '../definitions/InternalError'
-import { EntityErrors } from '../definitions/EntityErrors'
+import { OutputError } from '../definitions/OutputError'
 
 /**
  * Holds the currency amount, code, and also an optional exchange rate with a local code.
@@ -17,14 +17,14 @@ export class Currency implements Currency.Option {
 	 * @throws {InternalError} if the input data (options) isn't valid
 	 */
 	constructor(options: Currency.Option) {
-		const errors: EntityErrors[] = []
+		const errors: OutputError.Types[] = []
 
 		if (typeof options.code === 'string') {
 			let foundCode = Currency.Codes.fromString(options.code)
 			if (foundCode) {
 				this.code = foundCode
 			} else {
-				errors.push(EntityErrors.currencyCodeInvalid)
+				errors.push(OutputError.Types.currencyCodeInvalid)
 			}
 		} else {
 			this.code = options.code
@@ -40,7 +40,7 @@ export class Currency implements Currency.Option {
 				if (foundCode) {
 					this.localCode = foundCode
 				} else {
-					errors.push(EntityErrors.currencyCodeLocalInvalid)
+					errors.push(OutputError.Types.currencyCodeLocalInvalid)
 				}
 			} else {
 				this.localCode = options.localCode
@@ -70,20 +70,20 @@ export class Currency implements Currency.Option {
 		}
 	}
 
-	private validate(errors: EntityErrors[]) {
+	private validate(errors: OutputError.Types[]) {
 		// Exchange rate
 		if (typeof this.exchangeRate !== 'undefined') {
 			// Requires local code
 			if (typeof this.localCode === 'undefined') {
 				// Only add error message if there isn't one for invalid local code
-				if (!errors.includes(EntityErrors.currencyCodeLocalInvalid)) {
-					errors.push(EntityErrors.currencyCodeLocalNotSet)
+				if (!errors.includes(OutputError.Types.currencyCodeLocalInvalid)) {
+					errors.push(OutputError.Types.currencyCodeLocalNotSet)
 				}
 			}
 
 			// Not 0 or below
 			if (this.exchangeRate <= 0) {
-				errors.push(EntityErrors.exchangeRateNegativeOrZero)
+				errors.push(OutputError.Types.exchangeRateNegativeOrZero)
 			}
 		}
 
@@ -91,12 +91,12 @@ export class Currency implements Currency.Option {
 		if (typeof this.localCode !== 'undefined') {
 			// Requires exchange rate
 			if (typeof this.exchangeRate === 'undefined') {
-				errors.push(EntityErrors.exchangeRateNotSet)
+				errors.push(OutputError.Types.exchangeRateNotSet)
 			}
 
 			// Can't be same code as this.code
 			if (this.code == this.localCode) {
-				errors.push(EntityErrors.currencyCodesAreSame)
+				errors.push(OutputError.Types.currencyCodesAreSame)
 			}
 		}
 	}
@@ -587,7 +587,7 @@ export class Currency implements Currency.Option {
 	 */
 	private getComparableResults(other: Currency): bigint[] {
 		if (!this.isComparableTo(other)) {
-			throw new InternalError(InternalError.Types.comparableError, [EntityErrors.currenciesNotComparable])
+			throw new InternalError(InternalError.Types.comparableError, [OutputError.Types.currenciesNotComparable])
 		}
 
 		let first: Currency = this

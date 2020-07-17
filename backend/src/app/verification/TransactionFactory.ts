@@ -2,8 +2,6 @@ import { Currency } from '../core/entities/Currency'
 import { Account } from '../core/entities/Account'
 import { Transaction } from '../core/entities/Transaction'
 import { OutputError } from '../core/definitions/OutputError'
-import { EntityErrors } from '../core/definitions/EntityErrors'
-import { InternalError } from '../core/definitions/InternalError'
 import { Id } from '../core/definitions/Id'
 
 type CurrencyOrUndefined = Currency | undefined
@@ -33,7 +31,7 @@ export class TransactionFactory {
 	 * @param accountFrom account details of the from account (-amount from this account)
 	 * @param accountTo account details of the to account ()
 	 * @return created transactions from the specified input
-	 * @throws {InternalError.Types.exchangeRateNotSet} if exchangeRate isn't set when code and localCode differs
+	 * @throws {OutputError.Types.exchangeRateNotSet} if exchangeRate isn't set when code and localCode differs
 	 * @throws {OutputError.Types.invalidAccount} if the VAT percentage is missing and VAT account has been set
 	 */
 	static async createTransactions(option: TransactionFactory.Option): Promise<Transaction[]> {
@@ -42,7 +40,7 @@ export class TransactionFactory {
 		let exchangeRatePromise: Promise<number | undefined> = Promise.resolve(undefined)
 
 		if (localCode !== undefined && code !== localCode && exchangeRate === undefined) {
-			throw new InternalError(InternalError.Types.exchangeRateNotSet)
+			throw OutputError.create(OutputError.Types.exchangeRateNotSet)
 		}
 
 		// Unset local code if code and local code is same
@@ -102,11 +100,7 @@ export class TransactionFactory {
 			vatAccount = account.vatAccount
 
 			if (vatPercentage === undefined) {
-				throw OutputError.create(
-					OutputError.Types.invalidAccount,
-					EntityErrors.accountVatPercentageNotSet,
-					String(account.number)
-				)
+				throw OutputError.create(OutputError.Types.accountVatPercentageNotSet, String(account.number))
 			}
 
 			// Reverse VAT

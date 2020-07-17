@@ -1,6 +1,6 @@
 import { UserEntity } from './UserEntity'
 import * as faker from 'faker'
-import { EntityErrors } from '../definitions/EntityErrors'
+import { OutputError } from '../definitions/OutputError'
 
 describe('Validate user entity #cold', () => {
 	let entity: UserEntity
@@ -24,6 +24,6 @@ describe('Validate user entity #cold', () => {
 
 	it('User id is of type string and invalid (empty)', () => {
 		entity.userId = ''
-		expect(entity.validate()).toStrictEqual([{ error: EntityErrors.userIdIsEmpty }])
+		expect(entity.validate()).toStrictEqual([{ type: OutputError.Types.userIdIsEmpty }])
 	})
 })

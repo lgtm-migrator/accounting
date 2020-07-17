@@ -1,5 +1,4 @@
 import { Entity } from './Entity'
-import { EntityErrors } from '../definitions/EntityErrors'
 import { Immutable } from '../definitions/Immutable'
 import { Currency } from './Currency'
 import { OutputError } from '../definitions/OutputError'
@@ -62,7 +61,7 @@ export class Transaction extends Entity implements Transaction.Option {
 
 		// Amount original - Checks so the amount isn't exactly 0
 		if (this.currency.isZero()) {
-			errors.push({ error: EntityErrors.amountIsZero })
+			errors.push({ type: OutputError.Types.amountIsZero })
 		}
 
 		return errors

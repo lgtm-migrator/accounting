@@ -1,11 +1,9 @@
 import { Verification } from './Verification'
 import { Parser } from './Parser'
-import { EntityErrors } from '../definitions/EntityErrors'
 import { Currency } from './Currency'
 import { OutputError } from '../definitions/OutputError'
 import { Consts } from '../definitions/Consts'
 import { Account } from './Account'
-import { InternalError } from '../definitions/InternalError'
 
 interface MatcherResult {
 	date: string
@@ -70,14 +68,14 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 
 		// Needs line matchers or a generic
 		if (!this.generic && this.lineMatchers.length == 0) {
-			errors.push({ error: EntityErrors.parserLineMatchersOrGenericRequired })
+			errors.push({ type: OutputError.Types.parserLineMatchersOrGenericRequired })
 		}
 
 		// Default currency code
 		const foundCode = Currency.Codes.fromString(this.currencyCodeDefault)
 		if (!foundCode) {
 			errors.push({
-				error: EntityErrors.currencyCodeInvalid,
+				type: OutputError.Types.currencyCodeInvalid,
 				data: this.currencyCodeDefault,
 			})
 		}
@@ -112,7 +110,7 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 
 			// No year, month, or day specified. Add date error as well
 			if (errorCount == 3) {
-				errors.push({ error: EntityErrors.parserMatcherGroupMissing, data: 'date' })
+				errors.push({ type: OutputError.Types.parserMatcherGroupMissing, data: 'date' })
 			}
 		}
 
@@ -130,7 +128,7 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 		// Name replacement
 		if (line.nameReplacement && line.nameReplacement.length < Consts.NAME_LENGTH_MIN) {
 			errors.push({
-				error: EntityErrors.nameTooShort,
+				type: OutputError.Types.nameTooShort,
 				data: line.nameReplacement,
 			})
 		}
@@ -138,7 +136,7 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 		// Internal name
 		if (line.internalName.length < Consts.NAME_LENGTH_MIN) {
 			errors.push({
-				error: EntityErrors.internalNameTooShort,
+				type: OutputError.Types.internalNameTooShort,
 				data: line.internalName,
 			})
 		}
@@ -148,7 +146,7 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 			const foundCode = Currency.Codes.fromString(line.currencyCodeDefault)
 			if (!foundCode) {
 				errors.push({
-					error: EntityErrors.currencyCodeInvalid,
+					type: OutputError.Types.currencyCodeInvalid,
 					data: line.currencyCodeDefault,
 				})
 			}
@@ -162,7 +160,7 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 		const matcher = String(this.matcher)
 		const testGroup = RegExp(`\\(\\?<${group}>`)
 		if (!testGroup.test(matcher)) {
-			errors.push({ error: EntityErrors.parserMatcherGroupMissing, data: `${group}` })
+			errors.push({ type: OutputError.Types.parserMatcherGroupMissing, data: `${group}` })
 			return false
 		}
 		return true
@@ -211,7 +209,7 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 		}
 
 		if (errors.length > 0) {
-			throw new OutputError(OutputError.Types.invalidInput, errors)
+			throw new OutputError(errors)
 		}
 
 		return verifications
@@ -240,7 +238,7 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 		// Get the currency code object
 		const foundCode = Currency.Codes.fromString(code)
 		if (!foundCode) {
-			throw OutputError.create(OutputError.Types.invalidInput, EntityErrors.currencyCodeInvalid, code)
+			throw OutputError.create(OutputError.Types.currencyCodeInvalid, code)
 		}
 
 		// Negating amount since a positive amount would mean we take from the 'accountFrom'
@@ -262,7 +260,7 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 	private parseLine(match: RegExpMatchArray): MatcherResult | OutputError.Info[] {
 		const errors = new Array<OutputError.Info>()
 		if (!match.groups) {
-			throw OutputError.create(OutputError.Types.invalidInput, EntityErrors.parserPatternNotFound)
+			throw OutputError.create(OutputError.Types.parserPatternNotFound)
 		}
 		let { name, amount, date, year, month, day, currency } = match.groups
 
@@ -279,11 +277,11 @@ export class ParserMulti extends Parser implements ParserMulti.Option {
 				date = `${year}-${month}-${day}`
 			} else {
 				if (!year) {
-					errors.push({ error: EntityErrors.parserMatcherGroupMissing, data: 'year' })
+					errors.push({ type: OutputError.Types.parserMatcherGroupMissing, data: 'year' })
 				} else if (!month) {
-					errors.push({ error: EntityErrors.parserMatcherGroupMissing, data: 'month' })
+					errors.push({ type: OutputError.Types.parserMatcherGroupMissing, data: 'month' })
 				} else if (!day) {
-					errors.push({ error: EntityErrors.parserMatcherGroupMissing, data: 'day' })
+					errors.push({ type: OutputError.Types.parserMatcherGroupMissing, data: 'day' })
 				}
 			}
 		}

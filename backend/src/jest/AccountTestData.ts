@@ -1,7 +1,5 @@
 import { Account } from '../app/core/entities/Account'
-import { InternalError } from '../app/core/definitions/InternalError'
 import { OutputError } from '../app/core/definitions/OutputError'
-import { EntityErrors } from '../app/core/definitions/EntityErrors'
 
 export class Accounts {
 	static readonly BANK_ACCOUNT = new Account({
@@ -91,6 +89,6 @@ export class Accounts {
 				}
 			}
 		}
-		throw OutputError.create(OutputError.Types.invalidInput, EntityErrors.accountNumberNotFound, String(accountNumber))
+		throw OutputError.create(OutputError.Types.accountNumberNotFound, String(accountNumber))
 	}
 }

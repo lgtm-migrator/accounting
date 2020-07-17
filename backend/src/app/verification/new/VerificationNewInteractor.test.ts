@@ -5,7 +5,6 @@ import { Accounts } from '../../../jest/AccountTestData'
 import { Currency } from '../../core/entities/Currency'
 import { Verification } from '../../core/entities/Verification'
 import { OutputError } from '../../core/definitions/OutputError'
-import { EntityErrors } from '../../core/definitions/EntityErrors'
 import { VerificationNewInput } from './VerificationNewInput'
 import { Id } from '../../core/definitions/Id'
 
@@ -186,18 +185,16 @@ describe('New Verification #cold #use-case', () => {
 		output = interactor.execute(input)
 
 		await expect(output).rejects.toEqual({
-			type: OutputError.Types.invalidInput,
-			errors: [{ error: EntityErrors.accountNumberNotFound, data: `${inputData.accountFrom}` }],
+			errors: [{ type: OutputError.Types.accountNumberNotFound, data: `${inputData.accountFrom}` }],
 		})
 
 		inputData.accountFrom = Accounts.BANK_ACCOUNT.number
 		input = createInput(inputData)
 		output = interactor.execute(input)
 		await expect(output).rejects.toEqual({
-			type: OutputError.Types.invalidInput,
 			errors: [
-				{ error: EntityErrors.verificationDateInvalidFormat, data: inputData.date },
-				{ error: EntityErrors.amountIsZero },
+				{ type: OutputError.Types.verificationDateInvalidFormat, data: inputData.date },
+				{ type: OutputError.Types.amountIsZero },
 			],
 		})
 	})

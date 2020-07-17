@@ -1,5 +1,4 @@
 import { Id } from '../definitions/Id'
-import { EntityErrors } from '../definitions/EntityErrors'
 import { OutputError } from '../definitions/OutputError'
 
 /** Date: 2000-01-01 */
@@ -72,7 +71,7 @@ export class Entity implements Entity.Option {
 		// ID checks
 		if (typeof this.id === 'string') {
 			if (this.id.length <= 0) {
-				errors.push({ error: EntityErrors.idIsEmpty })
+				errors.push({ type: OutputError.Types.idIsEmpty })
 			}
 		}
 
@@ -82,12 +81,12 @@ export class Entity implements Entity.Option {
 			// Invalid before a specified date
 			if (this.dateCreated < VALID_DATE_AFTER) {
 				const data = `${this.dateCreated} < ${VALID_DATE_AFTER}`
-				errors.push({ error: EntityErrors.dateCreatedTooEarly, data: data })
+				errors.push({ type: OutputError.Types.dateCreatedTooEarly, data: data })
 			}
 			// In the future
 			else if (this.dateCreated > now) {
 				const data = `${this.dateCreated} > ${now}`
-				errors.push({ error: EntityErrors.dateCreatedInTheFuture, data: data })
+				errors.push({ type: OutputError.Types.dateCreatedInTheFuture, data: data })
 			}
 		}
 
@@ -95,17 +94,17 @@ export class Entity implements Entity.Option {
 		if (this.dateModified) {
 			// Requires date_created
 			if (!this.dateCreated) {
-				errors.push({ error: EntityErrors.dateModifiedRequiresDateCreated })
+				errors.push({ type: OutputError.Types.dateModifiedRequiresDateCreated })
 			}
 			// Before date created
 			else if (this.dateModified < this.dateCreated) {
 				const data = `${this.dateModified} < ${this.dateCreated}`
-				errors.push({ error: EntityErrors.dateModifiedBeforeCreated, data: data })
+				errors.push({ type: OutputError.Types.dateModifiedBeforeCreated, data: data })
 			}
 			// In the future
 			else if (this.dateModified > now) {
 				const data = `${this.dateModified} > ${now}`
-				errors.push({ error: EntityErrors.dateModifiedInTheFuture, data: data })
+				errors.push({ type: OutputError.Types.dateModifiedInTheFuture, data: data })
 			}
 		}
 
@@ -113,12 +112,12 @@ export class Entity implements Entity.Option {
 		if (this.dateDeleted) {
 			// Requires date_modified
 			if (!this.dateModified) {
-				errors.push({ error: EntityErrors.dateDeletedRequiresDateModified })
+				errors.push({ type: OutputError.Types.dateDeletedRequiresDateModified })
 			}
 			// Not equal to modified
 			else if (this.dateDeleted !== this.dateModified) {
 				const data = `${this.dateDeleted} !== ${this.dateModified}`
-				errors.push({ error: EntityErrors.dateDeletedNotSameAsModified, data: data })
+				errors.push({ type: OutputError.Types.dateDeletedNotSameAsModified, data: data })
 			}
 		}
 

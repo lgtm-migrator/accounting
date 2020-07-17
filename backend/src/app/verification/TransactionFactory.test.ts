@@ -1,9 +1,6 @@
-import { Account } from '../core/entities/Account'
 import { Currency } from '../core/entities/Currency'
 import { TransactionFactory } from './TransactionFactory'
-import { InternalError } from '../core/definitions/InternalError'
 import { OutputError } from '../core/definitions/OutputError'
-import { EntityErrors } from '../core/definitions/EntityErrors'
 import { Accounts } from '../../jest/AccountTestData'
 
 describe('TransactionFactory tests #cold #helper', () => {
@@ -53,10 +50,9 @@ describe('TransactionFactory tests #cold #helper', () => {
 		let transactionPromise = TransactionFactory.createTransactions(option)
 
 		let error = {
-			type: OutputError.Types.invalidAccount,
 			errors: [
 				{
-					error: EntityErrors.accountVatPercentageNotSet,
+					type: OutputError.Types.accountVatPercentageNotSet,
 					data: String(Accounts.EXPENSE_LOCAL_MISSING_VAT.number),
 				},
 			],
@@ -72,7 +68,7 @@ describe('TransactionFactory tests #cold #helper', () => {
 		let transactionPromise = TransactionFactory.createTransactions(option)
 
 		let error = {
-			type: InternalError.Types.exchangeRateNotSet,
+			errors: [{ type: OutputError.Types.exchangeRateNotSet }],
 		}
 
 		expect.assertions(1)
