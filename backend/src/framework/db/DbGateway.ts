@@ -14,11 +14,12 @@ export interface DbGateway {
 	saveVerification(verification: Verification): Promise<Id>
 
 	/**
-	 * Check if a verification exists
+	 * Check if the verification already exists and returns that instance.
+	 * This method doesn't check by id, but rather on the content of the verification
 	 * @param verification the verification to check if it exists
-	 * @return true or false depending on if the verification exists or not
+	 * @return the existing verification if it exists, undefined otherwise
 	 */
-	verificationExists(verification: Verification): Promise<boolean>
+	getExistingVerification(verification: Verification.Comparable): Promise<Verification | undefined>
 
 	/**
 	 * Get the local currency of a user
@@ -32,7 +33,7 @@ export interface DbGateway {
 	 * @param userId the user which the account belongs to
 	 * @param accountNumber get the account with this account number
 	 * @return The account with the specified account number
-	 * @throws {InternalError.Types.accountNumberNotFound} if the account number does not exist
+	 * @throws {OutputErrors.accountNumberNotFound} if the account number does not exist
 	 */
 	getAccount(userId: Id, accountNumber: number): Promise<Account>
 
@@ -41,7 +42,7 @@ export interface DbGateway {
 	 * @param userId the user which the verification belongs to
 	 * @param verificationId the verification id to get
 	 * @return The verification with the specified Id
-	 * @throws {InternalError.Types.verificationNotFound} if the verification does not exist
+	 * @throws {OutputErrors.verificationNotFound} if the verification does not exist
 	 */
 	getVerification(userId: Id, verificationId: Id): Promise<Verification>
 
@@ -49,7 +50,7 @@ export interface DbGateway {
 	 * Get the user for the specified API key
 	 * @param apiKey the user's API key
 	 * @return user found with the specified API key
-	 * @throws {InternalError.Types.userNotFound} if no user with the specified API key was found
+	 * @throws {OutputErrors.userNotFound} if no user with the specified API key was found
 	 */
 	getUser(apiKey: string): Promise<User>
 

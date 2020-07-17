@@ -7,37 +7,46 @@ import { User } from '../../app/core/entities/User'
 import { ParserSingle } from '../../app/core/entities/ParserSingle'
 import { ParserMulti } from '../../app/core/entities/ParserMulti'
 
+type AddId = 'add-id' | 'dont-add-id'
+type RemoveUndefined = 'remove-undefined' | 'keep-undefined'
+
 export namespace MongoConverter {
 	/**
 	 * Serialize an entity to a DB object.
 	 * Automatically converts bigint to string, and ids to Mongo db's internal id type.
 	 * The id property is mapped to _id.
 	 * @param entity the entity to serialize to a DB object
+	 * @param addId if _id should be added to the DB object if one doesn't exist, defaults to 'add-id'
+	 * @param removeUndefined if all undefined properties should be removed from the object, defaults to 'remove-undefined'
 	 * @return the serialized object
 	 * @throws {InternalError.Types.dbError} if the entity is empty, or only contains undefined or null properties
 	 */
-	export function toDbObject(entity: {}): { _id: ObjectId } {
+	export function toDbObject(
+		entity: {},
+		addId: AddId = 'add-id',
+		removeUndefined: RemoveUndefined = 'remove-undefined'
+	): { _id: ObjectId } {
 		if (!entity || Object.keys(entity).length === 0) {
 			throw new InternalError(InternalError.Types.dbError, 'toEntity() empty object')
 		}
 
-		const dbObject = serialize(entity) as { _id: ObjectId }
+		const dbObject = serialize(entity, removeUndefined) as { _id: ObjectId }
 
 		if (typeof dbObject === 'undefined') {
 			throw new InternalError(InternalError.Types.dbError, 'toDbObject() supplied empty object')
 		}
 
-		if (typeof dbObject._id === 'undefined') {
+		if (addId === 'add-id' && typeof dbObject._id === 'undefined') {
 			dbObject._id = new ObjectId()
 		}
 
 		return dbObject
 	}
 
-	function serialize(entity: {}): {} | undefined {
+	function serialize(entity: {}, removeUndefined: RemoveUndefined): {} | undefined {
 		const object: any = entity instanceof Array ? [] : {}
 		for (let [key, value] of Object.entries(entity)) {
-			if (typeof value !== 'undefined' && value !== null) {
+			if ((typeof value !== 'undefined' && value !== null) || removeUndefined === 'keep-undefined') {
 				// Convert id
 				if ((key === 'id' || key.endsWith('Id')) && (typeof value === 'string' || typeof value === 'number')) {
 					if (key === 'id') {
@@ -64,7 +73,7 @@ export namespace MongoConverter {
 					}
 					// Recursive object
 					else {
-						const child = serialize(value!)
+						const child = serialize(value!, removeUndefined)
 						if (child) {
 							object[key] = child
 						}

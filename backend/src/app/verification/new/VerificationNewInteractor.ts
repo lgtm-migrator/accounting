@@ -42,9 +42,9 @@ export class VerificationNewInteractor extends Interactor<
 			)
 		}
 
-		const localCurrencyPromise = this.repository.getLocalCurrency(this.input.userId)
-		const accountFromPromise = this.repository.getAccountDetails(this.input.verification.accountFrom)
-		const accountToPromise = this.repository.getAccountDetails(this.input.verification.accountTo)
+		const localCurrencyPromise = this.repository.getLocalCurrency(input.userId)
+		const accountFromPromise = this.repository.getAccountDetails(input.userId, input.verification.accountFrom)
+		const accountToPromise = this.repository.getAccountDetails(input.userId, input.verification.accountTo)
 		const promises = Promise.all([localCurrencyPromise, accountFromPromise, accountToPromise])
 
 		return promises
@@ -72,7 +72,7 @@ export class VerificationNewInteractor extends Interactor<
 				if (reason instanceof InternalError) {
 					if (reason.type === InternalError.Types.accountNumberNotFound) {
 						const type = OutputError.Types.invalidInput
-						throw OutputError.create(type, EntityErrors.accountNumberDoesNotExist, String(reason.error))
+						throw OutputError.create(type, EntityErrors.accountNumberNotFound, String(reason.error))
 						// TODO log error
 					}
 				}

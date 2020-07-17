@@ -11,6 +11,7 @@ import { InternalError } from '../../app/core/definitions/InternalError'
 import { Entity } from '../../app/core/entities/Entity'
 import { MongoConverter } from './MongoConverter'
 import { OutputError } from '../../app/core/definitions/OutputError'
+import { EntityErrors } from '../../app/core/definitions/EntityErrors'
 
 export enum Collections {
 	Verification = 'Verification',
@@ -87,8 +88,29 @@ export class MongoDbGateway implements DbGateway {
 		return this.save(verification, Collections.Verification)
 	}
 
-	async verificationExists(verification: Verification): Promise<boolean> {
-		throw new Error('Method not implemented.')
+	async getExistingVerification(verification: Verification.Comparable): Promise<Verification | undefined> {
+		const searchObject = MongoConverter.toDbObject(verification, 'dont-add-id')
+
+		return this.collection(Collections.Verification)
+			.then(async (collection) => {
+				return collection.findOne(searchObject)
+			})
+			.then((foundObject) => {
+				// Found object, but might still be different from the comparable verification
+				if (foundObject) {
+					const foundVerification = MongoConverter.toVerification(foundObject)
+
+					if (verification.isEqualTo(foundVerification.getComparable())) {
+						return foundVerification
+					}
+				}
+			})
+			.catch((reason) => {
+				if (reason instanceof InternalError) {
+					throw reason
+				}
+				throw new InternalError(InternalError.Types.dbError, reason)
+			})
 	}
 
 	async saveParser(parser: Parser): Promise<Id> {
@@ -100,7 +122,30 @@ export class MongoDbGateway implements DbGateway {
 	}
 
 	async getAccount(userId: Id, accountNumber: number): Promise<Account> {
-		throw new Error('Method not implemented.')
+		return this.collection(Collections.Account)
+			.then(async (collection) => {
+				return collection.findOne({
+					userId: new ObjectId(userId),
+					number: accountNumber,
+				})
+			})
+			.then((foundObject) => {
+				if (foundObject) {
+					return MongoConverter.toAccount(foundObject)
+				} else {
+					throw OutputError.create(
+						OutputError.Types.invalidInput,
+						EntityErrors.accountNumberNotFound,
+						String(accountNumber)
+					)
+				}
+			})
+			.catch((reason) => {
+				if (reason instanceof InternalError || reason instanceof OutputError) {
+					throw reason
+				}
+				throw new InternalError(InternalError.Types.dbError, reason)
+			})
 	}
 
 	async getVerification(userId: Id, verificationId: Id): Promise<Verification> {
@@ -111,18 +156,19 @@ export class MongoDbGateway implements DbGateway {
 					userId: new ObjectId(userId),
 				})
 			})
-			.then((object) => {
-				if (object) {
-					return MongoConverter.toVerification(object)
+			.then((foundObject) => {
+				if (foundObject) {
+					return MongoConverter.toVerification(foundObject)
 				} else {
-					throw new InternalError(
-						InternalError.Types.dbSearchReturnedEmpty,
-						`MongoDbGateway.getVerification(${userId}, ${verificationId}) not found`
+					throw OutputError.create(
+						OutputError.Types.invalidInput,
+						EntityErrors.verificationNotFound,
+						String(verificationId)
 					)
 				}
 			})
 			.catch((reason) => {
-				if (reason instanceof InternalError) {
+				if (reason instanceof InternalError || reason instanceof OutputError) {
 					throw reason
 				}
 				throw new InternalError(InternalError.Types.dbError, reason)

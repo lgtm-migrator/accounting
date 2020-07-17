@@ -10,7 +10,7 @@ export class VerificationRepositoryTest
 	static readonly LOCAL_CODE = Currency.Codes.SEK
 	static readonly EXCHANGE_RATE = 10
 
-	getAccountDetails(accountNumber: number): Promise<Account> {
+	getAccountDetails(userId: Id, accountNumber: number): Promise<Account> {
 		return new Promise((resolve) => {
 			const foundNumber = Accounts.findByNumber(accountNumber)
 			resolve(foundNumber)

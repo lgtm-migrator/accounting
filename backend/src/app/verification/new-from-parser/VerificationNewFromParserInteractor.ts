@@ -49,10 +49,8 @@ export class VerificationNewFromParserInteractor extends Interactor<
 			.catch((exception) => {
 				if (exception instanceof InternalError) {
 					throw OutputError.create(OutputError.Types.internalError)
-					// TODO log error
 				} else if (exception instanceof Error) {
 					throw OutputError.create(OutputError.Types.internalError)
-					// TODO log error
 				}
 
 				throw exception
@@ -96,8 +94,8 @@ export class VerificationNewFromParserInteractor extends Interactor<
 		}
 
 		// Get accounts
-		const accountFromPromise = this.repository.getAccountDetails(info.accountFrom)
-		const acountToPromise = this.repository.getAccountDetails(info.accountTo)
+		const accountFromPromise = this.repository.getAccountDetails(this.input.userId, info.accountFrom)
+		const acountToPromise = this.repository.getAccountDetails(this.input.userId, info.accountTo)
 
 		const promises = Promise.all([exchangeRatePromise, accountFromPromise, acountToPromise])
 

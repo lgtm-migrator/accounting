@@ -37,7 +37,7 @@ describe('Save Verification #cold #use-case', () => {
 
 	beforeEach(() => {
 		repository = {
-			async exists(verification: Verification): Promise<Verification | undefined> {
+			async getExistingVerification(verification: Verification.Comparable): Promise<Verification | undefined> {
 				return Promise.resolve(undefined)
 			},
 
@@ -65,7 +65,7 @@ describe('Save Verification #cold #use-case', () => {
 		}
 		interactor = new VerificationSaveInteractor(repository)
 
-		spyExists = jest.spyOn(repository, 'exists')
+		spyExists = jest.spyOn(repository, 'getExistingVerification')
 		spySaveFiles = jest.spyOn(repository, 'saveFiles')
 		spySaveVerification = jest.spyOn(repository, 'saveVerification')
 	})
@@ -112,10 +112,10 @@ describe('Save Verification #cold #use-case', () => {
 			verification: EXISTING_VERIFICATION,
 		}
 
-		repository.exists = function (verification: Verification): Promise<Verification> {
+		repository.getExistingVerification = function (verification: Verification.Comparable): Promise<Verification> {
 			return Promise.resolve(EXISTING_VERIFICATION)
 		}
-		spyExists = jest.spyOn(repository, 'exists')
+		spyExists = jest.spyOn(repository, 'getExistingVerification')
 
 		output = interactor.execute(input)
 		valid = {
@@ -136,10 +136,10 @@ describe('Save Verification #cold #use-case', () => {
 			files: ['new1', 'new2'],
 		}
 
-		repository.exists = function (verification: Verification): Promise<Verification> {
+		repository.getExistingVerification = function (verification: Verification.Comparable): Promise<Verification> {
 			return Promise.resolve(EXISTING_VERIFICATION)
 		}
-		spyExists = jest.spyOn(repository, 'exists')
+		spyExists = jest.spyOn(repository, 'getExistingVerification')
 
 		output = interactor.execute(input)
 		valid = {
@@ -160,10 +160,10 @@ describe('Save Verification #cold #use-case', () => {
 			files: ['new1', 'new2'],
 		}
 
-		repository.exists = function (verification: Verification): Promise<Verification> {
+		repository.getExistingVerification = function (verification: Verification.Comparable): Promise<Verification> {
 			return Promise.resolve(EXISTING_VERIFICATION_WITH_FILES)
 		}
-		spyExists = jest.spyOn(repository, 'exists')
+		spyExists = jest.spyOn(repository, 'getExistingVerification')
 
 		output = interactor.execute(input)
 		valid = {
@@ -184,10 +184,10 @@ describe('Save Verification #cold #use-case', () => {
 			files: EXISTING_VERIFICATION_WITH_FILES.files,
 		}
 
-		repository.exists = function (verification: Verification): Promise<Verification> {
+		repository.getExistingVerification = function (verification: Verification.Comparable): Promise<Verification> {
 			return Promise.resolve(EXISTING_VERIFICATION_WITH_FILES)
 		}
-		spyExists = jest.spyOn(repository, 'exists')
+		spyExists = jest.spyOn(repository, 'getExistingVerification')
 
 		output = interactor.execute(input)
 		valid = {

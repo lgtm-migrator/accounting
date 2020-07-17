@@ -22,9 +22,10 @@ export interface VerificationSaveRepository extends Repository {
 	saveFiles(files: string[], verification: Verification): Promise<Verification>
 
 	/**
-	 * Checks if the verification exists
-	 * @param verification the verification to check if it exists
+	 * Check if the verification already exists and returns that instance.
+	 * This method doesn't check by id, but rather on the content of the verification
+	 * @param verification a comparable version of the verification to check if it exists
 	 * @return the existing verification if it exists, undefined otherwise
 	 */
-	exists(verification: Verification): Promise<Verification | undefined>
+	getExistingVerification(verification: Verification.Comparable): Promise<Verification | undefined>
 }

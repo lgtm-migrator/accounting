@@ -43,7 +43,7 @@ export class VerificationSaveInteractor extends Interactor<
 		let existingVerification: Verification | undefined
 
 		return this.repository
-			.exists(input.verification)
+			.getExistingVerification(input.verification.getComparable())
 			.then((foundVerification) => {
 				let verification = input.verification
 				if (foundVerification) {

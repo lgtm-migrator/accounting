@@ -1,5 +1,7 @@
 import { Account } from '../app/core/entities/Account'
 import { InternalError } from '../app/core/definitions/InternalError'
+import { OutputError } from '../app/core/definitions/OutputError'
+import { EntityErrors } from '../app/core/definitions/EntityErrors'
 
 export class Accounts {
 	static readonly BANK_ACCOUNT = new Account({
@@ -79,7 +81,7 @@ export class Accounts {
 	 * Find the account with this account number in {Accounts}
 	 * @param accountNumber the account number to find the account for
 	 * @return account for this account number
-	 * @throws {InternalError.Types.accountNumberNotFound} if no account with the specified number was found
+	 * @throws {OutputErrors.accountNumberNotFound} if no account with the specified number was found
 	 */
 	static findByNumber(accountNumber: number): Account {
 		for (const value of Object.values(Accounts)) {
@@ -89,6 +91,6 @@ export class Accounts {
 				}
 			}
 		}
-		throw new InternalError(InternalError.Types.accountNumberNotFound, accountNumber)
+		throw OutputError.create(OutputError.Types.invalidInput, EntityErrors.accountNumberNotFound, String(accountNumber))
 	}
 }

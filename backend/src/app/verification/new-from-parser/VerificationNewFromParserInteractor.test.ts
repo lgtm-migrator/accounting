@@ -133,7 +133,7 @@ describe('Verification new from parser #cold #use-case', () => {
 			},
 		]
 
-		// expect.assertions(6)
+		expect.assertions(6)
 		await output.then((output) => {
 			expect(output.verifications.length).toStrictEqual(1)
 

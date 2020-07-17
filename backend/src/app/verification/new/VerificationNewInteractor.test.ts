@@ -187,7 +187,7 @@ describe('New Verification #cold #use-case', () => {
 
 		await expect(output).rejects.toEqual({
 			type: OutputError.Types.invalidInput,
-			errors: [{ error: EntityErrors.accountNumberDoesNotExist, data: `${inputData.accountFrom}` }],
+			errors: [{ error: EntityErrors.accountNumberNotFound, data: `${inputData.accountFrom}` }],
 		})
 
 		inputData.accountFrom = Accounts.BANK_ACCOUNT.number
