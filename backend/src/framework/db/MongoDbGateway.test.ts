@@ -9,100 +9,9 @@ import { Account } from '../../app/core/entities/Account'
 import { ParserSingle } from '../../app/core/entities/ParserSingle'
 import { resolve } from 'path'
 import { ParserMulti } from '../../app/core/entities/ParserMulti'
+import { Parser } from '../../app/core/entities/Parser'
 
 const USER_ID = new ObjectId().toHexString()
-
-function fakerTime(): number {
-	return faker.date.between('2000-01-01', new Date()).getTime()
-}
-
-function fakerVerificationFull(): Verification {
-	const created = fakerTime()
-	const modified = created + 1
-
-	const option: Verification.Option = {
-		id: new ObjectId().toHexString(),
-		userId: USER_ID,
-		name: faker.commerce.productName(),
-		internalName: faker.commerce.product(),
-		number: faker.random.number(),
-		date: '2020-01-01',
-		dateFiled: modified,
-		dateCreated: created,
-		dateModified: modified,
-		dateDeleted: modified,
-		type: Verification.Types.TRANSACTION,
-		description: 'A description',
-		totalAmount: {
-			amount: 1n,
-			localAmount: 10n,
-			code: 'USD',
-			localCode: 'SEK',
-			exchangeRate: 10,
-		},
-		files: ['hello', 'another file'],
-		invoiceId: new ObjectId().toHexString(),
-		paymentId: new ObjectId().toHexString(),
-		requireConfirmation: true,
-		transactions: [
-			{
-				dateCreated: created,
-				dateModified: modified,
-				accountNumber: 2020,
-				currency: {
-					amount: 1n,
-					localAmount: 10n,
-					code: 'USD',
-					localCode: 'SEK',
-					exchangeRate: 10,
-				},
-			},
-			{
-				dateCreated: created,
-				dateModified: modified,
-				accountNumber: 4661,
-				currency: {
-					amount: -1n,
-					localAmount: -10n,
-					code: 'USD',
-					localCode: 'SEK',
-					exchangeRate: 10,
-				},
-			},
-		],
-	}
-
-	const verification = new Verification(option)
-	return verification
-}
-
-function fakerVerificationMinimal(): Verification {
-	const option: Verification.Option = {
-		userId: USER_ID,
-		name: faker.commerce.productName(),
-		date: '2020-01-01',
-		type: Verification.Types.TRANSACTION,
-		transactions: [
-			{
-				accountNumber: 2020,
-				currency: {
-					amount: 1n,
-					code: 'USD',
-				},
-			},
-			{
-				accountNumber: 4661,
-				currency: {
-					amount: -1n,
-					code: 'USD',
-				},
-			},
-		],
-	}
-
-	const verification = new Verification(option)
-	return verification
-}
 
 describe('MongoDBGateway testing connection to the DB #db', () => {
 	let gateway: MongoDbGateway
@@ -293,30 +202,7 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 	})
 
 	it('saveParser() single', async () => {
-		const parser = new ParserSingle({
-			id: new ObjectId().toHexString(),
-			name: 'Test parser',
-			identifier: /test/,
-			userId: new ObjectId().toHexString(),
-			verification: {
-				name: 'Name',
-				internalName: 'INTERNAL_NAME',
-				type: Verification.Types.INVOICE_IN,
-				accountFrom: 2499,
-				accountTo: 4330,
-			},
-			matcher: {
-				date: {
-					find: /\d{4}-\d{2}-\d{2}/,
-				},
-				currencyCode: {
-					find: /(?<=code: )\w{3}/,
-				},
-				amount: {
-					find: /(?<=total: )\d{1,4}/,
-				},
-			},
-		})
+		const parser = fakerParserSingle()
 
 		const promise = gateway.saveParser(parser)
 		expect.assertions(1)
@@ -331,36 +217,7 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 	})
 
 	it('saveParser() multi', async () => {
-		const parser = new ParserMulti({
-			id: new ObjectId().toHexString(),
-			userId: new ObjectId().toHexString(),
-			name: 'Skattekonto',
-			identifier: /Omfattar transaktionstyp/,
-			accountFrom: 1630,
-			currencyCodeDefault: 'SEK',
-			matcher: /(?<year>\d{2})(?<month>\d{2})(?<day>\d{2})\s+(?<name>.*?)\s{4}\s+(?<amount>-?\d*?\s?\d*)\s{4}/g,
-			lineMatchers: [
-				{
-					identifier: /Debiterad preliminärskatt/,
-					internalName: 'TAX_ACCOUNT_PRELIMINARY_TAX',
-					type: Verification.Types.TRANSACTION,
-					accountTo: 2518,
-				},
-				{
-					identifier: /Moms/,
-					internalName: 'TAX_ACCOUNT_TAX_COLLECT',
-					type: Verification.Types.TRANSACTION,
-					accountTo: 1650,
-				},
-				{
-					identifier: /ostnadsränta/,
-					internalName: 'TAX_ACCOUNT_INTEREST_EXPENSE',
-					type: Verification.Types.TRANSACTION,
-					accountTo: 8423,
-					currencyCodeDefault: 'USD',
-				},
-			],
-		})
+		const parser = fakerParserMulti()
 
 		const promise = gateway.saveParser(parser)
 		expect.assertions(1)
@@ -388,4 +245,178 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 		const promise = gateway.saveParser(parser)
 		await expect(promise).rejects.toBeInstanceOf(OutputError)
 	})
+
+	it('getParsers()', async () => {
+		const userParserSingle = fakerParserSingle()
+		const userParserMulti = fakerParserMulti()
+		const otherParserSingle = fakerParserSingle()
+		otherParserSingle.userId = new ObjectId().toHexString()
+
+		const objects = []
+		objects.push(MongoConverter.toDbObject(userParserSingle))
+		objects.push(MongoConverter.toDbObject(userParserMulti))
+		objects.push(MongoConverter.toDbObject(otherParserSingle))
+
+		await db.collection(Collections.Parser).insertMany(objects)
+
+		const promise = gateway.getParsers(USER_ID)
+		await expect(promise).resolves.toHaveLength(2)
+		await expect(promise).resolves.toContainEqual(expect.objectContaining(userParserSingle))
+		await expect(promise).resolves.toContainEqual(expect.objectContaining(userParserMulti))
+	})
 })
+
+/////////////////////
+//			FAKERS
+////////////////////
+function fakerTime(): number {
+	return faker.date.between('2000-01-01', new Date()).getTime()
+}
+
+function fakerVerificationFull(): Verification {
+	const created = fakerTime()
+	const modified = created + 1
+
+	const option: Verification.Option = {
+		id: new ObjectId().toHexString(),
+		userId: USER_ID,
+		name: faker.commerce.productName(),
+		internalName: faker.commerce.product(),
+		number: faker.random.number(),
+		date: '2020-01-01',
+		dateFiled: modified,
+		dateCreated: created,
+		dateModified: modified,
+		dateDeleted: modified,
+		type: Verification.Types.TRANSACTION,
+		description: 'A description',
+		totalAmount: {
+			amount: 1n,
+			localAmount: 10n,
+			code: 'USD',
+			localCode: 'SEK',
+			exchangeRate: 10,
+		},
+		files: ['hello', 'another file'],
+		invoiceId: new ObjectId().toHexString(),
+		paymentId: new ObjectId().toHexString(),
+		requireConfirmation: true,
+		transactions: [
+			{
+				dateCreated: created,
+				dateModified: modified,
+				accountNumber: 2020,
+				currency: {
+					amount: 1n,
+					localAmount: 10n,
+					code: 'USD',
+					localCode: 'SEK',
+					exchangeRate: 10,
+				},
+			},
+			{
+				dateCreated: created,
+				dateModified: modified,
+				accountNumber: 4661,
+				currency: {
+					amount: -1n,
+					localAmount: -10n,
+					code: 'USD',
+					localCode: 'SEK',
+					exchangeRate: 10,
+				},
+			},
+		],
+	}
+
+	const verification = new Verification(option)
+	return verification
+}
+
+function fakerVerificationMinimal(): Verification {
+	const option: Verification.Option = {
+		userId: USER_ID,
+		name: faker.commerce.productName(),
+		date: '2020-01-01',
+		type: Verification.Types.TRANSACTION,
+		transactions: [
+			{
+				accountNumber: 2020,
+				currency: {
+					amount: 1n,
+					code: 'USD',
+				},
+			},
+			{
+				accountNumber: 4661,
+				currency: {
+					amount: -1n,
+					code: 'USD',
+				},
+			},
+		],
+	}
+
+	const verification = new Verification(option)
+	return verification
+}
+
+function fakerParserSingle(): Parser {
+	return new ParserSingle({
+		id: new ObjectId().toHexString(),
+		name: 'Test parser',
+		identifier: /test/,
+		userId: USER_ID,
+		verification: {
+			name: 'Name',
+			internalName: 'INTERNAL_NAME',
+			type: Verification.Types.INVOICE_IN,
+			accountFrom: 2499,
+			accountTo: 4330,
+		},
+		matcher: {
+			date: {
+				find: /\d{4}-\d{2}-\d{2}/,
+			},
+			currencyCode: {
+				find: /(?<=code: )\w{3}/,
+			},
+			amount: {
+				find: /(?<=total: )\d{1,4}/,
+			},
+		},
+	})
+}
+
+function fakerParserMulti(): Parser {
+	return new ParserMulti({
+		id: new ObjectId().toHexString(),
+		userId: USER_ID,
+		name: 'Skattekonto',
+		identifier: /Omfattar transaktionstyp/,
+		accountFrom: 1630,
+		currencyCodeDefault: 'SEK',
+		matcher: /(?<year>\d{2})(?<month>\d{2})(?<day>\d{2})\s+(?<name>.*?)\s{4}\s+(?<amount>-?\d*?\s?\d*)\s{4}/g,
+		lineMatchers: [
+			{
+				identifier: /Debiterad preliminärskatt/,
+				internalName: 'TAX_ACCOUNT_PRELIMINARY_TAX',
+				type: Verification.Types.TRANSACTION,
+				accountTo: 2518,
+			},
+			{
+				identifier: /Moms/,
+				internalName: 'TAX_ACCOUNT_TAX_COLLECT',
+				type: Verification.Types.TRANSACTION,
+				accountTo: 1650,
+			},
+			{
+				identifier: /ostnadsränta/,
+				internalName: 'TAX_ACCOUNT_INTEREST_EXPENSE',
+				type: Verification.Types.TRANSACTION,
+				accountTo: 8423,
+				currencyCodeDefault: 'USD',
+			},
+		],
+	})
+}

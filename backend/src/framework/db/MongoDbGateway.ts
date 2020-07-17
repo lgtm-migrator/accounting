@@ -171,6 +171,26 @@ export class MongoDbGateway implements DbGateway {
 	}
 
 	async getParsers(userId: Id): Promise<Parser[]> {
-		throw new Error('Method not implemented.')
+		return this.collection(Collections.Parser)
+			.then(async (collection) => {
+				const cursor = collection.find({ userId: new ObjectId(userId) })
+				return cursor.toArray()
+			})
+			.then((foundParsers) => {
+				const parsers = new Array<Parser>()
+
+				for (const object of foundParsers) {
+					const parser = MongoConverter.toParser(object)
+					parsers.push(parser)
+				}
+
+				return parsers
+			})
+			.catch((reason) => {
+				if (reason instanceof InternalError || reason instanceof OutputError) {
+					throw reason
+				}
+				throw new InternalError(InternalError.Types.dbError, reason)
+			})
 	}
 }
