@@ -23,6 +23,16 @@ export namespace Verification {
 		requireConfirmation?: boolean
 		transactions: Transaction.Option[]
 	}
+
+	export interface Comparable {
+		readonly userId: Id
+		readonly internalName?: string
+		readonly date: string
+		readonly type: Types
+		readonly totalAmount: Currency.Option
+
+		isEqualTo(other: Comparable): boolean
+	}
 }
 
 export class Verification extends UserEntity implements Verification.Option {
@@ -207,6 +217,45 @@ export class Verification extends UserEntity implements Verification.Option {
 
 		if (sum != 0n) {
 			errors.push({ error: EntityErrors.transactionSumIsNotZero, data: `${sum}` })
+		}
+	}
+
+	/**
+	 * Get the comparable of this verification. If two verifications have the same comparable
+	 * that essentially means they are the same, even though they might have different values
+	 * @return a comparable of this verification.
+	 */
+	getComparable(): Verification.Comparable {
+		return {
+			userId: this.userId,
+			internalName: this.internalName,
+			date: this.date,
+			totalAmount: this.totalAmount,
+			type: this.type,
+
+			isEqualTo(other: Verification.Comparable): boolean {
+				if (this === other) {
+					return true
+				}
+
+				if (this.userId !== other.userId) {
+					return false
+				}
+				if (this.internalName !== other.internalName) {
+					return false
+				}
+				if (this.date !== other.date) {
+					return false
+				}
+				if (this.type !== other.type) {
+					return false
+				}
+				if (!Currency.isEqualTo(this.totalAmount, other.totalAmount)) {
+					return false
+				}
+
+				return true
+			},
 		}
 	}
 

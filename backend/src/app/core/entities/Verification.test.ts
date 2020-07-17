@@ -269,6 +269,72 @@ describe('Verification test #cold #entity', () => {
 		}
 	})
 
+	it('getComparable() check so that the equality works', () => {
+		const verification = new Verification({
+			date: '2020-01-01',
+			transactions: [],
+			type: Verification.Types.INVOICE_IN,
+			name: faker.company.companyName(),
+			userId: 1,
+			totalAmount: {
+				amount: 1n,
+				code: 'SEK',
+			},
+		})
+
+		let first = verification.getComparable()
+		let second = verification.getComparable()
+
+		// Check equality
+		expect(first.isEqualTo(first)).toStrictEqual(true)
+		expect(first.isEqualTo(second)).toStrictEqual(true)
+		expect(second.isEqualTo(first)).toStrictEqual(true)
+
+		// Different user id
+		verification.userId = 2
+		second = verification.getComparable()
+		expect(first.isEqualTo(second)).toStrictEqual(false)
+		expect(second.isEqualTo(first)).toStrictEqual(false)
+
+		// Different dates
+		first = verification.getComparable()
+		verification.date = '1999-01-01'
+		second = verification.getComparable()
+		expect(first.isEqualTo(second)).toStrictEqual(false)
+		expect(second.isEqualTo(first)).toStrictEqual(false)
+
+		// Different internal names (undefined)
+		first = verification.getComparable()
+		verification.internalName = 'Hello'
+		second = verification.getComparable()
+		expect(first.isEqualTo(second)).toStrictEqual(false)
+		expect(second.isEqualTo(first)).toStrictEqual(false)
+
+		// Different internal names
+		first = verification.getComparable()
+		verification.internalName = 'World'
+		second = verification.getComparable()
+		expect(first.isEqualTo(second)).toStrictEqual(false)
+		expect(second.isEqualTo(first)).toStrictEqual(false)
+
+		// Different total amounts
+		first = verification.getComparable()
+		verification.totalAmount = new Currency({
+			amount: 1n,
+			code: 'USD',
+		})
+		second = verification.getComparable()
+		expect(first.isEqualTo(second)).toStrictEqual(false)
+		expect(second.isEqualTo(first)).toStrictEqual(false)
+
+		// Different types
+		first = verification.getComparable()
+		verification.type = Verification.Types.INVALID
+		second = verification.getComparable()
+		expect(first.isEqualTo(second)).toStrictEqual(false)
+		expect(second.isEqualTo(first)).toStrictEqual(false)
+	})
+
 	const TYPES: string[] = [
 		'INVOICE_IN',
 		'INVOICE_IN_PAYMENT',

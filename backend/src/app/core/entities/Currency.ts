@@ -101,6 +101,62 @@ export class Currency implements Currency.Option {
 		}
 	}
 
+	/**
+	 * Check if the objects are equal, not just if they have the same number
+	 * @param first an object to compare
+	 * @param second the other object to compare with
+	 * @return true if they are truly equal
+	 */
+	static isEqualTo(first: Currency.Option, second: Currency.Option): boolean {
+		if (first.amount !== second.amount) {
+			return false
+		}
+		if (!Currency.isCodeEqualTo(first.code, second.code)) {
+			return false
+		}
+		if (first.localAmount !== second.localAmount) {
+			return false
+		}
+		if (!Currency.isCodeEqualTo(first.localCode, second.localCode)) {
+			return false
+		}
+		if (first.exchangeRate !== second.exchangeRate) {
+			return false
+		}
+
+		return true
+	}
+
+	/**
+	 * Checks if the currency code name is equal.
+	 * Note that this will return true if both first and second is undefined
+	 * @param first one code to compare
+	 * @param second the other code to compare with
+	 * @return true if they are equal
+	 */
+	static isCodeEqualTo(first: Currency.Code | string | undefined, second: Currency.Code | string | undefined): boolean {
+		if (first === second) {
+			return true
+		}
+		if (typeof first === 'object' && typeof second === 'object') {
+			if (first.name === second.name) {
+				return true
+			}
+		}
+		if (typeof first === 'object') {
+			if (first.name === second) {
+				return true
+			}
+		}
+		if (typeof second === 'object') {
+			if (first === second.name) {
+				return true
+			}
+		}
+
+		return false
+	}
+
 	private static numberToBigInt(value: number, precision: number): bigint {
 		let negate = false
 		if (value < 0) {

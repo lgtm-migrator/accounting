@@ -479,4 +479,128 @@ describe('Currency compare tests #cold #entity', () => {
 		expect(equalFull.isLargerThanEqualTo(fullValue)).toBe(true)
 		expect(slEqualFull.isLargerThanEqualTo(fullValue)).toBe(true)
 	})
+
+	// isCodeEqualTo - true equalit
+	it('isCodeEqualTo() check true equality for codes', () => {
+		// Both undefined
+		expect(Currency.isCodeEqualTo(undefined, undefined)).toStrictEqual(true)
+
+		// One undefined
+		expect(Currency.isCodeEqualTo(undefined, 'SEK')).toStrictEqual(false)
+		expect(Currency.isCodeEqualTo('SEK', undefined)).toStrictEqual(false)
+		expect(Currency.isCodeEqualTo(undefined, Currency.Codes.SEK)).toStrictEqual(false)
+		expect(Currency.isCodeEqualTo(Currency.Codes.SEK, undefined)).toStrictEqual(false)
+
+		// string against string
+		expect(Currency.isCodeEqualTo('SEK', 'SEK')).toStrictEqual(true)
+		expect(Currency.isCodeEqualTo('SEK', 'USD')).toStrictEqual(false)
+		expect(Currency.isCodeEqualTo('USD', 'SEK')).toStrictEqual(false)
+
+		// Code against Code
+		expect(Currency.isCodeEqualTo(Currency.Codes.SEK, Currency.Codes.SEK)).toStrictEqual(true)
+		expect(Currency.isCodeEqualTo(Currency.Codes.SEK, Currency.Codes.USD)).toStrictEqual(false)
+		expect(Currency.isCodeEqualTo(Currency.Codes.USD, Currency.Codes.SEK)).toStrictEqual(false)
+
+		// Code against string
+		expect(Currency.isCodeEqualTo(Currency.Codes.SEK, 'SEK')).toStrictEqual(true)
+		expect(Currency.isCodeEqualTo('SEK', Currency.Codes.SEK)).toStrictEqual(true)
+		expect(Currency.isCodeEqualTo('USD', Currency.Codes.SEK)).toStrictEqual(false)
+		expect(Currency.isCodeEqualTo(Currency.Codes.SEK, 'USD')).toStrictEqual(false)
+	})
+
+	// isEqualTo - true equality
+	it('isEqualTo() check true equality for currency', () => {
+		// Code is already checked in isCodeEqualTo(), no need for extensive testing there
+		let first: Currency.Option = {
+			amount: 1n,
+			code: 'SEK',
+		}
+
+		let second: Currency.Option = {
+			amount: 1n,
+			code: Currency.Codes.SEK,
+		}
+
+		// Equal minimal
+		expect(Currency.isEqualTo(first, second)).toStrictEqual(true)
+		expect(Currency.isEqualTo(second, first)).toStrictEqual(true)
+
+		// Not equal minimal
+		first = {
+			amount: 10n,
+			code: 'SEK',
+		}
+
+		expect(Currency.isEqualTo(first, second)).toStrictEqual(false)
+		expect(Currency.isEqualTo(second, first)).toStrictEqual(false)
+
+		// Full equality
+		const full: Currency.Option = {
+			amount: 1n,
+			localAmount: 10n,
+			code: 'USD',
+			localCode: 'SEK',
+			exchangeRate: 10,
+		}
+		first = full
+
+		second = {
+			amount: 1n,
+			localAmount: 10n,
+			code: Currency.Codes.USD,
+			localCode: Currency.Codes.SEK,
+			exchangeRate: 10,
+		}
+
+		expect(Currency.isEqualTo(first, second)).toStrictEqual(true)
+		expect(Currency.isEqualTo(second, first)).toStrictEqual(true)
+
+		// Change exchangeRate
+		first = {
+			...full,
+			exchangeRate: 100,
+		}
+		expect(Currency.isEqualTo(first, second)).toStrictEqual(false)
+		expect(Currency.isEqualTo(second, first)).toStrictEqual(false)
+
+		// Change exchangeRate to undefined
+		expect(Currency.isEqualTo(first, second)).toStrictEqual(false)
+		expect(Currency.isEqualTo(second, first)).toStrictEqual(false)
+		first = {
+			...full,
+			exchangeRate: undefined,
+		}
+
+		// Change localcode
+		first = {
+			...full,
+			localCode: 'XTS',
+		}
+		expect(Currency.isEqualTo(first, second)).toStrictEqual(false)
+		expect(Currency.isEqualTo(second, first)).toStrictEqual(false)
+
+		// Undefined local code
+		first = {
+			...full,
+			localCode: undefined,
+		}
+		expect(Currency.isEqualTo(first, second)).toStrictEqual(false)
+		expect(Currency.isEqualTo(second, first)).toStrictEqual(false)
+
+		// Change localAmount
+		first = {
+			...full,
+			localAmount: 0n,
+		}
+		expect(Currency.isEqualTo(first, second)).toStrictEqual(false)
+		expect(Currency.isEqualTo(second, first)).toStrictEqual(false)
+
+		// Undefined localAmonut
+		first = {
+			...full,
+			localAmount: undefined,
+		}
+		expect(Currency.isEqualTo(first, second)).toStrictEqual(false)
+		expect(Currency.isEqualTo(second, first)).toStrictEqual(false)
+	})
 })
