@@ -6,6 +6,9 @@ import * as faker from 'faker'
 import { MongoConverter } from './MongoConverter'
 import { OutputError } from '../../app/core/definitions/OutputError'
 import { Account } from '../../app/core/entities/Account'
+import { ParserSingle } from '../../app/core/entities/ParserSingle'
+import { resolve } from 'path'
+import { ParserMulti } from '../../app/core/entities/ParserMulti'
 
 const USER_ID = new ObjectId().toHexString()
 
@@ -144,9 +147,8 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 				return db.collection(Collections.Verification).findOne({ _id: new ObjectId(id) })
 			})
 			.then((object) => {
-				const option: Verification.Option = MongoConverter.toOption(object)
-				verification.id = option.id
-				const dbVerification = new Verification(option)
+				const dbVerification = MongoConverter.toVerification(object)
+				verification.id = dbVerification.id
 				expect(dbVerification).toEqual(verification)
 			})
 	})
@@ -161,9 +163,8 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 				return db.collection(Collections.Verification).findOne({ _id: new ObjectId(id) })
 			})
 			.then((object) => {
-				const option: Verification.Option = MongoConverter.toOption(object)
-				verification.id = option.id
-				const dbVerification = new Verification(option)
+				const dbVerification = MongoConverter.toVerification(object)
+				verification.id = dbVerification.id
 				expect(dbVerification).toEqual(verification)
 			})
 	})
@@ -191,10 +192,17 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 				return db.collection(Collections.Verification).findOne({ _id: new ObjectId(id) })
 			})
 			.then((object) => {
-				const option: Verification.Option = MongoConverter.toOption(object)
-				const dbVerification = new Verification(option)
+				const dbVerification = MongoConverter.toVerification(object)
 				expect(dbVerification).toEqual(verification)
 			})
+	})
+
+	it('saveVerification() - Invalid', async () => {
+		const verification = fakerVerificationMinimal()
+		verification.name = '12'
+		const promise = gateway.saveVerification(verification)
+
+		await expect(promise).rejects.toStrictEqual(OutputError.create(OutputError.Types.nameTooShort, '12'))
 	})
 
 	it('getVerification() get existing', async () => {
@@ -282,5 +290,102 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 		promise = gateway.getAccount(account.userId, 1235)
 		validError = OutputError.create(OutputError.Types.accountNumberNotFound, String(1235))
 		await expect(promise).rejects.toStrictEqual(validError)
+	})
+
+	it('saveParser() single', async () => {
+		const parser = new ParserSingle({
+			id: new ObjectId().toHexString(),
+			name: 'Test parser',
+			identifier: /test/,
+			userId: new ObjectId().toHexString(),
+			verification: {
+				name: 'Name',
+				internalName: 'INTERNAL_NAME',
+				type: Verification.Types.INVOICE_IN,
+				accountFrom: 2499,
+				accountTo: 4330,
+			},
+			matcher: {
+				date: {
+					find: /\d{4}-\d{2}-\d{2}/,
+				},
+				currencyCode: {
+					find: /(?<=code: )\w{3}/,
+				},
+				amount: {
+					find: /(?<=total: )\d{1,4}/,
+				},
+			},
+		})
+
+		const promise = gateway.saveParser(parser)
+		expect.assertions(1)
+		await promise
+			.then((id) => {
+				return db.collection(Collections.Parser).findOne({ _id: new ObjectId(id) })
+			})
+			.then((object) => {
+				const dbParser = MongoConverter.toParser(object)
+				expect(dbParser).toEqual(parser)
+			})
+	})
+
+	it('saveParser() multi', async () => {
+		const parser = new ParserMulti({
+			id: new ObjectId().toHexString(),
+			userId: new ObjectId().toHexString(),
+			name: 'Skattekonto',
+			identifier: /Omfattar transaktionstyp/,
+			accountFrom: 1630,
+			currencyCodeDefault: 'SEK',
+			matcher: /(?<year>\d{2})(?<month>\d{2})(?<day>\d{2})\s+(?<name>.*?)\s{4}\s+(?<amount>-?\d*?\s?\d*)\s{4}/g,
+			lineMatchers: [
+				{
+					identifier: /Debiterad preliminärskatt/,
+					internalName: 'TAX_ACCOUNT_PRELIMINARY_TAX',
+					type: Verification.Types.TRANSACTION,
+					accountTo: 2518,
+				},
+				{
+					identifier: /Moms/,
+					internalName: 'TAX_ACCOUNT_TAX_COLLECT',
+					type: Verification.Types.TRANSACTION,
+					accountTo: 1650,
+				},
+				{
+					identifier: /ostnadsränta/,
+					internalName: 'TAX_ACCOUNT_INTEREST_EXPENSE',
+					type: Verification.Types.TRANSACTION,
+					accountTo: 8423,
+					currencyCodeDefault: 'USD',
+				},
+			],
+		})
+
+		const promise = gateway.saveParser(parser)
+		expect.assertions(1)
+		await promise
+			.then((id) => {
+				return db.collection(Collections.Parser).findOne({ _id: new ObjectId(id) })
+			})
+			.then((object) => {
+				const dbParser = MongoConverter.toParser(object)
+				expect(dbParser).toEqual(parser)
+			})
+	})
+
+	it('saveParser() invalid', async () => {
+		const parser = new ParserMulti({
+			userId: new ObjectId().toHexString(),
+			identifier: /none/,
+			matcher: /none/,
+			lineMatchers: [],
+			currencyCodeDefault: 'SEK',
+			accountFrom: 999,
+			name: '12',
+		})
+
+		const promise = gateway.saveParser(parser)
+		await expect(promise).rejects.toBeInstanceOf(OutputError)
 	})
 })
