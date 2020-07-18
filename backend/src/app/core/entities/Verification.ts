@@ -63,6 +63,7 @@ export class Verification extends UserEntity implements Verification.Option {
 		this.description = data.description
 		this.invoiceId = data.invoiceId
 		this.paymentId = data.paymentId
+		this.fiscalYearId = data.fiscalYearId
 		this.requireConfirmation = data.requireConfirmation
 		this.transactions = []
 

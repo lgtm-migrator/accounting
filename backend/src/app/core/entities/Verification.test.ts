@@ -3,42 +3,7 @@ import { Verification } from './Verification'
 import { Transaction } from './Transaction'
 import { OutputError } from '../definitions/OutputError'
 import { Currency } from './Currency'
-
-function fakerValidDate(): number {
-	return faker.date.between('2010-01-01', '2020-01-01').getTime()
-}
-
-function fakerTransaction(): Transaction.Option {
-	return {
-		accountNumber: faker.random.number({ min: 1000, max: 2000 }),
-		currency: new Currency({
-			amount: BigInt(faker.random.number({ min: 1, max: 10000000 })),
-			code: 'SEK',
-		}),
-	}
-}
-
-function fakerValidTransactionPair(): Transaction.Option[] {
-	const transaction = fakerTransaction()
-
-	let localAmount: undefined | bigint
-	if (transaction.currency.localAmount) {
-		localAmount = -transaction.currency.localAmount
-	}
-
-	const opposite: Transaction.Option = {
-		accountNumber: faker.random.number({ min: 3000, max: 4000 }),
-		currency: {
-			amount: -transaction.currency.amount,
-			localAmount: localAmount,
-			code: transaction.currency.code,
-			localCode: transaction.currency.localCode,
-			exchangeRate: transaction.currency.exchangeRate,
-		},
-	}
-
-	return [transaction, opposite]
-}
+import { ObjectID } from 'mongodb'
 
 describe('Verification test #cold #entity', () => {
 	let verification: Verification
@@ -353,6 +318,25 @@ describe('Verification test #cold #entity', () => {
 		expect(second.isEqualTo(first)).toStrictEqual(false)
 	})
 
+	it('Verification from option test', () => {
+		const option = fakerVerificationFull()
+		const verification = new Verification(option)
+
+		expect(verification.name).toStrictEqual(option.name)
+		expect(verification.internalName).toStrictEqual(option.internalName)
+		expect(verification.number).toStrictEqual(option.number)
+		expect(verification.date).toStrictEqual(option.date)
+		expect(verification.dateFiled).toStrictEqual(option.dateFiled)
+		expect(verification.type).toStrictEqual(option.type)
+		expect(verification.description).toStrictEqual(option.description)
+		expect(verification.totalAmount).toStrictEqual(new Currency(option.totalAmount!))
+		expect(verification.files).toStrictEqual(option.files)
+		expect(verification.invoiceId).toStrictEqual(option.invoiceId)
+		expect(verification.fiscalYearId).toStrictEqual(option.fiscalYearId)
+		expect(verification.requireConfirmation).toStrictEqual(option.requireConfirmation)
+		expect(verification.transactions).toHaveLength(option.transactions.length)
+	})
+
 	const TYPES: string[] = [
 		'INVOICE_IN',
 		'INVOICE_IN_PAYMENT',
@@ -363,3 +347,101 @@ describe('Verification test #cold #entity', () => {
 		'TRANSACTION',
 	]
 })
+
+/////////////////////
+//			FAKERS
+////////////////////
+function fakerValidDate(): number {
+	return faker.date.between('2010-01-01', '2020-01-01').getTime()
+}
+
+function fakerTransaction(): Transaction.Option {
+	return {
+		accountNumber: faker.random.number({ min: 1000, max: 2000 }),
+		currency: new Currency({
+			amount: BigInt(faker.random.number({ min: 1, max: 10000000 })),
+			code: 'SEK',
+		}),
+	}
+}
+
+function fakerValidTransactionPair(): Transaction.Option[] {
+	const transaction = fakerTransaction()
+
+	let localAmount: undefined | bigint
+	if (transaction.currency.localAmount) {
+		localAmount = -transaction.currency.localAmount
+	}
+
+	const opposite: Transaction.Option = {
+		accountNumber: faker.random.number({ min: 3000, max: 4000 }),
+		currency: {
+			amount: -transaction.currency.amount,
+			localAmount: localAmount,
+			code: transaction.currency.code,
+			localCode: transaction.currency.localCode,
+			exchangeRate: transaction.currency.exchangeRate,
+		},
+	}
+
+	return [transaction, opposite]
+}
+
+function fakerVerificationFull(): Verification.Option {
+	const created = fakerValidDate()
+	const modified = created + 1
+
+	const option: Verification.Option = {
+		id: 1,
+		userId: 1,
+		name: faker.commerce.productName(),
+		internalName: faker.commerce.product(),
+		number: faker.random.number(),
+		date: '2020-01-01',
+		dateFiled: modified,
+		dateCreated: created,
+		dateModified: modified,
+		dateDeleted: modified,
+		type: Verification.Types.TRANSACTION,
+		description: 'A description',
+		totalAmount: {
+			amount: 1n,
+			localAmount: 10n,
+			code: 'USD',
+			localCode: 'SEK',
+			exchangeRate: 10,
+		},
+		files: ['hello', 'another file'],
+		invoiceId: 1,
+		paymentId: 2,
+		requireConfirmation: true,
+		transactions: [
+			{
+				dateCreated: created,
+				dateModified: modified,
+				accountNumber: 2020,
+				currency: {
+					amount: 1n,
+					localAmount: 10n,
+					code: 'USD',
+					localCode: 'SEK',
+					exchangeRate: 10,
+				},
+			},
+			{
+				dateCreated: created,
+				dateModified: modified,
+				accountNumber: 4661,
+				currency: {
+					amount: -1n,
+					localAmount: -10n,
+					code: 'USD',
+					localCode: 'SEK',
+					exchangeRate: 10,
+				},
+			},
+		],
+	}
+
+	return option
+}
