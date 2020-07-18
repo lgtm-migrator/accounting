@@ -95,6 +95,7 @@ export class VerificationNewFromParserInteractor extends Interactor<
 		// Get accounts
 		const accountFromPromise = this.repository.getAccountDetails(this.input.userId, info.accountFrom)
 		const acountToPromise = this.repository.getAccountDetails(this.input.userId, info.accountTo)
+		const fiscalYearIdPromise = this.repository.getFiscalYear(this.input.userId, info.date)
 
 		const promises = Promise.all([exchangeRatePromise, accountFromPromise, acountToPromise])
 
@@ -111,12 +112,14 @@ export class VerificationNewFromParserInteractor extends Interactor<
 					accountTo: accountTo,
 				}
 
-				return TransactionFactory.createTransactions(transactionInfo)
+				const transactionPromises = TransactionFactory.createTransactions(transactionInfo)
+				return Promise.all([transactionPromises, fiscalYearIdPromise])
 			})
-			.then((transactions) => {
+			.then(([transactions, fiscalYearId]) => {
 				// Create
 				const option: Verification.Option = {
 					userId: this.input.userId,
+					fiscalYearId: fiscalYearId,
 					name: info.name,
 					internalName: info.internalName,
 					type: info.type,

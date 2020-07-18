@@ -76,6 +76,7 @@ describe('Verification new from parser #cold #use-case', () => {
 
 		const validVerification = {
 			userId: 1,
+			fiscalYearId: 2,
 			date: '2019-01-31',
 			name: 'Google account',
 			internalName: 'G-SUITE',

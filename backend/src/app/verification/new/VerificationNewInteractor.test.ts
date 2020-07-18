@@ -10,7 +10,7 @@ import { Id } from '../../core/definitions/Id'
 
 const LOCAL_CODE = VerificationRepositoryTest.LOCAL_CODE
 const EXCHANGE_RATE = VerificationRepositoryTest.EXCHANGE_RATE
-const MIN_ASSERTIONS = 8
+const MIN_ASSERTIONS = 9
 
 function validFromInput(input: VerificationNewInput): Verification.Option {
 	return {
@@ -41,6 +41,7 @@ function validFromInput(input: VerificationNewInput): Verification.Option {
 
 function testEquality(verification: VerificationNewOutput, valid: Verification.Option) {
 	expect(verification.userId).toStrictEqual(valid.userId)
+	expect(verification.fiscalYearId).toStrictEqual(2)
 	expect(verification.name).toStrictEqual(valid.name)
 	expect(verification.date).toStrictEqual(valid.date)
 	expect(verification.internalName).toStrictEqual(valid.internalName)

@@ -8,6 +8,7 @@ import { Verification } from '../../core/entities/Verification'
 import { OutputError } from '../../core/definitions/OutputError'
 import { InternalError } from '../../core/definitions/InternalError'
 import { TransactionFactory } from '../TransactionFactory'
+import { Id } from '../../core/definitions/Id'
 
 /**
  * Creates a valid verification from a new direct payment
@@ -40,6 +41,7 @@ export class VerificationNewInteractor extends Interactor<
 		const localCurrencyPromise = this.repository.getLocalCurrency(input.userId)
 		const accountFromPromise = this.repository.getAccountDetails(input.userId, input.verification.accountFrom)
 		const accountToPromise = this.repository.getAccountDetails(input.userId, input.verification.accountTo)
+		const fiscalYearIdPromise = this.repository.getFiscalYear(input.userId, input.verification.date)
 		const promises = Promise.all([localCurrencyPromise, accountFromPromise, accountToPromise])
 
 		return promises
@@ -50,7 +52,7 @@ export class VerificationNewInteractor extends Interactor<
 				}
 
 				const exchangeRate = await exchangeRatePromise
-				return TransactionFactory.createTransactions({
+				const transactionPromises = TransactionFactory.createTransactions({
 					userId: this.input.userId,
 					amount: this.input.verification.amount,
 					code: code,
@@ -59,9 +61,11 @@ export class VerificationNewInteractor extends Interactor<
 					accountFrom: accountFrom,
 					accountTo: accountTo,
 				})
+
+				return Promise.all([transactionPromises, fiscalYearIdPromise])
 			})
-			.then(async (transactions) => {
-				return this.createVerification(transactions)
+			.then(async ([transactions, fiscalYearId]) => {
+				return this.createVerification(transactions, fiscalYearId)
 			})
 			.catch((reason) => {
 				if (reason instanceof InternalError) {
@@ -75,13 +79,15 @@ export class VerificationNewInteractor extends Interactor<
 	/**
 	 * Create a verification and validate it
 	 * @param transactions the transactions of the verification
+	 * @param fiscalYearId the fiscal year's id
 	 * @return verification object
 	 */
-	private async createVerification(transactions: Transaction[]): Promise<Verification> {
+	private async createVerification(transactions: Transaction[], fiscalYearId: Id): Promise<Verification> {
 		let type = Verification.Types.fromString(this.input.verification.type)
 
 		const verification = new Verification({
 			userId: this.input.userId,
+			fiscalYearId: fiscalYearId,
 			name: this.input.verification.name,
 			internalName: this.input.verification.internalName,
 			date: this.input.verification.date,

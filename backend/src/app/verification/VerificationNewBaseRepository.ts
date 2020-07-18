@@ -1,6 +1,7 @@
 import { VerificationRepository } from './VerificationRepository'
 import { Currency } from '../core/entities/Currency'
 import { Id } from '../core/definitions/Id'
+import { FiscalYear } from '../core/entities/FiscalYear'
 
 export interface VerificationNewBaseRepository extends VerificationRepository {
 	/**
@@ -19,4 +20,14 @@ export interface VerificationNewBaseRepository extends VerificationRepository {
 	 * @return local currency code
 	 */
 	getLocalCurrency(userId: Id): Promise<Currency.Code>
+
+	/**
+	 * Get the id of the fiscal year.
+	 * @param userId the user id to get the fiscal year from
+	 * @param date a YYYY-MM-DD date that will be in the range [fiscalyYear.from, fiscalYear.to]
+	 * @return the fiscal year's id
+	 * @throws {OutputErrors.Types.fiscalYearNotFound} if no fiscal year was found between these dates
+	 * @throws {OutputErrors.Types.dateFormatInvalid} if date has an invalid format
+	 */
+	getFiscalYear(userId: Id, date: string): Promise<Id>
 }

@@ -72,7 +72,7 @@ export interface DbGateway {
 	/**
 	 * Get the fiscal year that would contain the specified date
 	 * @param userId the user id to get the fiscal year from
-	 * @param date a YYYY-MM-DD date
+	 * @param date a YYYY-MM-DD date that will be in the range [fiscalyYear.from, fiscalYear.to]
 	 * @return the fiscal year that contains the specified date. I.e. the date will
 	 * be between fiscalYear.from and fiscalYear.to
 	 * @throws {OutputErrors.Types.fiscalYearNotFound} if no fiscal year was found between these dates

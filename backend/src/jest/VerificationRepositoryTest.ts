@@ -10,24 +10,28 @@ export class VerificationRepositoryTest
 	static readonly LOCAL_CODE = Currency.Codes.SEK
 	static readonly EXCHANGE_RATE = 10
 
-	getAccountDetails(userId: Id, accountNumber: number): Promise<Account> {
-		return new Promise((resolve) => {
-			const foundNumber = Accounts.findByNumber(accountNumber)
-			resolve(foundNumber)
-		})
+	async getAccountDetails(userId: Id, accountNumber: number): Promise<Account> {
+		return Accounts.findByNumber(accountNumber)
 	}
 
 	/**
 	 * @return by default return 10
 	 */
-	getExchangeRate(date: string, fromCode: Currency.Code, toCode: Currency.Code): Promise<number> {
-		return Promise.resolve(VerificationRepositoryTest.EXCHANGE_RATE)
+	async getExchangeRate(date: string, fromCode: Currency.Code, toCode: Currency.Code): Promise<number> {
+		return VerificationRepositoryTest.EXCHANGE_RATE
 	}
 
 	/**
 	 * @return SEK by default
 	 */
-	getLocalCurrency(userId: Id): Promise<Currency.Code> {
-		return Promise.resolve(VerificationRepositoryTest.LOCAL_CODE)
+	async getLocalCurrency(userId: Id): Promise<Currency.Code> {
+		return VerificationRepositoryTest.LOCAL_CODE
+	}
+
+	/**
+	 * @return 2 by default
+	 */
+	async getFiscalYear(userId: Id, date: string): Promise<Id> {
+		return 2
 	}
 }

@@ -6,6 +6,7 @@ import { Transaction } from '../../core/entities/Transaction'
 import { Currency } from '../../core/entities/Currency'
 import { Verification } from '../../core/entities/Verification'
 import { OutputError } from '../../core/definitions/OutputError'
+import { Id } from '../../core/definitions/Id'
 
 /**
  * Creates a valid verification with transactions from an input
@@ -23,18 +24,20 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
 	 * Create a valid verification for the specified input
 	 * @param input
 	 * @return {Promise.<VerificationNewCustomTransactionOutput>}
-	 * @throws {OutputError.Types.invalidInput} when the input data is invalid. See the errors for what was invalid
+	 * @throws {OutputError} when the input data is invalid. See the errors for what was invalid
 	 */
 	async execute(input: VerificationNewCustomTransactionInput): Promise<VerificationNewCustomTransactionOutput> {
 		this.input = input
 
-		return this.repository
-			.getLocalCurrency(this.input.userId)
+		const localCurrencyPromise = this.repository.getLocalCurrency(input.userId)
+		const fiscalYearIdPromise = this.repository.getFiscalYear(input.userId, input.verification.date)
+
+		return localCurrencyPromise
 			.then((localCurrency) => {
-				return this.createTransactions(localCurrency)
+				return Promise.all([this.createTransactions(localCurrency), fiscalYearIdPromise])
 			})
-			.then((transactions) => {
-				return this.createVerification(transactions)
+			.then(([transactions, fiscalYearId]) => {
+				return this.createVerification(transactions, fiscalYearId)
 			})
 	}
 
@@ -86,18 +89,20 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
 					exchangeRate: exchangeRate,
 				}),
 			}
-			return Promise.resolve(new Transaction(transactionData))
+			return new Transaction(transactionData)
 		})
 	}
 
 	/**
 	 * Create a verification and validate it
 	 * @param transactions the transactions of the verification
+	 * @param fiscalYearId the fiscal year id
 	 * @return verification object
 	 */
-	private async createVerification(transactions: Transaction[]): Promise<Verification> {
+	private async createVerification(transactions: Transaction[], fiscalYearId: Id): Promise<Verification> {
 		const verification = new Verification({
 			userId: this.input.userId,
+			fiscalYearId: fiscalYearId,
 			name: this.input.verification.name,
 			date: this.input.verification.date,
 			type: Verification.Types.TRANSACTION,
@@ -110,6 +115,6 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
 			throw new OutputError(errors)
 		}
 
-		return Promise.resolve(verification)
+		return verification
 	}
 }

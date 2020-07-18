@@ -44,6 +44,7 @@ describe('New verification from custom transactions #cold #use-case', () => {
 		expect.assertions(1)
 		await expect(output).resolves.toMatchObject({
 			userId: input.userId,
+			fiscalYearId: 2,
 			name: input.verification.name,
 			date: input.verification.date,
 			type: Verification.Types.TRANSACTION,
@@ -93,6 +94,7 @@ describe('New verification from custom transactions #cold #use-case', () => {
 		expect.assertions(1)
 		await expect(output).resolves.toMatchObject({
 			userId: input.userId,
+			fiscalYearId: 2,
 			name: input.verification.name,
 			date: input.verification.date,
 			description: input.verification.description,
