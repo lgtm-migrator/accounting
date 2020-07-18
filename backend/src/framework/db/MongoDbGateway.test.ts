@@ -152,6 +152,45 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 		await expect(promise).rejects.toStrictEqual(validError)
 	})
 
+	it('getVerifications()', async () => {
+		const fiscalId1 = new ObjectId().toHexString()
+		const fiscalId2 = new ObjectId().toHexString()
+
+		const userVer1 = fakerVerificationFull()
+		const userVer2 = fakerVerificationFull()
+		const userVer3 = fakerVerificationFull()
+		const otherVer = fakerVerificationMinimal()
+		otherVer.userId = new ObjectId().toHexString()
+
+		otherVer.fiscalYearId = fiscalId1
+		userVer1.fiscalYearId = fiscalId1
+		userVer2.fiscalYearId = fiscalId2
+		userVer3.fiscalYearId = fiscalId2
+
+		const objects = [
+			MongoConverter.toDbObject(userVer1),
+			MongoConverter.toDbObject(userVer2),
+			MongoConverter.toDbObject(userVer3),
+			MongoConverter.toDbObject(otherVer),
+		]
+
+		await db.collection(Collections.Verification).insert(objects)
+
+		// First verification for fiscal id 1 (should not get otherVer even though they have same fiscal id)
+		await expect(gateway.getVerifications(USER_ID, fiscalId1)).resolves.toStrictEqual([userVer1])
+
+		// Two verifications from the second fiscal id
+		let promise = gateway.getVerifications(USER_ID, fiscalId2)
+		await expect(promise).resolves.toContainEqual(expect.objectContaining(userVer2))
+		await expect(promise).resolves.toContainEqual(expect.objectContaining(userVer3))
+
+		// No verifications found
+		await expect(
+			gateway.getVerifications(new ObjectId().toHexString(), new ObjectId().toHexString())
+		).resolves.toStrictEqual([])
+		await expect(gateway.getVerifications(USER_ID, new ObjectId().toHexString())).resolves.toStrictEqual([])
+	})
+
 	it('getExistingVerification()', async () => {
 		const verification = fakerVerificationFull()
 		let comparable = verification.getComparable()
@@ -264,10 +303,14 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 
 		await db.collection(Collections.Parser).insertMany(objects)
 
+		// Found correct number
 		const promise = gateway.getParsers(USER_ID)
 		await expect(promise).resolves.toHaveLength(2)
 		await expect(promise).resolves.toContainEqual(expect.objectContaining(userParserSingle))
 		await expect(promise).resolves.toContainEqual(expect.objectContaining(userParserMulti))
+
+		// No parser
+		await expect(gateway.getParsers(new ObjectId().toHexString())).resolves.toStrictEqual([])
 	})
 
 	it('getLocalCurrency()', async () => {
@@ -402,6 +445,7 @@ function fakerVerificationFull(): Verification {
 		dateModified: modified,
 		dateDeleted: modified,
 		type: Verification.Types.TRANSACTION,
+		fiscalYearId: new ObjectId().toHexString(),
 		description: 'A description',
 		totalAmount: {
 			amount: 1n,

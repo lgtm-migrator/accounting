@@ -259,4 +259,31 @@ export class MongoDbGateway implements DbGateway {
 				throw new InternalError(InternalError.Types.dbError, reason)
 			})
 	}
+
+	async getVerifications(userId: Id, fiscalYearId: Id): Promise<Verification[]> {
+		return this.collection(Collections.Verification)
+			.then(async (collection) => {
+				const query = {
+					userId: new ObjectId(userId),
+					fiscalYearId: new ObjectId(fiscalYearId),
+				}
+				return collection.find(query).toArray()
+			})
+			.then((foundObjects) => {
+				const verifications: Verification[] = []
+				if (foundObjects) {
+					for (const object of foundObjects) {
+						const verification = MongoConverter.toVerification(object)
+						verifications.push(verification)
+					}
+				}
+				return verifications
+			})
+			.catch((reason) => {
+				if (reason instanceof InternalError || reason instanceof OutputError) {
+					throw reason
+				}
+				throw new InternalError(InternalError.Types.dbError, reason)
+			})
+	}
 }
