@@ -18,7 +18,7 @@ export class VerificationNewInteractor extends Interactor<
 	VerificationNewOutput,
 	VerificationNewRepository
 > {
-	localCurrencyCode?: Currency.Code
+	localCurrencyCode?: Currency.Codes
 
 	constructor(repository: VerificationNewRepository) {
 		super(repository)

@@ -8,5 +8,5 @@ export interface ExchangeGateway {
 	 * @param to convert to this currency
 	 * @throws {OutputError.Types.dateFormatInvalid} if the date format is invalid
 	 */
-	getExchangeRate(date: string, from: Currency.Code, to: Currency.Code): Promise<number>
+	getExchangeRate(date: string, from: Currency.Codes, to: Currency.Codes): Promise<number>
 }

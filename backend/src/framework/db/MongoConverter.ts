@@ -7,6 +7,7 @@ import { User } from '../../app/core/entities/User'
 import { ParserSingle } from '../../app/core/entities/ParserSingle'
 import { ParserMulti } from '../../app/core/entities/ParserMulti'
 import { FiscalYear } from '../../app/core/entities/FiscalYear'
+import { Currency } from '../../app/core/entities/Currency'
 
 type AddId = 'add-id' | 'dont-add-id'
 type RemoveUndefined = 'remove-undefined' | 'keep-undefined'
@@ -62,22 +63,21 @@ export namespace MongoConverter {
 					object[key] = `${value}n`
 				}
 
-				// Object
+				// Currency code - only use name
+				else if (value instanceof Currency.Codes) {
+					object[key] = value.name
+				}
+
+				// Regexp - Use value directly
+				else if (value instanceof RegExp) {
+					object[key] = value
+				}
+
+				// Recursive object
 				else if (typeof value === 'object' && value) {
-					// Currency code
-					if (isCode(value)) {
-						object[key] = (value as any).name
-					}
-					// Regexp - Use value directly
-					else if (value instanceof RegExp) {
-						object[key] = value
-					}
-					// Recursive object
-					else {
-						const child = serialize(value!, removeUndefined)
-						if (child) {
-							object[key] = child
-						}
+					const child = serialize(value!, removeUndefined)
+					if (child) {
+						object[key] = child
 					}
 				}
 
@@ -89,25 +89,6 @@ export namespace MongoConverter {
 		}
 
 		return object
-	}
-
-	/**
-	 * Check if the object is of type code
-	 * @param object the object to test
-	 * @return true if this is of type code, false otherwise
-	 */
-	function isCode(object: any): boolean {
-		if (!object) {
-			return false
-		}
-		if (!object.name || typeof object.name !== 'string') {
-			return false
-		}
-		if (!object.precision || typeof object.precision !== 'number') {
-			return false
-		}
-
-		return true
 	}
 
 	/**

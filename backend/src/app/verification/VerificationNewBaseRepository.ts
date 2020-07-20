@@ -1,7 +1,6 @@
 import { VerificationRepository } from './VerificationRepository'
 import { Currency } from '../core/entities/Currency'
 import { Id } from '../core/definitions/Id'
-import { FiscalYear } from '../core/entities/FiscalYear'
 
 export interface VerificationNewBaseRepository extends VerificationRepository {
 	/**
@@ -12,14 +11,14 @@ export interface VerificationNewBaseRepository extends VerificationRepository {
 	 * @return exchangeRate on the specified date
 	 * @throws {InternalError.serviceNotReachable} if the service isn't reachable
 	 */
-	getExchangeRate(date: string, fromCode: Currency.Code, toCode: Currency.Code): Promise<number>
+	getExchangeRate(date: string, fromCode: Currency.Codes, toCode: Currency.Codes): Promise<number>
 
 	/**
 	 * Get the local currency for the specified user
 	 * @param userId the user to get the local currency code from
 	 * @return local currency code
 	 */
-	getLocalCurrency(userId: Id): Promise<Currency.Code>
+	getLocalCurrency(userId: Id): Promise<Currency.Codes>
 
 	/**
 	 * Get the id of the fiscal year.

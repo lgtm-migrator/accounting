@@ -6,7 +6,7 @@ import { OutputError } from '../../core/definitions/OutputError'
 import { Verification } from '../../core/entities/Verification'
 import { VerificationRepositoryTest } from '../../../jest/VerificationRepositoryTest'
 
-const localCurrency: Currency.Code = Currency.Codes.SEK
+const localCurrency: Currency.Codes = Currency.Codes.SEK
 
 describe('New verification from custom transactions #cold #use-case', () => {
 	let interactor: VerificationNewCustomTransactionInteractor

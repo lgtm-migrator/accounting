@@ -118,7 +118,7 @@ export class MongoDbGateway implements DbGateway {
 		return this.save(parser, Collections.Parser)
 	}
 
-	async getLocalCurrency(userId: Id): Promise<Currency.Code> {
+	async getLocalCurrency(userId: Id): Promise<Currency.Codes> {
 		return this.collection(Collections.User)
 			.then((collection) => {
 				return collection.findOne({ _id: new ObjectId(userId) }, { projection: { localCurrencyCode: 1 } })

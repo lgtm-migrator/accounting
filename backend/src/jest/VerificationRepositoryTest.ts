@@ -17,14 +17,14 @@ export class VerificationRepositoryTest
 	/**
 	 * @return by default return 10
 	 */
-	async getExchangeRate(date: string, fromCode: Currency.Code, toCode: Currency.Code): Promise<number> {
+	async getExchangeRate(date: string, fromCode: Currency.Codes, toCode: Currency.Codes): Promise<number> {
 		return VerificationRepositoryTest.EXCHANGE_RATE
 	}
 
 	/**
 	 * @return SEK by default
 	 */
-	async getLocalCurrency(userId: Id): Promise<Currency.Code> {
+	async getLocalCurrency(userId: Id): Promise<Currency.Codes> {
 		return VerificationRepositoryTest.LOCAL_CODE
 	}
 

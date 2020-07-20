@@ -8,7 +8,7 @@ export namespace User {
 		username: string
 		firstName: string
 		lastName: string
-		localCurrencyCode: Currency.Code | string
+		localCurrencyCode: Currency.Codes | string
 		apiKey?: string
 	}
 }
@@ -17,7 +17,7 @@ export class User extends Entity implements User.Option {
 	username: string
 	firstName: string
 	lastName: string
-	localCurrencyCode: Currency.Code
+	localCurrencyCode: Currency.Codes
 	apiKey: string
 
 	constructor(data: User.Option) {

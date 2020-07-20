@@ -295,7 +295,7 @@ export class Verification extends UserEntity implements Verification.Option {
 	 * of the transaction's code directly
 	 * @return local currency code
 	 */
-	private findLocalCurrencyCode(): Currency.Code {
+	private findLocalCurrencyCode(): Currency.Codes {
 		for (const transaction of this.transactions) {
 			const localCode = transaction.getLocalCurrencyCode()
 			if (localCode) {

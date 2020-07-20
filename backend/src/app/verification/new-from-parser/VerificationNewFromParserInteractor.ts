@@ -56,7 +56,7 @@ export class VerificationNewFromParserInteractor extends Interactor<
 			})
 	}
 
-	private async parseFile(file: string, parsers: Parser[], localCurrencyCode: Currency.Code): Promise<Verification[]> {
+	private async parseFile(file: string, parsers: Parser[], localCurrencyCode: Currency.Codes): Promise<Verification[]> {
 		return this.repository
 			.readFile(file)
 			.then((text) => {
@@ -82,7 +82,7 @@ export class VerificationNewFromParserInteractor extends Interactor<
 
 	private async createVerificationFromInfo(
 		info: Parser.VerificationInfo,
-		localCurrencyCode: Currency.Code,
+		localCurrencyCode: Currency.Codes,
 		file: string
 	): Promise<Verification> {
 		// Get exchange rate

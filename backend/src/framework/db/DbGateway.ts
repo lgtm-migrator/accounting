@@ -27,7 +27,7 @@ export interface DbGateway {
 	 * @param userId the user to get the local currency for
 	 * @return local currency for the specified user
 	 */
-	getLocalCurrency(userId: Id): Promise<Currency.Code>
+	getLocalCurrency(userId: Id): Promise<Currency.Codes>
 
 	/**
 	 * Get the specific account number from the user
