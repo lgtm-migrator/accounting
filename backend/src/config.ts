@@ -38,4 +38,8 @@ export interface Config {
 		 */
 		url(): string
 	}
+
+	apiKeys: {
+		fixerIo: string
+	}
 }

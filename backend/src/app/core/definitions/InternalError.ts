@@ -32,6 +32,7 @@ export namespace InternalError {
 		dbConnectionError = 'db-connection-error',
 		dbError = 'db-error',
 		dbSearchReturnedEmpty = 'db-search-returned-empty',
+		exchangeRateAccessError = 'exchange-rate-access-error',
 		unknown = 'internal-error',
 	}
 }
