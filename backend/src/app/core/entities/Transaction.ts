@@ -43,14 +43,14 @@ export class Transaction extends Entity implements Transaction.Option {
 	/**
 	 * @return the local currency code if it exists. undefined if it doesn't exist
 	 */
-	getLocalCurrencyCode(): Currency.Code | undefined {
+	getLocalCurrencyCode(): Currency.Codes | undefined {
 		return this.currency.localCode
 	}
 
 	/**
 	 * @return the currency code for this transaction
 	 */
-	getCurrencyCode(): Currency.Code {
+	getCurrencyCode(): Currency.Codes {
 		return this.currency.code
 	}
 
