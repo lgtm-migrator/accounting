@@ -46,7 +46,7 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
 	 * @param localCurrencyCode the currency code for the current user
 	 * @return create transactions from the specified inputs
 	 */
-	private async createTransactions(localCurrencyCode: Currency.Code): Promise<Transaction[]> {
+	private async createTransactions(localCurrencyCode: Currency.Codes): Promise<Transaction[]> {
 		const promises = this.input.verification.transactions.map(async (transaction) => {
 			return this.createTransaction(transaction, localCurrencyCode)
 		})
@@ -61,7 +61,7 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
 	 */
 	private async createTransaction(
 		transactionInputData: TransactionInputData,
-		localCurrencyCode: Currency.Code
+		localCurrencyCode: Currency.Codes
 	): Promise<Transaction> {
 		const code = Currency.Codes.fromString(transactionInputData.currencyCode)
 		if (!code) {
@@ -75,7 +75,7 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
 		}
 
 		return exchangeRatePromise.then((exchangeRate) => {
-			let localCode: Currency.Code | undefined
+			let localCode: Currency.Codes | undefined
 			if (code !== localCurrencyCode) {
 				localCode = localCurrencyCode
 			}

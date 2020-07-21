@@ -8,9 +8,8 @@ export class VerificationSaveRepositoryAdapter extends BaseAdapter implements Ve
 		return BaseAdapter.dbGateway.saveVerification(verification)
 	}
 
-	async saveFiles(files: string[], verification: Verification): Promise<Verification> {
-		// TODO implement saveFiles
-		throw new Error('Method not implemented.')
+	async saveFiles(verification: Verification): Promise<Verification> {
+		return BaseAdapter.fileGateway.save(verification)
 	}
 
 	async getExistingVerification(verification: Verification.Comparable): Promise<Verification | undefined> {

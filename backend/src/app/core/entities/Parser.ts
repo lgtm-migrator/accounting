@@ -161,7 +161,7 @@ export namespace Parser {
 		date: string
 		name: string
 		internalName: string
-		code: Currency.Code
+		code: Currency.Codes
 		type: Verification.Types
 		accountFrom: number
 		accountTo: number

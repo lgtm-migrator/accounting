@@ -12,8 +12,7 @@ export class VerificationNewFromParserRepositoryAdapter extends VerificationNewB
 	}
 
 	async readFile(filename: string): Promise<string> {
-		const fileReader = BaseAdapter.fileGateway.create(filename)
-		return fileReader.read(filename)
+		return BaseAdapter.fileGateway.read(filename)
 	}
 
 	async getAccountDetails(userId: Id, accountNumber: number): Promise<Account> {

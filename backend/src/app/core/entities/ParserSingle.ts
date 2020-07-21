@@ -110,7 +110,7 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 		const errors: OutputError.Info[] = []
 		let date!: string
 		let amount!: number
-		let code!: Currency.Code
+		let code!: Currency.Codes
 
 		try {
 			date = this.parseDate(text)
@@ -149,7 +149,7 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
 		return Parser.fixDate(date)
 	}
 
-	private parseCurrencyCode(text: string): Currency.Code {
+	private parseCurrencyCode(text: string): Currency.Codes {
 		const codeString = ParserSingle.match(text, this.matcher.currencyCode)
 
 		if (codeString.length > 0) {

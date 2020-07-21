@@ -11,8 +11,8 @@ export namespace TransactionFactory {
 	export interface Option {
 		userId: Id
 		amount: number /** How much was transfered (positive amount will deduct from accountFrom, negative amount will add to accountFrom) */
-		code: Currency.Code /** Currency of the amount */
-		localCode?: Currency.Code /** The local currency */
+		code: Currency.Codes /** Currency of the amount */
+		localCode?: Currency.Codes /** The local currency */
 		exchangeRate?: number /** exchange rate from code to localCode. If code and localcode is the same this is not used */
 		accountFrom: Account /** -amount from this account */
 		accountTo: Account /** +amount from this account */
