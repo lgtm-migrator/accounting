@@ -7,7 +7,7 @@ import { OutputError } from '../../app/core/definitions/OutputError'
 import { InternalError } from '../../app/core/definitions/InternalError'
 
 export class FixerIoGateway implements ExchangeGateway {
-	getExchangeRate(date: string, from: Currency.Code, to: Currency.Code): Promise<number> {
+	getExchangeRate(date: string, from: Currency.Codes, to: Currency.Codes): Promise<number> {
 		if (!date.isValidIsoDate()) {
 			throw OutputError.create(OutputError.Types.dateFormatInvalid, date)
 		}
