@@ -43,24 +43,26 @@ describe('Save Verification #cold #use-case', () => {
 
 			async saveVerification(verification: Verification): Promise<Id> {
 				if (verification.id) {
-					return Promise.resolve(verification.id)
+					return verification.id
 				}
-				return Promise.resolve(NEW_ID)
+				return NEW_ID
 			},
 
-			async saveFiles(files: string[], verification: Verification): Promise<Verification> {
+			async saveFiles(verification: Verification): Promise<Verification> {
 				let updated = new Verification(verification)
-				if (files.length > 0) {
-					if (!updated.files) {
-						updated.files = []
-					}
-					updated.files = updated.files!.concat(files)
+				if (verification.files) {
+					if (verification.files.length > 0) {
+						if (!updated.files) {
+							updated.files = []
+						}
+						updated.files = updated.files!.concat(verification.files)
 
-					// Make them unique (to test that we don't added files if they existed)
-					updated.files = [...new Set(updated.files)]
+						// Make them unique (to test that we don't added files if they existed)
+						updated.files = [...new Set(updated.files)]
+					}
 				}
 
-				return Promise.resolve(updated)
+				return updated
 			},
 		}
 		interactor = new VerificationSaveInteractor(repository)
@@ -184,8 +186,8 @@ describe('Save Verification #cold #use-case', () => {
 			files: EXISTING_VERIFICATION_WITH_FILES.files,
 		}
 
-		repository.getExistingVerification = function (verification: Verification.Comparable): Promise<Verification> {
-			return Promise.resolve(EXISTING_VERIFICATION_WITH_FILES)
+		repository.getExistingVerification = async function (verification: Verification.Comparable): Promise<Verification> {
+			return EXISTING_VERIFICATION_WITH_FILES
 		}
 		spyExists = jest.spyOn(repository, 'getExistingVerification')
 

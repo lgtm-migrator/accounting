@@ -17,21 +17,6 @@ export class VerificationSaveInteractor extends Interactor<
 		super(repository)
 	}
 
-	private wasNewFilesAdded(existingVerification: Verification | undefined, verification: Verification): boolean {
-		// There was new files
-		if (this.input.files) {
-			// There were no existing files prior
-			if (!existingVerification || !existingVerification.files) {
-				return true
-			}
-			// There was files prior, did we add any new files?
-			if (verification.files && verification.files.length != this.input.files.length) {
-				return true
-			}
-		}
-		return false
-	}
-
 	/**
 	 * Tries to save the verification
 	 * @param input
@@ -40,7 +25,7 @@ export class VerificationSaveInteractor extends Interactor<
 	async execute(input: VerificationSaveInput): Promise<VerificationSaveOutput> {
 		this.input = input
 		let successType = VerificationSaveOutput.SuccessTypes.INVALID
-		let existingVerification: Verification | undefined
+		let initialFileCount: number | undefined
 
 		return this.repository
 			.getExistingVerification(input.verification.getComparable())
@@ -49,14 +34,20 @@ export class VerificationSaveInteractor extends Interactor<
 				if (foundVerification) {
 					successType = VerificationSaveOutput.SuccessTypes.DUPLICATE
 					verification = foundVerification
-					existingVerification = foundVerification
 				}
 
-				// Files to save
+				// Add files to save
 				if (input.files) {
-					return this.repository.saveFiles(input.files, verification)
+					if (!verification.files) {
+						verification.files = []
+					} else {
+						initialFileCount = verification.files.length
+					}
+
+					verification.files.push(...input.files)
+					return this.repository.saveFiles(verification)
 				} else {
-					return Promise.resolve(verification)
+					return verification
 				}
 			})
 			.then((verification) => {
@@ -65,7 +56,7 @@ export class VerificationSaveInteractor extends Interactor<
 					successType = VerificationSaveOutput.SuccessTypes.ADDED_NEW
 				}
 				// Added new files to duplicate (check so that we actually added new files)
-				else if (this.wasNewFilesAdded(existingVerification, verification)) {
+				else if (initialFileCount !== verification.files?.length) {
 					successType = VerificationSaveOutput.SuccessTypes.DUPLICATE_ADDED_FILES
 				}
 				// Duplicate -> No need to save duplicate, return directly with the existing Id
@@ -82,6 +73,11 @@ export class VerificationSaveInteractor extends Interactor<
 				}
 
 				return Promise.resolve(output)
+			})
+			.catch((reason) => {
+				// TODO Cleanup files after error
+
+				throw reason
 			})
 	}
 }

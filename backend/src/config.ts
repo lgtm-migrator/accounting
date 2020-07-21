@@ -42,4 +42,15 @@ export interface Config {
 	apiKeys: {
 		fixerIo: string
 	}
+
+	fileSystem: {
+		/**
+		 * Project directory, the folder that has the backend and frontend dirs.
+		 */
+		projectDir: string
+		/**
+		 * Output for all files
+		 */
+		writeDir: string
+	}
 }

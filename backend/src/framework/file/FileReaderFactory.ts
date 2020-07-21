@@ -2,9 +2,8 @@ import { FileReader } from './FileReader'
 import { PdfReader } from './PdfReader'
 import { InternalError } from '../../app/core/definitions/InternalError'
 import { TxtReader } from './TxtReader'
-import { FileGateway } from './FileGateway'
 
-export class FileReaderFactory implements FileGateway {
+export class FileReaderFactory {
 	/**
 	 * Creates a correct file reader depending on the file's extension
 	 * @param filename the filename to create a reader for

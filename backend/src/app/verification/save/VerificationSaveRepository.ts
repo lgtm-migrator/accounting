@@ -12,14 +12,12 @@ export interface VerificationSaveRepository extends Repository {
 	saveVerification(verification: Verification): Promise<Id>
 
 	/**
-	 * Save all the specified files
-	 * @param files the new files to save. If the file already exists (checksum) it does nothing.
-	 * If no files are specified, this method does nothing except to return the verification without changes.
-	 * @param verification the verification to save the files for (used to determine file name)
+	 * Save all the files for the verification
+	 * @param verification the verification to save the files for
 	 * @return updated verification with all the new files. Note that this verification hasn't been saved.
 	 * Only the files have been updated. If no files are specified, returns verification directly without changes.
 	 */
-	saveFiles(files: string[], verification: Verification): Promise<Verification>
+	saveFiles(verification: Verification): Promise<Verification>
 
 	/**
 	 * Check if the verification already exists and returns that instance.

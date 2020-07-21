@@ -33,6 +33,7 @@ export namespace InternalError {
 		dbError = 'db-error',
 		dbSearchReturnedEmpty = 'db-search-returned-empty',
 		exchangeRateAccessError = 'exchange-rate-access-error',
+		fileSave = 'file-save',
 		unknown = 'internal-error',
 	}
 }

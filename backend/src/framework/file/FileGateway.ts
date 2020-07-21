@@ -1,11 +1,26 @@
-import { FileReader } from './FileReader'
+import { Verification } from '../../app/core/entities/Verification'
 
 export interface FileGateway {
 	/**
-	 * Creates a correct file reader depending on the file's extension
-	 * @param filename the filename to create a reader for
-	 * @return a file reader that can read the specified file
-	 * @throws {InternalError.Types.notImplemented} if the file's extension hasn't been implemented
+	 * Reads a file and returns it as a string.
+	 * @param file the file to read.
+	 * @return all the text in the file
+	 * @throws {InternalError.Types.fileNotFound} if the file doesn't exist
+	 * @throws {InternalError.Types.readingFile} if the file couldn't be read properly
+	 * @throws {InternalError.Types.notImplemented} if a reader for the file's extension hasn't been implemented
 	 */
-	create(filename: string): FileReader
+	read(file: string): Promise<string>
+
+	/**
+	 * Save (move) all verification files to the correct location
+	 * @param verification save all the files of this verification
+	 * @throws {InternalError.Types.fileSave} if something went wrong saving one or more files
+	 */
+	save(verification: Verification): Promise<Verification>
+
+	/**
+	 * Remove the specified file
+	 * @param file the file to remove
+	 */
+	remove(file: string): Promise<void>
 }
