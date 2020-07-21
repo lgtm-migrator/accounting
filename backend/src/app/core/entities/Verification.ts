@@ -230,6 +230,20 @@ export class Verification extends UserEntity implements Verification.Option {
 	}
 
 	/**
+	 * Get the full name of the verification. Both useful for debugging purposes and storing files
+	 * @return full name of the verification
+	 */
+	getFullName(): string {
+		let fullName = ''
+		if (this.number) {
+			const paddedNumber = `${this.number}`.padStart(4, '0')
+			fullName = `#${paddedNumber} - `
+		}
+		fullName += `${this.date} - ${this.name}`
+		return fullName
+	}
+
+	/**
 	 * Get the comparable of this verification. If two verifications have the same comparable
 	 * that essentially means they are the same, even though they might have different values
 	 * @return a comparable of this verification.

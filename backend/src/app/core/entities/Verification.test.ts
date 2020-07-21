@@ -3,7 +3,6 @@ import { Verification } from './Verification'
 import { Transaction } from './Transaction'
 import { OutputError } from '../definitions/OutputError'
 import { Currency } from './Currency'
-import { ObjectID } from 'mongodb'
 
 describe('Verification test #cold #entity', () => {
 	let verification: Verification
@@ -11,12 +10,24 @@ describe('Verification test #cold #entity', () => {
 	beforeEach(() => {
 		const validData: Verification.Option = {
 			userId: 1,
-			name: 'Test',
+			name: faker.commerce.productName(),
 			date: '2020-01-15',
 			type: Verification.Types.TRANSACTION,
 			transactions: fakerValidTransactionPair(),
 		}
 		verification = new Verification(validData)
+	})
+
+	// getFullName()
+	it('getFullName()', () => {
+		// Without verification number
+		verification.date = '2012-01-01'
+		verification.name = 'Name'
+		expect(verification.getFullName()).toStrictEqual('2012-01-01 - Name')
+
+		// With verification number
+		verification.number = 12
+		expect(verification.getFullName()).toStrictEqual('#0012 - 2012-01-01 - Name')
 	})
 
 	// Minimum valid
