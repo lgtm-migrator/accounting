@@ -7,12 +7,10 @@ import { MongoConverter } from './MongoConverter'
 import { OutputError } from '../../app/core/definitions/OutputError'
 import { Account } from '../../app/core/entities/Account'
 import { ParserSingle } from '../../app/core/entities/ParserSingle'
-import { resolve } from 'path'
 import { ParserMulti } from '../../app/core/entities/ParserMulti'
 import { Parser } from '../../app/core/entities/Parser'
 import { User } from '../../app/core/entities/User'
 import { Currency } from '../../app/core/entities/Currency'
-import { fake } from 'faker'
 import { FiscalYear } from '../../app/core/entities/FiscalYear'
 import { Consts } from '../../app/core/definitions/Consts'
 
@@ -192,32 +190,35 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 	})
 
 	it('getExistingVerification()', async () => {
-		const verification = fakerVerificationFull()
-		let comparable = verification.getComparable()
-		let insertObject = MongoConverter.toDbObject(verification)
+		const testVerification = fakerVerificationFull()
+		const validVerification = new Verification(testVerification)
+		let insertObject = MongoConverter.toDbObject(validVerification)
 		await db.collection(Collections.Verification).insertOne(insertObject)
+		testVerification.id = undefined
 
 		// Found
+		let comparable = testVerification.getComparable()
 		let promise = gateway.getExistingVerification(comparable)
-		await expect(promise).resolves.toStrictEqual(verification)
+		await expect(promise).resolves.toStrictEqual(validVerification)
 
 		// Not found - not equal
-		verification.internalName = 'something else'
-		comparable = verification.getComparable()
+		testVerification.internalName = 'something else'
+		comparable = testVerification.getComparable()
 		promise = gateway.getExistingVerification(comparable)
 		await expect(promise).resolves.toStrictEqual(undefined)
 
 		// Not found - undefined fields
-		verification.internalName = undefined
-		comparable = verification.getComparable()
+		testVerification.internalName = undefined
+		comparable = testVerification.getComparable()
 		promise = gateway.getExistingVerification(comparable)
 		await expect(promise).resolves.toStrictEqual(undefined)
 
 		// Remove the internal name from the verification, and now it should be found
-		insertObject = MongoConverter.toDbObject(verification)
-		await db.collection(Collections.Verification).replaceOne({ _id: new ObjectId(verification.id) }, insertObject)
+		validVerification.internalName = undefined
+		insertObject = MongoConverter.toDbObject(validVerification)
+		await db.collection(Collections.Verification).replaceOne({ _id: new ObjectId(validVerification.id) }, insertObject)
 		promise = gateway.getExistingVerification(comparable)
-		await expect(promise).resolves.toStrictEqual(verification)
+		await expect(promise).resolves.toStrictEqual(validVerification)
 	})
 
 	it('getAccount()', async () => {

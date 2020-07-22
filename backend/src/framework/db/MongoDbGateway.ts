@@ -90,6 +90,11 @@ export class MongoDbGateway implements DbGateway {
 	}
 
 	async getExistingVerification(verification: Verification.Comparable): Promise<Verification | undefined> {
+		// Only search by id if Id is specified
+		if (verification.id) {
+			return this.getVerification(verification.userId, verification.id)
+		}
+
 		const searchObject = MongoConverter.toDbObject(verification, 'dont-add-id')
 
 		return this.collection(Collections.Verification)

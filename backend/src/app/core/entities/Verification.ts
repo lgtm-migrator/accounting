@@ -25,6 +25,7 @@ export namespace Verification {
 	}
 
 	export interface Comparable {
+		readonly id?: Id
 		readonly userId: Id
 		readonly internalName?: string
 		readonly date: string
@@ -250,6 +251,7 @@ export class Verification extends UserEntity implements Verification.Option {
 	 */
 	getComparable(): Verification.Comparable {
 		return {
+			id: this.id,
 			userId: this.userId,
 			internalName: this.internalName,
 			date: this.date,
@@ -260,7 +262,12 @@ export class Verification extends UserEntity implements Verification.Option {
 				if (this === other) {
 					return true
 				}
-
+				if (this.id && this.id === other.id) {
+					return true
+				}
+				if (this.id && other.id && this.id !== other.id) {
+					return false
+				}
 				if (this.userId !== other.userId) {
 					return false
 				}
