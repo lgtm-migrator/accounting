@@ -24,47 +24,26 @@ export class VerificationSaveInteractor extends Interactor<
 	 */
 	async execute(input: VerificationSaveInput): Promise<VerificationSaveOutput> {
 		this.input = input
+		let existingVerification: Verification | undefined
 		let successType = VerificationSaveOutput.SuccessTypes.INVALID
-		let initialFileCount: number | undefined
 
 		return this.repository
 			.getExistingVerification(input.verification.getComparable())
 			.then((foundVerification) => {
-				let verification = input.verification
-				if (foundVerification) {
-					successType = VerificationSaveOutput.SuccessTypes.DUPLICATE
-					verification = foundVerification
-				}
-
-				// Add files to save
-				if (input.files) {
-					if (!verification.files) {
-						verification.files = []
-					} else {
-						initialFileCount = verification.files.length
-					}
-
-					verification.files.push(...input.files)
-					return this.repository.saveFiles(verification)
-				} else {
-					return verification
-				}
+				existingVerification = foundVerification
+				return this.saveFiles(existingVerification)
 			})
 			.then((verification) => {
-				// New verification
-				if (successType != VerificationSaveOutput.SuccessTypes.DUPLICATE && !input.verification.id) {
-					successType = VerificationSaveOutput.SuccessTypes.ADDED_NEW
-				}
-				// Added new files to duplicate (check so that we actually added new files)
-				else if (initialFileCount !== verification.files?.length) {
-					successType = VerificationSaveOutput.SuccessTypes.DUPLICATE_ADDED_FILES
-				}
-				// Duplicate -> No need to save duplicate, return directly with the existing Id
-				else {
-					return Promise.resolve(verification.id!)
-				}
+				successType = VerificationSaveInteractor.calculateSuccessType(verification, existingVerification)
 
-				return this.repository.saveVerification(verification)
+				// Duplicate, no need to save, just return the id directly
+				if (successType === VerificationSaveOutput.SuccessTypes.DUPLICATE) {
+					return verification.id!
+				}
+				// New or added files, save the verificatino
+				else {
+					return this.repository.saveVerification(verification)
+				}
 			})
 			.then((id) => {
 				const output: VerificationSaveOutput = {
@@ -79,5 +58,43 @@ export class VerificationSaveInteractor extends Interactor<
 
 				throw reason
 			})
+	}
+
+	private async saveFiles(existingVerification?: Verification): Promise<Verification> {
+		let verification: Verification = this.input.verification
+
+		if (existingVerification) {
+			verification = new Verification(existingVerification)
+		}
+
+		// Add files to save
+		if (this.input.files) {
+			if (!verification.files) {
+				verification.files = []
+			}
+
+			verification.files.push(...this.input.files)
+			return this.repository.saveFiles(verification)
+		} else {
+			return verification
+		}
+	}
+
+	private static calculateSuccessType(
+		verification: Verification,
+		existingVerification?: Verification
+	): VerificationSaveOutput.SuccessTypes {
+		if (!existingVerification) {
+			return VerificationSaveOutput.SuccessTypes.ADDED_NEW
+		} else {
+			const existingFileCount = existingVerification.files?.length
+			const totalFileCount = verification.files?.length
+
+			if (existingFileCount !== totalFileCount) {
+				return VerificationSaveOutput.SuccessTypes.DUPLICATE_ADDED_FILES
+			} else {
+				return VerificationSaveOutput.SuccessTypes.DUPLICATE
+			}
+		}
 	}
 }
