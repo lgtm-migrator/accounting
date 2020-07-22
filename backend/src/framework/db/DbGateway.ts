@@ -86,4 +86,10 @@ export interface DbGateway {
 	 * @param fiscalYearId the id of the fiscal year to get the verifications for
 	 */
 	getVerifications(userId: Id, fiscalYearId: Id): Promise<Verification[]>
+
+	/**
+	 * Get all unbound verifications
+	 * @param userId the user id to get the verifications from
+	 */
+	getUnboundVerifications(userId: Id): Promise<Verification[]>
 }

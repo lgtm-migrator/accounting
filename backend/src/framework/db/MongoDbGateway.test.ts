@@ -221,6 +221,70 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 		await expect(promise).resolves.toStrictEqual(validVerification)
 	})
 
+	it('getUnboundVerifications()', async () => {
+		// Create data
+		const bound1 = fakerVerificationFull()
+		const bound2 = fakerVerificationFull()
+		const bound3 = fakerVerificationFull()
+
+		bound1.type = Verification.Types.PAYMENT_DIRECT_IN
+		bound2.type = Verification.Types.INVOICE_OUT
+		bound2.paymentId = undefined
+		bound3.type = Verification.Types.INVOICE_IN_PAYMENT
+		bound3.invoiceId = undefined
+
+		const unbound1 = fakerVerificationFull()
+		const unbound2 = fakerVerificationFull()
+		const unbound3 = fakerVerificationFull()
+		const unbound4 = fakerVerificationFull()
+
+		unbound1.type = Verification.Types.INVOICE_IN
+		unbound1.paymentId = undefined
+		unbound1.invoiceId = undefined
+		unbound2.type = Verification.Types.INVOICE_IN_PAYMENT
+		unbound2.paymentId = undefined
+		unbound2.invoiceId = undefined
+		unbound3.type = Verification.Types.INVOICE_OUT
+		unbound3.paymentId = undefined
+		unbound3.invoiceId = undefined
+		unbound4.type = Verification.Types.INVOICE_OUT_PAYMENT
+		unbound4.paymentId = undefined
+		unbound4.invoiceId = undefined
+
+		const unboundButDirect = fakerVerificationFull()
+		unboundButDirect.type = Verification.Types.PAYMENT_DIRECT_OUT
+		unboundButDirect.paymentId = undefined
+		unboundButDirect.invoiceId = undefined
+
+		const otherUser = fakerVerificationFull()
+		otherUser.userId = new ObjectId().toHexString()
+		otherUser.type = Verification.Types.INVOICE_IN
+		otherUser.paymentId = undefined
+		otherUser.invoiceId = undefined
+
+		const objects = [
+			MongoConverter.toDbObject(bound1),
+			MongoConverter.toDbObject(bound2),
+			MongoConverter.toDbObject(bound3),
+			MongoConverter.toDbObject(unbound1),
+			MongoConverter.toDbObject(unbound2),
+			MongoConverter.toDbObject(unbound3),
+			MongoConverter.toDbObject(unbound4),
+			MongoConverter.toDbObject(unboundButDirect),
+			MongoConverter.toDbObject(otherUser),
+		]
+
+		await db.collection(Collections.Verification).insertMany(objects)
+
+		// Test data
+		let promise = gateway.getUnboundVerifications(USER_ID)
+		await expect(promise).resolves.toHaveLength(4)
+		await expect(promise).resolves.toContainEqual(expect.objectContaining(unbound1))
+		await expect(promise).resolves.toContainEqual(expect.objectContaining(unbound2))
+		await expect(promise).resolves.toContainEqual(expect.objectContaining(unbound3))
+		await expect(promise).resolves.toContainEqual(expect.objectContaining(unbound4))
+	})
+
 	it('getAccount()', async () => {
 		const account = new Account({
 			userId: new ObjectId().toHexString(),

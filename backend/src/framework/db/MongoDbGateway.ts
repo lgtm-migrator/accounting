@@ -291,4 +291,31 @@ export class MongoDbGateway implements DbGateway {
 				throw new InternalError(InternalError.Types.dbError, reason)
 			})
 	}
+
+	async getUnboundVerifications(userId: Id): Promise<Verification[]> {
+		return this.collection(Collections.Verification)
+			.then(async (collection) => {
+				const query = {
+					userId: new ObjectId(userId),
+					paymentId: { $exists: false },
+					invoiceId: { $exists: false },
+					type: {
+						$in: [
+							Verification.Types.INVOICE_IN,
+							Verification.Types.INVOICE_IN_PAYMENT,
+							Verification.Types.INVOICE_OUT,
+							Verification.Types.INVOICE_OUT_PAYMENT,
+						],
+					},
+				}
+				return collection.find(query).toArray()
+			})
+			.then((foundObjects) => {
+				// Convert objects to verifications
+				return foundObjects.reduce((array, object) => {
+					array.push(MongoConverter.toVerification(object))
+					return array
+				}, new Array<Verification>())
+			})
+	}
 }
