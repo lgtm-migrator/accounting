@@ -41,11 +41,12 @@ describe('Save Verification #cold #use-case', () => {
 				return Promise.resolve(undefined)
 			},
 
-			async saveVerification(verification: Verification): Promise<Id> {
-				if (verification.id) {
-					return verification.id
+			async saveVerification(verification: Verification): Promise<Verification> {
+				let savedVerification = new Verification(verification)
+				if (!savedVerification.id) {
+					savedVerification.id = NEW_ID
 				}
-				return NEW_ID
+				return savedVerification
 			},
 
 			async saveFiles(verification: Verification): Promise<Verification> {
@@ -78,9 +79,10 @@ describe('Save Verification #cold #use-case', () => {
 		}
 
 		output = interactor.execute(input)
+		input.verification.id = NEW_ID
 		valid = {
 			successType: VerificationSaveOutput.SuccessTypes.ADDED_NEW,
-			id: NEW_ID,
+			verification: input.verification,
 		}
 
 		expect.assertions(4)
@@ -97,9 +99,10 @@ describe('Save Verification #cold #use-case', () => {
 		}
 
 		output = interactor.execute(input)
+		input.verification.id = NEW_ID
 		valid = {
 			successType: VerificationSaveOutput.SuccessTypes.ADDED_NEW,
-			id: NEW_ID,
+			verification: input.verification,
 		}
 
 		expect.assertions(4)
@@ -122,7 +125,7 @@ describe('Save Verification #cold #use-case', () => {
 		output = interactor.execute(input)
 		valid = {
 			successType: VerificationSaveOutput.SuccessTypes.DUPLICATE,
-			id: EXISTING_VERIFICATION.id!,
+			verification: EXISTING_VERIFICATION,
 		}
 
 		expect.assertions(4)
@@ -144,9 +147,11 @@ describe('Save Verification #cold #use-case', () => {
 		spyExists = jest.spyOn(repository, 'getExistingVerification')
 
 		output = interactor.execute(input)
+		const verification = new Verification(EXISTING_VERIFICATION)
+		verification.files = input.files
 		valid = {
 			successType: VerificationSaveOutput.SuccessTypes.DUPLICATE_ADDED_FILES,
-			id: EXISTING_VERIFICATION.id!,
+			verification: verification,
 		}
 
 		expect.assertions(4)
@@ -168,9 +173,11 @@ describe('Save Verification #cold #use-case', () => {
 		spyExists = jest.spyOn(repository, 'getExistingVerification')
 
 		output = interactor.execute(input)
+		const verification = new Verification(EXISTING_VERIFICATION_WITH_FILES)
+		verification.files?.push(...input.files!)
 		valid = {
 			successType: VerificationSaveOutput.SuccessTypes.DUPLICATE_ADDED_FILES,
-			id: EXISTING_VERIFICATION_WITH_FILES.id!,
+			verification: verification,
 		}
 
 		expect.assertions(4)
@@ -194,7 +201,7 @@ describe('Save Verification #cold #use-case', () => {
 		output = interactor.execute(input)
 		valid = {
 			successType: VerificationSaveOutput.SuccessTypes.DUPLICATE,
-			id: EXISTING_VERIFICATION_WITH_FILES.id!,
+			verification: EXISTING_VERIFICATION_WITH_FILES,
 		}
 
 		expect.assertions(4)

@@ -1,6 +1,7 @@
 import { Immutable } from '../../core/definitions/Immutable'
 import { Output } from '../../core/definitions/Output'
 import { Id } from '../../core/definitions/Id'
+import { Verification } from '../../core/entities/Verification'
 
 export namespace VerificationSaveOutput {
 	export enum SuccessTypes {
@@ -12,6 +13,6 @@ export namespace VerificationSaveOutput {
 }
 
 export interface VerificationSaveOutput extends Output {
-	readonly id: Id
+	readonly verification: Immutable<Verification>
 	readonly successType: VerificationSaveOutput.SuccessTypes
 }

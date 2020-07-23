@@ -9,7 +9,7 @@ export interface VerificationSaveRepository extends Repository {
 	 * @param verification the verification to save
 	 * @return id of the saved verification
 	 */
-	saveVerification(verification: Verification): Promise<Id>
+	saveVerification(verification: Verification): Promise<Verification>
 
 	/**
 	 * Save all the files for the verification

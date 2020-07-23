@@ -1,10 +1,9 @@
-import { BaseAdapter } from './BaseAdapter'
-import { VerificationSaveRepository } from '../../app/verification/save/VerificationSaveRepository'
 import { Verification } from '../../app/core/entities/Verification'
-import { Id } from '../../app/core/definitions/Id'
+import { VerificationSaveRepository } from '../../app/verification/save/VerificationSaveRepository'
+import { BaseAdapter } from './BaseAdapter'
 
 export class VerificationSaveRepositoryAdapter extends BaseAdapter implements VerificationSaveRepository {
-	async saveVerification(verification: Verification): Promise<Id> {
+	async saveVerification(verification: Verification): Promise<Verification> {
 		return BaseAdapter.dbGateway.saveVerification(verification)
 	}
 

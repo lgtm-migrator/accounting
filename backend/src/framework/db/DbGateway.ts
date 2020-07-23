@@ -10,9 +10,9 @@ export interface DbGateway {
 	/**
 	 * Save the verification and returns the verification's id if successfully saved
 	 * @param verification the verification to save
-	 * @return Id of the verification if successfully saved
+	 * @return The verification with its id set if save was successful
 	 */
-	saveVerification(verification: Verification): Promise<Id>
+	saveVerification(verification: Verification): Promise<Verification>
 
 	/**
 	 * Check if the verification already exists and returns that instance.
@@ -65,9 +65,9 @@ export interface DbGateway {
 	/**
 	 * Save a parser
 	 * @param parser the parser to save
-	 * @return Id of the parser if saved successfully
+	 * @return parnel with its id set if save was successful
 	 */
-	saveParser(parser: Parser): Promise<Id>
+	saveParser(parser: Parser): Promise<Parser>
 
 	/**
 	 * Get the fiscal year that would contain the specified date

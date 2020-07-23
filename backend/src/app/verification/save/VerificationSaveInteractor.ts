@@ -38,16 +38,16 @@ export class VerificationSaveInteractor extends Interactor<
 
 				// Duplicate, no need to save, just return the id directly
 				if (successType === VerificationSaveOutput.SuccessTypes.DUPLICATE) {
-					return verification.id!
+					return verification
 				}
 				// New or added files, save the verificatino
 				else {
 					return this.repository.saveVerification(verification)
 				}
 			})
-			.then((id) => {
+			.then((verification) => {
 				const output: VerificationSaveOutput = {
-					id: id,
+					verification: verification,
 					successType: successType,
 				}
 

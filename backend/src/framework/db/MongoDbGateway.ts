@@ -56,7 +56,7 @@ export class MongoDbGateway implements DbGateway {
 		})
 	}
 
-	private async save(entity: Entity, collection: Collections): Promise<Id> {
+	private async save(entity: Entity, collection: Collections): Promise<{}> {
 		const validation = entity.validate()
 
 		if (validation.length > 0) {
@@ -71,7 +71,7 @@ export class MongoDbGateway implements DbGateway {
 			})
 			.then((result) => {
 				if (result.modifiedCount + result.upsertedCount === 1) {
-					return dbObject._id.toHexString()
+					return dbObject
 				} else {
 					throw new InternalError(InternalError.Types.dbError, 'Could save Entity to MongoDB')
 				}
@@ -85,8 +85,10 @@ export class MongoDbGateway implements DbGateway {
 			})
 	}
 
-	async saveVerification(verification: Verification): Promise<Id> {
-		return this.save(verification, Collections.Verification)
+	async saveVerification(verification: Verification): Promise<Verification> {
+		return this.save(verification, Collections.Verification).then((dbObject) => {
+			return MongoConverter.toVerification(dbObject)
+		})
 	}
 
 	async getExistingVerification(verification: Verification.Comparable): Promise<Verification | undefined> {
@@ -119,8 +121,10 @@ export class MongoDbGateway implements DbGateway {
 			})
 	}
 
-	async saveParser(parser: Parser): Promise<Id> {
-		return this.save(parser, Collections.Parser)
+	async saveParser(parser: Parser): Promise<Parser> {
+		return this.save(parser, Collections.Parser).then((dbObject) => {
+			return MongoConverter.toParser(dbObject)
+		})
 	}
 
 	async getLocalCurrency(userId: Id): Promise<Currency.Codes> {

@@ -55,8 +55,8 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 
 		expect.assertions(1)
 		await promise
-			.then((id) => {
-				return db.collection(Collections.Verification).findOne({ _id: new ObjectId(id) })
+			.then((verification) => {
+				return db.collection(Collections.Verification).findOne({ _id: new ObjectId(verification.id) })
 			})
 			.then((object) => {
 				const dbVerification = MongoConverter.toVerification(object)
@@ -71,8 +71,8 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 
 		expect.assertions(1)
 		await promise
-			.then((id) => {
-				return db.collection(Collections.Verification).findOne({ _id: new ObjectId(id) })
+			.then((verification) => {
+				return db.collection(Collections.Verification).findOne({ _id: new ObjectId(verification.id) })
 			})
 			.then((object) => {
 				const dbVerification = MongoConverter.toVerification(object)
@@ -87,8 +87,8 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 
 		expect.assertions(2)
 		await promise
-			.then((id) => {
-				return db.collection(Collections.Verification).findOne({ _id: new ObjectId(id) })
+			.then((verification) => {
+				return db.collection(Collections.Verification).findOne({ _id: new ObjectId(verification.id) })
 			})
 			.then((object) => {
 				const option: Verification.Option = MongoConverter.toOption(object)
@@ -100,8 +100,8 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 				verification.name = 'Another name'
 				return gateway.saveVerification(verification)
 			})
-			.then((id) => {
-				return db.collection(Collections.Verification).findOne({ _id: new ObjectId(id) })
+			.then((verification) => {
+				return db.collection(Collections.Verification).findOne({ _id: new ObjectId(verification.id) })
 			})
 			.then((object) => {
 				const dbVerification = MongoConverter.toVerification(object)
@@ -316,8 +316,8 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 		const promise = gateway.saveParser(parser)
 		expect.assertions(1)
 		await promise
-			.then((id) => {
-				return db.collection(Collections.Parser).findOne({ _id: new ObjectId(id) })
+			.then((parser) => {
+				return db.collection(Collections.Parser).findOne({ _id: new ObjectId(parser.id) })
 			})
 			.then((object) => {
 				const dbParser = MongoConverter.toParser(object)
@@ -331,8 +331,8 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 		const promise = gateway.saveParser(parser)
 		expect.assertions(1)
 		await promise
-			.then((id) => {
-				return db.collection(Collections.Parser).findOne({ _id: new ObjectId(id) })
+			.then((parser) => {
+				return db.collection(Collections.Parser).findOne({ _id: new ObjectId(parser.id) })
 			})
 			.then((object) => {
 				const dbParser = MongoConverter.toParser(object)
