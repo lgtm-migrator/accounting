@@ -156,7 +156,7 @@ export class Verification extends UserEntity implements Verification.Option {
 			for (let transaction of this.transactions) {
 				if (!transaction.isDeleted()) {
 					if (this.totalAmount.isComparableTo(transaction.currency)) {
-						if (this.totalAmount.isEqualTo(transaction.currency)) {
+						if (this.totalAmount.isEquallyLarge(transaction.currency)) {
 							found = true
 							break
 						}
@@ -306,6 +306,16 @@ export class Verification extends UserEntity implements Verification.Option {
 		}
 
 		this.transactions.push(new Transaction(transaction))
+		this.updateModified()
+	}
+
+	setPaymentId(paymentId: Id | undefined) {
+		this.paymentId = paymentId
+		this.updateModified()
+	}
+
+	setInvoiceId(invoiceId: Id | undefined) {
+		this.invoiceId = invoiceId
 		this.updateModified()
 	}
 
