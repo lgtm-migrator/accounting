@@ -30,6 +30,99 @@ describe('Verification test #cold #entity', () => {
 		expect(verification.getFullName()).toStrictEqual('#0012 - 2012-01-01 - Name')
 	})
 
+	// getTransaction()
+	it('getTransaction()', () => {
+		verification.transactions[0].accountNumber = 2440
+		verification.transactions[1].accountNumber = 4661
+
+		// Valid
+		expect(verification.getTransaction(2440)).toStrictEqual(verification.transactions[0])
+		expect(verification.getTransaction(4661)).toStrictEqual(verification.transactions[1])
+
+		// Not found
+		expect(verification.getTransaction(2222)).toStrictEqual(undefined)
+
+		// Not found (because it is set as deleted)
+		verification.transactions[0].setAsDeleted()
+		expect(verification.getTransaction(2440)).toStrictEqual(undefined)
+	})
+
+	// Remove transaction
+	it('removeTransaction() not filed yet', () => {
+		verification.dateModified = new Date().getTime() - 1000
+		verification.transactions[0].accountNumber = 2440
+		verification.transactions[1].accountNumber = 4661
+		const oldModified = verification.dateModified
+
+		expect(verification.removeTransaction(2440)).toStrictEqual(undefined)
+		expect(verification.transactions).toHaveLength(1)
+		expect(verification.dateModified).not.toStrictEqual(oldModified)
+
+		try {
+			verification.removeTransaction(2440)
+			expect(true).toStrictEqual(false)
+		} catch (exception) {
+			expect(exception).toStrictEqual(OutputError.create(OutputError.Types.transactionNotFound, '2440'))
+		}
+	})
+
+	it('removeTransaction() with filed verification', () => {
+		verification.dateModified = new Date().getTime() - 1000
+		verification.dateFiled = new Date().getTime()
+		verification.transactions[0].dateModified = verification.dateModified
+		verification.transactions[0].accountNumber = 2440
+		verification.transactions[1].accountNumber = 4661
+		const oldModifiedVerification = verification.dateModified
+		const oldModifiedTransaction = verification.transactions[0].dateModified
+
+		expect(verification.removeTransaction(2440)).toStrictEqual(undefined)
+		expect(verification.transactions).toHaveLength(2)
+		expect(verification.dateModified).not.toStrictEqual(oldModifiedVerification)
+		expect(verification.transactions[0].dateModified).not.toStrictEqual(oldModifiedTransaction)
+		expect(verification.transactions[0].dateDeleted).not.toStrictEqual(undefined)
+
+		try {
+			verification.removeTransaction(2440)
+			expect(true).toStrictEqual(false)
+		} catch (exception) {
+			expect(exception).toStrictEqual(OutputError.create(OutputError.Types.transactionNotFound, '2440'))
+		}
+
+		// Readd 2440 and remove it again
+		let transaction = new Transaction(fakerTransaction())
+		transaction.accountNumber = 2440
+		verification.transactions.push(transaction)
+		expect(verification.removeTransaction(2440)).toStrictEqual(undefined)
+		expect(verification.transactions).toHaveLength(3)
+	})
+
+	it('addTransaction()', () => {
+		verification.dateModified = new Date().getTime() - 1000
+		verification.transactions[0].accountNumber = 2440
+		verification.transactions[1].accountNumber = 4661
+		const oldModified = verification.dateModified
+
+		// Add another transaction
+		let transaction = fakerTransaction()
+		transaction.accountNumber = 2222
+		verification.addTransaction(transaction)
+		expect(verification.transactions).toHaveLength(3)
+		expect(verification.dateModified).not.toStrictEqual(oldModified)
+
+		// Try to add the same transaction
+		try {
+			verification.addTransaction(transaction)
+			expect(true).toStrictEqual(false)
+		} catch (exception) {
+			expect(exception).toStrictEqual(OutputError.create(OutputError.Types.transactionWithAccountNumberExists, '2222'))
+		}
+
+		// Set the transaction as deleted, and try to add it again
+		verification.transactions[2].setAsDeleted()
+		verification.addTransaction(transaction)
+		expect(verification.transactions).toHaveLength(4)
+	})
+
 	// Minimum valid
 	it('Minimum valid verification', () => {
 		expect(verification.validate()).toStrictEqual([])

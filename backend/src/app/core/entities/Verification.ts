@@ -5,6 +5,7 @@ import { Consts } from '../definitions/Consts'
 import '../definitions/String'
 import { OutputError } from '../definitions/OutputError'
 import { UserEntity } from './UserEntity'
+import { verify } from 'crypto'
 
 export namespace Verification {
 	export interface Option extends UserEntity.Option {
@@ -242,6 +243,70 @@ export class Verification extends UserEntity implements Verification.Option {
 		}
 		fullName += `${this.date} - ${this.name}`
 		return fullName
+	}
+
+	/**
+	 * Find a transaction that has the specified account number (only not deleted)
+	 * @param accountNumber the transaction to get with this account number
+	 * @return transaction with this account number, undefined if not found
+	 */
+	getTransaction(accountNumber: number): Transaction | undefined {
+		for (const transaction of this.transactions) {
+			if (transaction.accountNumber === accountNumber && !transaction.isDeleted()) {
+				return transaction
+			}
+		}
+	}
+
+	/**
+	 * Remove a transaction with the specified account number.
+	 * If the verification has been filed, the transaction isn't removed, but rather marked as deleted.
+	 * @param accountNumber the transaction to remove
+	 * @throws {OutputError.Types.transactionNotFound} if the transaction with the account number isn't found
+	 */
+	removeTransaction(accountNumber: number) {
+		// Only mark the transaction as deleted, do not delete it
+		if (this.dateFiled) {
+			for (const transaction of this.transactions) {
+				if (transaction.accountNumber === accountNumber && !transaction.isDeleted()) {
+					transaction.setAsDeleted()
+					transaction.updateModified()
+					this.updateModified()
+					return
+				}
+			}
+			throw OutputError.create(OutputError.Types.transactionNotFound, `${accountNumber}`)
+		}
+		// Remove the transaction because the verification hasn't been filed
+		else {
+			const filtered = this.transactions.filter((transaction) => {
+				return transaction.accountNumber !== accountNumber
+			})
+			// Nothing was removed, throw error
+			if (filtered.length === this.transactions.length) {
+				throw OutputError.create(OutputError.Types.transactionNotFound, `${accountNumber}`)
+			}
+			this.transactions = filtered
+			this.updateModified()
+		}
+	}
+
+	/**
+	 * Add a transaction to the verification.
+	 * Cannot add a transaction with an account number that already exists in the verification,
+	 * unless that transaction has been marked as deleted.
+	 * @param transaction the transaction to add
+	 * @throws {OutputError.Types.transactionWithAccountNumberExists} if another transaction with the same account number exists
+	 * that hasn't been marked as deleted.
+	 */
+	addTransaction(transaction: Transaction.Option) {
+		// Can only add if the transaction doesn't exist already
+		if (this.getTransaction(transaction.accountNumber)) {
+			throw OutputError.create(OutputError.Types.transactionWithAccountNumberExists, `${transaction.accountNumber}`)
+		}
+
+		this.transactions.push(new Transaction(transaction))
+		this.updateModified()
 	}
 
 	/**
