@@ -224,6 +224,31 @@ describe('Currency compare tests #cold #entity', () => {
 		expect(minimalNegative.isEqualTo(other)).toBe(true)
 	})
 
+	// isEquallyLarge()
+	it('isEquallyLarge() -> Full', () => {
+		// Test aginst minimal
+		expect(fullValue.isEquallyLarge(lessThanMinimal)).toBe(false)
+		expect(fullValue.isEquallyLarge(slSmallerThanMinimal)).toBe(false)
+		expect(lessThanMinimal.isEquallyLarge(fullValue)).toBe(false)
+		expect(slSmallerThanMinimal.isEquallyLarge(fullValue)).toBe(false)
+
+		// Both are converted
+		expect(fullValue.isEquallyLarge(greaterThanFull)).toBe(false)
+		expect(fullValue.isEquallyLarge(slLargerThanFull)).toBe(false)
+		expect(greaterThanFull.isEquallyLarge(fullValue)).toBe(false)
+		expect(slLargerThanFull.isEquallyLarge(fullValue)).toBe(false)
+
+		// Equality
+		expect(fullValue.isEquallyLarge(equalMinimal)).toBe(true)
+		expect(fullValue.isEquallyLarge(slEqualMinimal)).toBe(true)
+		expect(equalMinimal.isEquallyLarge(fullValue)).toBe(true)
+		expect(slEqualMinimal.isEquallyLarge(fullValue)).toBe(true)
+		expect(fullValue.isEquallyLarge(equalFull)).toBe(true)
+		expect(fullValue.isEquallyLarge(slEqualFull)).toBe(true)
+		expect(equalFull.isEquallyLarge(fullValue)).toBe(true)
+		expect(slEqualFull.isEquallyLarge(fullValue)).toBe(true)
+	})
+
 	// isLessThan()
 	it('isLessThan() -> Basic inputs', () => {
 		expect(minimalPositive.isLessThan(minimalNegative)).toBe(false)

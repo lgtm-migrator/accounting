@@ -13,6 +13,7 @@ export class Currency implements Currency.Option {
 	readonly exchangeRate?: number
 
 	/**
+	 * If localCode is set but not localAmount the local amount will automatically
 	 * @param options currency data
 	 * @throws {InternalError} if the input data (options) isn't valid
 	 */
@@ -82,8 +83,8 @@ export class Currency implements Currency.Option {
 			}
 
 			// Not 0 or below
-			if (this.exchangeRate <= 0) {
-				errors.push(OutputError.Types.exchangeRateNegativeOrZero)
+			if (this.exchangeRate === 0) {
+				errors.push(OutputError.Types.exchangeRateZero)
 			}
 		}
 
@@ -337,6 +338,9 @@ export class Currency implements Currency.Option {
 	 * @return true if amount is less than 0
 	 */
 	isNegative(): boolean {
+		if (this.localAmount) {
+			return this.localAmount < 0n
+		}
 		return this.amount < 0n
 	}
 
@@ -344,6 +348,9 @@ export class Currency implements Currency.Option {
 	 * @return true if amount is larger than 0
 	 */
 	isPositive(): boolean {
+		if (this.localAmount) {
+			return this.localAmount > 0n
+		}
 		return this.amount > 0n
 	}
 
@@ -352,6 +359,7 @@ export class Currency implements Currency.Option {
 	 * @param other the other currency to compare with this one
 	 * @return true if the other currency has the same amount value as this
 	 * @throws {InternalError} with the {EntityError.currenciesNotComparable} if {isComparableTo() returns false}
+	 * @see isEquallyLarge() to check if the currencies are equally far away from 0
 	 * @see isComparableTo() to check beforehand if they are comparable
 	 * @see isSmallerThan() to check which comparable amount is closest to 0
 	 * @see isSmallerThanOrEqualTo() to check which comparable amount is closest to 0
@@ -369,7 +377,34 @@ export class Currency implements Currency.Option {
 		}
 
 		const comparableResults = this.getComparableResults(other)
-		return comparableResults[0] == comparableResults[1]
+		return comparableResults[0] === comparableResults[1]
+	}
+
+	/**
+	 * Checks if the amounts are equally large compared in the same currency.
+	 * Equally large means that -10 == 10 as they are equally far from 0.
+	 * @param other the other currency to compare with this one
+	 * @return true if the the two currencies are equally large.
+	 * @throws {InternalError} with the {EntityError.currenciesNotComparable} if {isComparableTo() returns false}
+	 * @see isEqualTo() to check if the currencies are equal
+	 * @see isComparableTo() to check beforehand if they are comparable
+	 * @see isSmallerThan() to check which comparable amount is closest to 0
+	 * @see isSmallerThanOrEqualTo() to check which comparable amount is closest to 0
+	 * @see isLargerThan() to check which comparable amount is farthest away from 0
+	 * @see isLargerThanEqualTo() to check which comparable amount is farthest away from 0
+	 * @see isLessThan() to check if the comparable amount is less than other
+	 * @see isLessThanEqualTo() to check if the comparable amount is less than or equal to other
+	 * @see isGreaterThan() to check if the comparable amount is greater than other
+	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
+	 */
+	isEquallyLarge(other: Currency): boolean {
+		// Short circuit if they are the same object
+		if (this === other) {
+			return true
+		}
+
+		const comparableResults = this.getComparableResults(other, true)
+		return comparableResults[0] === comparableResults[1]
 	}
 
 	/**
@@ -391,15 +426,7 @@ export class Currency implements Currency.Option {
 	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
 	 */
 	isSmallerThan(other: Currency): boolean {
-		const comparableResults = this.getComparableResults(other)
-
-		// Make comparables positive
-		if (comparableResults[0] < 0) {
-			comparableResults[0] *= -1n
-		}
-		if (comparableResults[1] < 0) {
-			comparableResults[1] *= -1n
-		}
+		const comparableResults = this.getComparableResults(other, true)
 
 		return comparableResults[0] < comparableResults[1]
 	}
@@ -423,15 +450,7 @@ export class Currency implements Currency.Option {
 	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
 	 */
 	isSmallerThanEqualTo(other: Currency): boolean {
-		const comparableResults = this.getComparableResults(other)
-
-		// Make comparables positive
-		if (comparableResults[0] < 0) {
-			comparableResults[0] *= -1n
-		}
-		if (comparableResults[1] < 0) {
-			comparableResults[1] *= -1n
-		}
+		const comparableResults = this.getComparableResults(other, true)
 
 		return comparableResults[0] <= comparableResults[1]
 	}
@@ -455,15 +474,7 @@ export class Currency implements Currency.Option {
 	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
 	 */
 	isLargerThan(other: Currency): boolean {
-		const comparableResults = this.getComparableResults(other)
-
-		// Make comparables positive
-		if (comparableResults[0] < 0) {
-			comparableResults[0] *= -1n
-		}
-		if (comparableResults[1] < 0) {
-			comparableResults[1] *= -1n
-		}
+		const comparableResults = this.getComparableResults(other, true)
 
 		return comparableResults[0] > comparableResults[1]
 	}
@@ -487,15 +498,7 @@ export class Currency implements Currency.Option {
 	 * @see isGreaterThanEqualTo() to check if the comparable amount is greater than or equal to other
 	 */
 	isLargerThanEqualTo(other: Currency): boolean {
-		const comparableResults = this.getComparableResults(other)
-
-		// Make comparables positive
-		if (comparableResults[0] < 0) {
-			comparableResults[0] *= -1n
-		}
-		if (comparableResults[1] < 0) {
-			comparableResults[1] *= -1n
-		}
+		const comparableResults = this.getComparableResults(other, true)
 
 		return comparableResults[0] >= comparableResults[1]
 	}
@@ -588,7 +591,7 @@ export class Currency implements Currency.Option {
 	 * @see isLargerThan() to check which comparable amount is farthest away from 0
 	 * @see isLargerThanEqualTo() to check which comparable amount is farthest away from 0
 	 */
-	private getComparableResults(other: Currency): bigint[] {
+	private getComparableResults(other: Currency, positive: boolean = false): bigint[] {
 		if (!this.isComparableTo(other)) {
 			throw new InternalError(InternalError.Types.comparableError, [OutputError.Types.currenciesNotComparable])
 		}
@@ -605,6 +608,11 @@ export class Currency implements Currency.Option {
 		} else if (this.localCode == other.code) {
 			first = this.getLocalCurrency()
 			second = other
+		}
+
+		if (positive) {
+			first = first.absolute()
+			second = second.absolute()
 		}
 
 		return [first.amount, second.amount]

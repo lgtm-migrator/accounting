@@ -176,22 +176,14 @@ describe('Currency tester #cold #entity', () => {
 
 	// Exchange rate
 	it('Exchange rate below 0', () => {
-		expect.assertions(2 * TEST_TIMES)
-
-		const errorObject = [OutputError.Types.exchangeRateNegativeOrZero]
 		for (let i = 0; i < TEST_TIMES; ++i) {
 			data = {
 				amount: faker_valid_amount(),
 				code: 'SEK',
 				localCode: 'USD',
-				exchangeRate: faker.random.number({ min: -1000, max: 0, precision: 6 }),
+				exchangeRate: faker.random.number({ min: -1000, max: -0.00001, precision: 6 }),
 			}
-			try {
-				new Currency(data)
-			} catch (error) {
-				expect(error).toBeInstanceOf(InternalError)
-				expect(error).toHaveProperty('error', errorObject)
-			}
+			new Currency(data)
 		}
 	})
 
@@ -207,7 +199,7 @@ describe('Currency tester #cold #entity', () => {
 		try {
 			new Currency(data)
 		} catch (error) {
-			const errorObject = [OutputError.Types.exchangeRateNegativeOrZero]
+			const errorObject = [OutputError.Types.exchangeRateZero]
 			expect(error).toBeInstanceOf(InternalError)
 			expect(error).toHaveProperty('error', errorObject)
 		}
