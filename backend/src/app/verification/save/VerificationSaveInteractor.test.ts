@@ -3,7 +3,6 @@ import { VerificationSaveRepository } from './VerificationSaveRepository'
 import { VerificationSaveInput } from './VerificationSaveInput'
 import { VerificationSaveOutput } from './VerificationSaveOutput'
 import { Verification } from '../../core/entities/Verification'
-import { Id } from '../../core/definitions/Id'
 import * as faker from 'faker'
 
 function faker_minimum_verification(): Verification {
