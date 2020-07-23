@@ -31,6 +31,7 @@ export namespace InternalError {
 		fileNotFound = 'file-not-found',
 		dbConnectionError = 'db-connection-error',
 		dbError = 'db-error',
+		stateInvalid = 'state-invalid',
 		dbSearchReturnedEmpty = 'db-search-returned-empty',
 		exchangeRateAccessError = 'exchange-rate-access-error',
 		fileSave = 'file-save',

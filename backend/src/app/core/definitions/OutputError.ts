@@ -50,7 +50,7 @@ export namespace OutputError {
 		currencyCodeLocalNotSet = 'currency-code-local-not-set',
 		currencyCodesAreSame = 'currency-codes-are-same',
 		exchangeRateNotSet = 'exchange-rate-not-set',
-		exchangeRateNegativeOrZero = 'exchange-rate-negative-or-zero',
+		exchangeRateZero = 'exchange-rate-zero',
 		userIdIsEmpty = 'user-id-is-empty',
 		nameTooShort = 'name-too-short',
 		internalNameTooShort = 'internal-name-too-short',
@@ -85,5 +85,11 @@ export namespace OutputError {
 		dateFormatInvalid = 'date-format-invalid',
 		fiscalYearToBeforeFrom = 'fiscal-year-to-before-from',
 		fiscalYearNotFound = 'fiscal-year-not-found',
+		invoiceAlreadyBound = 'invoice-already-bound',
+		paymentAlreadyBound = 'payment-already-bound',
+		invoiceNotValidType = 'invoice-not-valid-type',
+		paymentNotValidType = 'payment-not-valid-type',
+		invoicePaymentTypeMismatch = 'invoice-payment-type-mismatch',
+		invoiceOutBindNotImplemented = 'invoice-out-bound-not-implemented',
 	}
 }
