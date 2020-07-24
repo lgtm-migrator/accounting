@@ -1,15 +1,15 @@
 import { Interactor } from '../../core/definitions/Interactor'
-import { VerifyApiKeyInput } from './VerifyApiKeyInput'
-import { VerifyApiKeyOutput } from './VerifyApiKeyOutput'
-import { VerifyApiKeyRepository } from './VerifyApiKeyRepository'
+import { UserGetByKeyInput } from './UserGetByKeyInput'
+import { UserGetByKeyOutput } from './UserGetByKeyOutput'
+import { UserGetByKeyRepository } from './UserGetByKeyRepository'
 import { InternalError } from '../../core/definitions/InternalError'
 import { OutputError } from '../../core/definitions/OutputError'
 
 /**
  * Verifies if there is a user with the API key and returns that user's id
  */
-export class VerifyApiKeyInteractor extends Interactor<VerifyApiKeyInput, VerifyApiKeyOutput, VerifyApiKeyRepository> {
-	constructor(repository: VerifyApiKeyRepository) {
+export class UserGetByKeyInteractor extends Interactor<UserGetByKeyInput, UserGetByKeyOutput, UserGetByKeyRepository> {
+	constructor(repository: UserGetByKeyRepository) {
 		super(repository)
 	}
 
@@ -20,7 +20,7 @@ export class VerifyApiKeyInteractor extends Interactor<VerifyApiKeyInput, Verify
 	 * @throws {OutputError.Types.userNotFound} if no user was found with the specified APi key
 	 * @throws {OutputError.Types.internalError} if an internal error occurred
 	 */
-	async execute(input: VerifyApiKeyInput): Promise<VerifyApiKeyOutput> {
+	async execute(input: UserGetByKeyInput): Promise<UserGetByKeyOutput> {
 		const findUserPromise = this.repository.findUserWithApiKey(input.apiKey)
 
 		return findUserPromise

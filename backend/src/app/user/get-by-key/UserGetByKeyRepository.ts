@@ -1,7 +1,7 @@
 import { Id } from '../../core/definitions/Id'
 import { Repository } from '../../core/definitions/Repository'
 
-export interface VerifyApiKeyRepository extends Repository {
+export interface UserGetByKeyRepository extends Repository {
 	/**
 	 * Get user id with the specified API key
 	 * @param apiKey get the user id which has this API key

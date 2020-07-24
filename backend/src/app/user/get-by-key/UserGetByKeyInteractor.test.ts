@@ -1,16 +1,16 @@
-import { VerifyApiKeyInteractor } from './VerifyApiKeyInteractor'
-import { VerifyApiKeyRepository } from './VerifyApiKeyRepository'
+import { UserGetByKeyInteractor } from './UserGetByKeyInteractor'
+import { UserGetByKeyRepository } from './UserGetByKeyRepository'
 import * as faker from 'faker'
-import { VerifyApiKeyInput } from './VerifyApiKeyInput'
-import { VerifyApiKeyOutput } from './VerifyApiKeyOutput'
+import { UserGetByKeyInput } from './UserGetByKeyInput'
+import { UserGetByKeyOutput } from './UserGetByKeyOutput'
 import { InternalError } from '../../core/definitions/InternalError'
 import { OutputError } from '../../core/definitions/OutputError'
 
 describe('Verify Api Key #cold #use-case', () => {
-	let interactor: VerifyApiKeyInteractor
-	let repository: VerifyApiKeyRepository
-	let input: VerifyApiKeyInput
-	let output: VerifyApiKeyOutput
+	let interactor: UserGetByKeyInteractor
+	let repository: UserGetByKeyRepository
+	let input: UserGetByKeyInput
+	let output: UserGetByKeyOutput
 
 	beforeEach(() => {
 		input = {
@@ -26,7 +26,7 @@ describe('Verify Api Key #cold #use-case', () => {
 			findUserWithApiKey: jest.fn(async () => Promise.resolve(output.id)),
 		}
 
-		interactor = new VerifyApiKeyInteractor(repository)
+		interactor = new UserGetByKeyInteractor(repository)
 
 		return expect(interactor.execute(input)).resolves.toStrictEqual(output)
 	})
@@ -38,7 +38,7 @@ describe('Verify Api Key #cold #use-case', () => {
 			}),
 		}
 
-		interactor = new VerifyApiKeyInteractor(repository)
+		interactor = new UserGetByKeyInteractor(repository)
 
 		expect.assertions(1)
 		await expect(interactor.execute(input)).rejects.toStrictEqual(OutputError.create(OutputError.Types.userNotFound))
@@ -51,7 +51,7 @@ describe('Verify Api Key #cold #use-case', () => {
 			}),
 		}
 
-		interactor = new VerifyApiKeyInteractor(repository)
+		interactor = new UserGetByKeyInteractor(repository)
 
 		expect.assertions(1)
 		await expect(interactor.execute(input)).rejects.toStrictEqual(OutputError.create(OutputError.Types.internalError))
@@ -64,7 +64,7 @@ describe('Verify Api Key #cold #use-case', () => {
 			}),
 		}
 
-		interactor = new VerifyApiKeyInteractor(repository)
+		interactor = new UserGetByKeyInteractor(repository)
 
 		expect.assertions(1)
 		await expect(interactor.execute(input)).rejects.toStrictEqual(OutputError.create(OutputError.Types.internalError))
