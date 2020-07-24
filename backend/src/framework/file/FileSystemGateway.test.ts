@@ -295,7 +295,7 @@ function fakerCreateTestFileWithDuplicate(name: string): [string, string] {
 function fakerVerification(): Verification {
 	return new Verification({
 		userId: 1,
-		name: faker.commerce.productName(),
+		name: faker.commerce.productName() + ' 12',
 		date: '2020-01-01',
 		type: Verification.Types.TRANSACTION,
 		transactions: [],
