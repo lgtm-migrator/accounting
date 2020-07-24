@@ -81,6 +81,13 @@ export interface DbGateway {
 	getFiscalYear(userId: Id, date: string): Promise<FiscalYear>
 
 	/**
+	 * Get all the user's fiscal years
+	 * @param userId the user id to get the fiscal years from
+	 * @return all the user's fiscal years
+	 */
+	getFiscalYears(userId: Id): Promise<FiscalYear[]>
+
+	/**
 	 * Get all verifications for the specified fiscal year
 	 * @param userId the user id to get the verification for
 	 * @param fiscalYearId the id of the fiscal year to get the verifications for

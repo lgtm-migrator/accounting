@@ -180,7 +180,9 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 		// Two verifications from the second fiscal id
 		let promise = gateway.getVerifications(USER_ID, fiscalId2)
 		await expect(promise).resolves.toContainEqual(expect.objectContaining(userVer2))
-		await expect(promise).resolves.toContainEqual(expect.objectContaining(userVer3))
+		await expect(promise).resolves.toContainEqual(expect.objectContaining(userVer2))
+		await expect(promise).resolves.not.toContainEqual(expect.objectContaining(userVer1))
+		await expect(promise).resolves.not.toContainEqual(expect.objectContaining(otherVer))
 
 		// No verifications found
 		await expect(
@@ -484,6 +486,33 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 		await expect(gateway.getFiscalYear(USER_ID, '2017-02-29')).rejects.toStrictEqual(
 			OutputError.create(OutputError.Types.dateFormatInvalid, '2017-02-29')
 		)
+	})
+
+	it('getFiscalYears()', async () => {
+		const fiscal2012 = fakerFiscalYear(2012)
+		const fiscal2013 = fakerFiscalYear(2013)
+		const fiscal2014 = fakerFiscalYear(2014)
+		const fiscalOther = fakerFiscalYear(2014)
+		fiscalOther.userId = new ObjectId().toHexString()
+
+		const objects = [
+			MongoConverter.toDbObject(fiscal2012),
+			MongoConverter.toDbObject(fiscal2013),
+			MongoConverter.toDbObject(fiscal2014),
+			MongoConverter.toDbObject(fiscalOther),
+		]
+
+		await db.collection(Collections.FiscalYear).insertMany(objects)
+
+		// Should get all three fiscal years (and not the others)
+		let promise = gateway.getFiscalYears(USER_ID)
+		await expect(promise).resolves.toContainEqual(expect.objectContaining(fiscal2012))
+		await expect(promise).resolves.toContainEqual(expect.objectContaining(fiscal2013))
+		await expect(promise).resolves.toContainEqual(expect.objectContaining(fiscal2014))
+		await expect(promise).resolves.not.toContainEqual(expect.objectContaining(fiscalOther))
+
+		// No verifications found
+		await expect(gateway.getFiscalYears(new ObjectId().toHexString())).resolves.toStrictEqual([])
 	})
 })
 

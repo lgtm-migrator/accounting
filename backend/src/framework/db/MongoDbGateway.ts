@@ -322,4 +322,18 @@ export class MongoDbGateway implements DbGateway {
 				}, new Array<Verification>())
 			})
 	}
+
+	async getFiscalYears(userId: Id): Promise<FiscalYear[]> {
+		return this.collection(Collections.FiscalYear)
+			.then(async (collection) => {
+				const query = { userId: new ObjectId(userId) }
+				return collection.find(query).toArray()
+			})
+			.then((foundObjects) => {
+				return foundObjects.reduce((array, object) => {
+					array.push(MongoConverter.toFiscalYear(object))
+					return array
+				}, new Array<FiscalYear>())
+			})
+	}
 }
