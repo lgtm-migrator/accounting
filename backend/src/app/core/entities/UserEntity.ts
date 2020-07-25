@@ -8,7 +8,7 @@ export namespace UserEntity {
 	}
 }
 
-export class UserEntity extends Entity implements UserEntity.Option {
+export abstract class UserEntity extends Entity implements UserEntity.Option {
 	userId: Id
 
 	constructor(data: UserEntity.Option) {
