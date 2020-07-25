@@ -1,11 +1,9 @@
-import { BaseAdapter } from './BaseAdapter'
+import { User } from '../../app/core/entities/User'
 import { UserGetByKeyRepository } from '../../app/user/get-by-key/UserGetByKeyRepository'
-import { Id } from '../../app/core/definitions/Id'
+import { BaseAdapter } from './BaseAdapter'
 
 export class UserGetByKeyRepositoryAdapter extends BaseAdapter implements UserGetByKeyRepository {
-	async findUserWithApiKey(apiKey: string): Promise<Id> {
-		return BaseAdapter.dbGateway.getUser(apiKey).then((user) => {
-			return user.id!
-		})
+	async findUserWithApiKey(apiKey: string): Promise<User> {
+		return BaseAdapter.dbGateway.getUser(apiKey)
 	}
 }

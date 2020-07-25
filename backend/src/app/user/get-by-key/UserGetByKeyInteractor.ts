@@ -24,8 +24,8 @@ export class UserGetByKeyInteractor extends Interactor<UserGetByKeyInput, UserGe
 		const findUserPromise = this.repository.findUserWithApiKey(input.apiKey)
 
 		return findUserPromise
-			.then((id) => {
-				return { id: id }
+			.then((user) => {
+				return { user: user }
 			})
 			.catch((reason) => {
 				if (reason instanceof InternalError) {
