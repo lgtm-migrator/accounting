@@ -2,11 +2,17 @@ import { UserEntity } from './UserEntity'
 import * as faker from 'faker'
 import { OutputError } from '../definitions/OutputError'
 
+class UserEntityImpl extends UserEntity {
+	constructor(data: UserEntity.Option) {
+		super(data)
+	}
+}
+
 describe('Validate user entity #cold', () => {
-	let entity: UserEntity
+	let entity: UserEntityImpl
 
 	beforeEach(() => {
-		entity = new UserEntity({
+		entity = new UserEntityImpl({
 			userId: faker.random.number(),
 		})
 	})
