@@ -1,7 +1,6 @@
-import { ApiVerificationOutput } from './helpers/ApiVerificationOutput'
-import { VerificationSaveOutput } from '../../../app/verification/save/VerificationSaveOutput'
 import { Immutable } from '../../../app/core/definitions/Immutable'
-import { OutputError } from '../../../app/core/definitions/OutputError'
+import { VerificationSaveOutput } from '../../../app/verification/save/VerificationSaveOutput'
+import { ApiVerificationOutput } from './helpers/ApiVerificationOutput'
 
 export interface ApiVerificationAddOutput {
 	readonly verification: ApiVerificationOutput
