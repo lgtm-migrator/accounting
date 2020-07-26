@@ -1,4 +1,3 @@
-import { Immutable } from '../../core/definitions/Immutable'
 import { Output } from '../../core/definitions/Output'
 import { Verification } from '../../core/entities/Verification'
 
@@ -14,8 +13,4 @@ export namespace VerificationSaveOutput {
 export interface VerificationSaveOutput extends Output {
 	readonly verification: Verification
 	readonly successType: VerificationSaveOutput.SuccessTypes
-}
-
-export interface VerificationSaveManyOutput extends Output {
-	readonly saved: Immutable<VerificationSaveOutput[]>
 }

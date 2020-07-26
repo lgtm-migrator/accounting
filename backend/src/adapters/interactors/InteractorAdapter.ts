@@ -18,7 +18,7 @@ export interface InteractorAdapter {
 	}
 
 	user: {
-		verifyApiKey: UserGetByKeyInteractor
+		getByKey: UserGetByKeyInteractor
 	}
 
 	fiscalYear: {

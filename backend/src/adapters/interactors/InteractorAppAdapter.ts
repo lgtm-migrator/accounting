@@ -36,7 +36,7 @@ export class InteractorAppAdapter implements InteractorAdapter {
 	}
 
 	user = {
-		verifyApiKey: new UserGetByKeyInteractor(new UserGetByKeyRepositoryAdapter()),
+		getByKey: new UserGetByKeyInteractor(new UserGetByKeyRepositoryAdapter()),
 	}
 
 	fiscalYear = {

@@ -12,10 +12,10 @@ export interface ApiVerificationOutput {
 	readonly dateDeleted?: number
 	readonly type: Verification.Types
 	readonly description?: string
-	readonly files?: string[]
+	readonly files?: Immutable<string[]>
 	readonly invoiceId: Id | undefined
 	readonly paymentId: Id | undefined
-	readonly transactions: ApiTransactionOutput[]
+	readonly transactions: Immutable<ApiTransactionOutput[]>
 }
 
 export namespace ApiVerificationOutput {

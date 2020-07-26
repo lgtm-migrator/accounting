@@ -3,7 +3,7 @@ import { VerificationGetAllOutput } from '../../../app/verification/get-all/Veri
 import { Immutable } from '../../../app/core/definitions/Immutable'
 
 export interface ApiVerificationGetAllOutput {
-	readonly verifications: ApiVerificationOutput[]
+	readonly verifications: Immutable<ApiVerificationOutput[]>
 }
 
 export namespace ApiVerificationGetAllOutput {

@@ -3,11 +3,11 @@ import { FiscalYearGetAllOutput } from '../../../app/fiscal-year/get-all/FiscalY
 import { Immutable } from '../../../app/core/definitions/Immutable'
 
 export interface ApiFiscalYearGetAllOutput {
-	readonly years: ApiFiscalYearBaseOutput[]
+	readonly years: Immutable<ApiFiscalYearBaseOutput[]>
 }
 
 export namespace ApiFiscalYearGetAllOutput {
-	function fromInteractorOutput(interactorOutput: FiscalYearGetAllOutput): Immutable<ApiFiscalYearGetAllOutput> {
+	export function fromInteractorOutput(interactorOutput: FiscalYearGetAllOutput): Immutable<ApiFiscalYearGetAllOutput> {
 		// Convert Fiscal
 		const years = interactorOutput.fiscalYears.reduce((array, fiscalYear) => {
 			array.push(ApiFiscalYearBaseOutput.fromFiscalYear(fiscalYear))
