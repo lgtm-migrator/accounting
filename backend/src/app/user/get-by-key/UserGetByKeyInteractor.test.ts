@@ -5,6 +5,8 @@ import { UserGetByKeyInput } from './UserGetByKeyInput'
 import { UserGetByKeyOutput } from './UserGetByKeyOutput'
 import { InternalError } from '../../core/definitions/InternalError'
 import { OutputError } from '../../core/definitions/OutputError'
+import { Currency } from '../../core/entities/Currency'
+import { User } from '../../core/entities/User'
 
 describe('Verify Api Key #cold #use-case', () => {
 	let interactor: UserGetByKeyInteractor
@@ -17,13 +19,19 @@ describe('Verify Api Key #cold #use-case', () => {
 			apiKey: faker.internet.password(),
 		}
 		output = {
-			id: faker.random.uuid(),
+			user: new User({
+				id: faker.random.number(),
+				firstName: faker.name.firstName(),
+				lastName: faker.name.lastName(),
+				username: faker.internet.userName(),
+				localCurrencyCode: Currency.Codes.SEK,
+			}),
 		}
 	})
 
 	it('Search and find a user with API key', () => {
 		repository = {
-			findUserWithApiKey: jest.fn(async () => Promise.resolve(output.id)),
+			findUserWithApiKey: jest.fn(async () => Promise.resolve(output.user)),
 		}
 
 		interactor = new UserGetByKeyInteractor(repository)
