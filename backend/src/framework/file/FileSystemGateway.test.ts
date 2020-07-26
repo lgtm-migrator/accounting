@@ -274,7 +274,7 @@ describe('FileSystemGateway', () => {
 ////////////////////
 function fakerCreateTestFile(name: string): string {
 	const testFile = path.join(IN_DIR, name)
-	fs.ensureDir(path.dirname(testFile))
+	fs.ensureDirSync(path.dirname(testFile))
 	fs.writeFileSync(testFile, faker.lorem.paragraphs(2))
 
 	return testFile
