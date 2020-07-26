@@ -29,7 +29,7 @@ export class ExpressApiHelper {
 	constructor(adapter: ApiAdapter) {
 		this.adapter = adapter
 
-		fs.ensureDir(this.tmpDir)
+		fs.ensureDirSync(this.tmpDir)
 
 		this.express.listen(config.server.port)
 		this.express.use(express.json())
