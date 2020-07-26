@@ -5,8 +5,8 @@ import * as faker from 'faker'
 import { Verification } from '../../app/core/entities/Verification'
 import { FileSystemGateway } from './FileSystemGateway'
 
-const IN_DIR = path.join(config.fileSystem.projectDir, config.fileSystem.writeDir, 'test-files')
-const OUT_DIR = path.join(config.fileSystem.projectDir, config.fileSystem.writeDir, 'verifications')
+const IN_DIR = path.join(config.fileSystem.writeDir, 'test-files')
+const OUT_DIR = path.join(config.fileSystem.writeDir, 'verifications')
 
 describe('FileSystemGateway', () => {
 	let verification: Verification

@@ -43,13 +43,17 @@ export interface Config {
 		fixerIo: string
 	}
 
+	server: {
+		port: number
+	}
+
 	fileSystem: {
 		/**
 		 * Project directory, the folder that has the backend and frontend dirs.
 		 */
 		projectDir: string
 		/**
-		 * Output for all files
+		 * Output for all files, this should be the full path to the output dir
 		 */
 		writeDir: string
 	}

@@ -9,11 +9,7 @@ import { FileReaderFactory } from './FileReaderFactory'
 
 export class FileSystemGateway implements FileGateway {
 	private readonly fileReaderFactory = new FileReaderFactory()
-	private static readonly outputDir = path.join(
-		config.fileSystem.projectDir,
-		config.fileSystem.writeDir,
-		'verifications'
-	)
+	private static readonly outputDir = path.join(config.fileSystem.writeDir, 'verifications')
 
 	async read(file: string): Promise<string> {
 		const fileReader = this.fileReaderFactory.create(file)
