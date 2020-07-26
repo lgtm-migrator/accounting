@@ -105,6 +105,7 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
 			fiscalYearId: fiscalYearId,
 			name: this.input.verification.name,
 			date: this.input.verification.date,
+			files: this.input.verification.files,
 			type: Verification.Types.TRANSACTION,
 			description: this.input.verification.description,
 			transactions: transactions,

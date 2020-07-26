@@ -88,8 +88,8 @@ export class VerificationNewInteractor extends Interactor<
 		const verification = new Verification({
 			userId: this.input.userId,
 			fiscalYearId: fiscalYearId,
+			files: this.input.verification.files,
 			name: this.input.verification.name,
-			internalName: this.input.verification.internalName,
 			date: this.input.verification.date,
 			type: type,
 			description: this.input.verification.description,

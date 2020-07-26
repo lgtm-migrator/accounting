@@ -18,7 +18,6 @@ function validFromInput(input: VerificationNewInput): Verification.Option {
 		name: input.verification.name,
 		date: input.verification.date,
 		description: input.verification.description,
-		internalName: input.verification.internalName,
 		type: Verification.Types.fromString(input.verification.type),
 		transactions: [
 			{
@@ -78,7 +77,6 @@ function createInput(data: InputData = {}): VerificationNewInput {
 		userId: data.userId ? data.userId : 1,
 		verification: {
 			name: data.name ? data.name : 'test',
-			internalName: data.internalName,
 			description: data.description,
 			date: data.date ? data.date : '2020-03-14',
 			accountFrom: data.accountFrom ? data.accountFrom : Accounts.BANK_ACCOUNT.number,
