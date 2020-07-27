@@ -5,7 +5,7 @@
 	"main": "src/index.ts",
 	"scripts": {
 		"start": "node dist/index.js",
-		"dev": "nodemon src/index.ts",
+		"dev": "ts-node-dev src",
 		"build": "tsc -p .",
 		"test": "npx jest",
 		"coverage": "jest --coverage --silent",
