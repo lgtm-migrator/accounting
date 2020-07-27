@@ -13,6 +13,7 @@ import { User } from '../../app/core/entities/User'
 import { Currency } from '../../app/core/entities/Currency'
 import { FiscalYear } from '../../app/core/entities/FiscalYear'
 import { Consts } from '../../app/core/definitions/Consts'
+import { fake } from 'faker'
 
 const USER_ID = new ObjectId().toHexString()
 
@@ -46,6 +47,24 @@ describe('MongoDBGateway testing connection to the DB #db', () => {
 	it('Test connection', async () => {
 		const gateway = new MongoDbGateway()
 		await expect(gateway.waitUntilConnected()).resolves.toBe(undefined)
+	})
+
+	it('saveUser()', async () => {
+		const user = new User({
+			email: faker.internet.email(),
+			firstName: faker.name.firstName(),
+			lastName: faker.name.lastName(),
+			localCurrencyCode: 'SEK',
+		})
+
+		const savedUser = await gateway.saveUser(user)
+		expect(savedUser.id).not.toEqual(user.id)
+		user.id = savedUser.id
+		expect(savedUser).toStrictEqual(user)
+
+		const object = await db.collection(Collections.User).findOne({ _id: new ObjectId(savedUser.id) })
+		const dbUser = MongoConverter.toUser(object)
+		expect(dbUser).toStrictEqual(savedUser)
 	})
 
 	it('saveVerification() full', async () => {
@@ -675,7 +694,7 @@ function fakerParserMulti(): Parser {
 function fakerUser(): User.Option {
 	return {
 		id: USER_ID,
-		username: faker.internet.userName(),
+		email: faker.internet.userName(),
 		firstName: faker.name.firstName(),
 		lastName: faker.name.lastName(),
 		localCurrencyCode: 'SEK',

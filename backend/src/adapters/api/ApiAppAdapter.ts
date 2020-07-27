@@ -14,6 +14,9 @@ import { ApiVerificationAddCustomOutput } from './out/ApiVerificationAddCustomOu
 import { VerificationNewFromParserInput } from '../../app/verification/new-from-parser/VerificationNewFromParserInput'
 import { ApiVerificationAddFromParserOutput } from './out/ApiVerificationAddFromParserOutput'
 import { VerificationSaveOutput } from '../../app/verification/save/VerificationSaveOutput'
+import { create } from 'domain'
+import { ApiUserCreateOutput } from './out/ApiUserCreateOutput'
+import { UserCreateInput } from '../../app/user/create/UserCreateInput'
 
 export class ApiAppAdapter implements ApiAdapter {
 	static interactorAdapter = new InteractorAppAdapter()
@@ -83,6 +86,12 @@ export class ApiAppAdapter implements ApiAdapter {
 		async getByKey(input: UserGetByKeyInput): Promise<ApiUserGetByKeyOutput> {
 			return ApiAppAdapter.interactorAdapter.user.getByKey.execute(input).then((output) => {
 				return ApiUserGetByKeyOutput.fromInteractorOutput(output)
+			})
+		},
+
+		async create(input: UserCreateInput): Promise<ApiUserCreateOutput> {
+			return ApiAppAdapter.interactorAdapter.user.create.execute(input).then((output) => {
+				return ApiUserCreateOutput.fromInteractorOutput(output)
 			})
 		},
 	}

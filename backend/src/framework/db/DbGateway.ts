@@ -48,6 +48,14 @@ export interface DbGateway {
 	getVerification(userId: Id, verificationId: Id): Promise<Verification>
 
 	/**
+	 * Save the user, can either be an existing user or a new user
+	 * @param user the user to save
+	 * @return either the newly created user or the updated existing user
+	 * @throws {OutputError} if the user is invalid
+	 */
+	saveUser(user: User): Promise<User>
+
+	/**
 	 * Get the user for the specified API key
 	 * @param apiKey the user's API key
 	 * @return user found with the specified API key

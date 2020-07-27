@@ -23,7 +23,7 @@ describe('Verify Api Key #cold #use-case', () => {
 				id: faker.random.number(),
 				firstName: faker.name.firstName(),
 				lastName: faker.name.lastName(),
-				username: faker.internet.userName(),
+				email: faker.internet.userName(),
 				localCurrencyCode: Currency.Codes.SEK,
 			}),
 		}

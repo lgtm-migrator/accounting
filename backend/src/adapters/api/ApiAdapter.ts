@@ -10,6 +10,8 @@ import { ApiVerificationAddCustomOutput } from './out/ApiVerificationAddCustomOu
 import { ApiVerificationAddFromParserOutput } from './out/ApiVerificationAddFromParserOutput'
 import { ApiVerificationAddOutput } from './out/ApiVerificationAddOutput'
 import { ApiVerificationGetAllOutput } from './out/ApiVerificationGetAllOutput'
+import { UserCreateInput } from '../../app/user/create/UserCreateInput'
+import { ApiUserCreateOutput } from './out/ApiUserCreateOutput'
 
 export interface ApiAdapter {
 	verification: {
@@ -39,6 +41,13 @@ export interface ApiAdapter {
 		addFromParser(input: VerificationNewFromParserInput): Promise<ApiVerificationAddFromParserOutput>
 	}
 	user: {
+		/**
+		 * Create a new user
+		 * TODO add authorization checks to see if the user can be created
+		 * @throws {OutputError} if the input is invalid
+		 */
+		create(input: UserCreateInput): Promise<ApiUserCreateOutput>
+
 		/**
 		 * Get the user's id with the specified api key
 		 * @return user id for the specified api key

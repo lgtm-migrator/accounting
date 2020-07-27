@@ -127,6 +127,12 @@ export class MongoDbGateway implements DbGateway {
 		})
 	}
 
+	async saveUser(user: User): Promise<User> {
+		return this.save(user, Collections.User).then((dbObject) => {
+			return MongoConverter.toUser(dbObject)
+		})
+	}
+
 	async getLocalCurrency(userId: Id): Promise<Currency.Codes> {
 		return this.collection(Collections.User)
 			.then((collection) => {

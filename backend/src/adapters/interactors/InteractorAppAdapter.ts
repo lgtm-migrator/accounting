@@ -20,6 +20,8 @@ import { FiscalYearGetAllInteractor } from '../../app/fiscal-year/get-all/Fiscal
 import { FiscalYearGetAllRepositoryAdapter } from '../repository/FiscalYearGetAllRepositoryAdapter'
 import { VerificationGetAllInteractor } from '../../app/verification/get-all/VerificationGetAllInteractor'
 import { VerificationGetAllRepositoryAdapter } from '../repository/VerificationGetAllRepositoryAdapter'
+import { UserCreateInteractor } from '../../app/user/create/UserCreateInteractor'
+import { UserCreateRepositoryAdapter } from '../repository/UserCreateRepositoryAdapter'
 
 export class InteractorAppAdapter implements InteractorAdapter {
 	verification = {
@@ -37,6 +39,7 @@ export class InteractorAppAdapter implements InteractorAdapter {
 
 	user = {
 		getByKey: new UserGetByKeyInteractor(new UserGetByKeyRepositoryAdapter()),
+		create: new UserCreateInteractor(new UserCreateRepositoryAdapter()),
 	}
 
 	fiscalYear = {

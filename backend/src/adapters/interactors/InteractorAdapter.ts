@@ -6,6 +6,7 @@ import { VerificationNewFromParserInteractor } from '../../app/verification/new-
 import { VerificationNewInteractor } from '../../app/verification/new/VerificationNewInteractor'
 import { VerificationSaveInteractor } from '../../app/verification/save/VerificationSaveInteractor'
 import { VerificationGetAllInteractor } from '../../app/verification/get-all/VerificationGetAllInteractor'
+import { UserCreateInteractor } from '../../app/user/create/UserCreateInteractor'
 
 export interface InteractorAdapter {
 	verification: {
@@ -19,6 +20,7 @@ export interface InteractorAdapter {
 
 	user: {
 		getByKey: UserGetByKeyInteractor
+		create: UserCreateInteractor
 	}
 
 	fiscalYear: {

@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 export namespace User {
 	export interface Option extends Entity.Option {
-		username: string
+		email: string
 		firstName: string
 		lastName: string
 		localCurrencyCode: Currency.Codes | string
@@ -14,7 +14,7 @@ export namespace User {
 }
 
 export class User extends Entity implements User.Option {
-	username: string
+	email: string
 	firstName: string
 	lastName: string
 	localCurrencyCode: Currency.Codes
@@ -23,7 +23,7 @@ export class User extends Entity implements User.Option {
 	constructor(data: User.Option) {
 		super(data)
 
-		this.username = data.username
+		this.email = data.email
 		this.firstName = data.firstName
 		this.lastName = data.lastName
 
