@@ -57,6 +57,12 @@ export class ExpressApi {
 	}
 
 	private bindUser() {
+		// Create user
+		this.api.post('/api/user', (adapter, request) => {
+			const userData = ExpressSerializer.deserialize(request.body)
+			return adapter.user.create({ user: userData })
+		})
+
 		// Get user by Api key
 		this.api.get('/api/user/:apiKep', (adapter, request) => {
 			return adapter.user.getByKey({ apiKey: request.params.apiKey })

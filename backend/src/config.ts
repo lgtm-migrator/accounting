@@ -1,60 +1,99 @@
-export let config: Config
+let configData: Config
 if (process.env.NODE_ENV === 'development') {
-	config = require('./config.development').config
+	configData = require('./config.development').config
 } else if (process.env.NODE_ENV === 'production') {
-	config = require('./config.production').config
+	configData = require('./config.production').config
 } else if (process.env.NODE_ENV === 'test') {
-	config = require('./config.testing').config
+	configData = require('./config.testing').config
 } else {
 	throw new Error('Could not load config file')
 }
 
-export function mongoDbUrl(config: Config): string {
-	let { host, username, password, database, port } = config.mongoDb
+class Config implements Config.Option {
+	mongoDb: MongoDbFunctions
+	apiKeys: ApiKeys
+	server: Server
+	fileSystem: FileSystem
 
-	let credentials = ''
-	if (username && password) {
-		credentials = `${username}:${password}@`
+	constructor(data: Config.Option) {
+		this.fileSystem = data.fileSystem
+		this.apiKeys = data.apiKeys
+		this.server = data.server
+
+		this.mongoDb = {
+			...data.mongoDb,
+			url: function () {
+				let credentials = ''
+				if (this.username && this.password) {
+					credentials = `${this.username}:${this.password}@`
+				}
+
+				let portString = ''
+				if (this.port) {
+					portString = `:${this.port}`
+				}
+
+				return `mongodb://${credentials}${this.host}${portString}/${this.database}`
+			},
+		}
 	}
 
-	let portString = ''
-	if (port) {
-		portString = `:${port}`
-	}
+	env = {
+		isDevelopment(): boolean {
+			return process.env.NODE_ENV === 'development'
+		},
 
-	return `mongodb://${credentials}${host}${portString}/${database}`
+		isTesting(): boolean {
+			return process.env.NODE_ENV === 'test'
+		},
+
+		isProduction(): boolean {
+			return process.env.NODE_ENV === 'production'
+		},
+	}
 }
 
-export interface Config {
-	mongoDb: {
-		host: string
-		username?: string
-		password?: string
-		database: string
-		port?: number
+export const config = new Config(configData)
 
-		/**
-		 * Generate the URL from the info
-		 */
-		url(): string
+export namespace Config {
+	export interface Option {
+		mongoDb: MongoDb
+		apiKeys: ApiKeys
+		server: Server
+		fileSystem: FileSystem
 	}
+}
 
-	apiKeys: {
-		fixerIo: string
-	}
+interface MongoDb {
+	host: string
+	username?: string
+	password?: string
+	database: string
+	port?: number
+}
 
-	server: {
-		port: number
-	}
+interface MongoDbFunctions extends MongoDb {
+	/**
+	 * Get the url for mongo db
+	 */
+	url(): string
+}
 
-	fileSystem: {
-		/**
-		 * Project directory, the folder that has the backend and frontend dirs.
-		 */
-		projectDir: string
-		/**
-		 * Output for all files, this should be the full path to the output dir
-		 */
-		writeDir: string
-	}
+interface ApiKeys {
+	fixerIo: string
+}
+
+interface Server {
+	port: number
+}
+
+interface FileSystem {
+	/**
+	 * Project directory, the folder that has the backend and frontend dirs.
+	 */
+	projectDir: string
+	/**
+	 * Output for all files, this should be the full path to the output dir
+	 */
+	writeDir: string
 }

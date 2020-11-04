@@ -7,7 +7,7 @@ import VerificationInfo from '../ui/VerificationEdit'
 
 const INVOICE_IN = 'INVOICE_IN'
 const INVOICE_IN_PAYMENT = 'INVOICE_IN_PAYMENT'
-const PAYMENT_DIRECT = 'PAYMENT_DIRECT'
+const PAYMENT_DIRECT_OUT = 'PAYMENT_DIRECT_OUT'
 
 class PaymentNew extends React.Component {
 	constructor(props) {
@@ -31,7 +31,7 @@ class PaymentNew extends React.Component {
 			name: '',
 			invoice_amount: '',
 			payed_in_sek: '',
-			currency: 'SEK',
+			currency: localStorage.getItem('localCurrencyCode'),
 			account_to: null,
 			account_from: null,
 		},
@@ -49,7 +49,7 @@ class PaymentNew extends React.Component {
 
 	render() {
 		return (
-			<div id="paymentNew">
+			<div id='paymentNew'>
 				<h1>{this.state.header}</h1>
 				<form onSubmit={this.onSubmit}>
 					<VerificationInfo
@@ -60,28 +60,62 @@ class PaymentNew extends React.Component {
 						onChange={this.onChange}
 						onTypeChange={this.onTypeChange}
 					/>
-					<div className="info">
+					<div className='info'>
 						<div>
-							<span className="label">{this.state.type === PAYMENT_DIRECT ? 'Payed' : 'Invoice'} amount</span>
-							<input type="text" name="invoice_amount" placeholder="Amount" value={this.state.input.invoice_amount} onChange={this.onChange} />
-							<input type="text" className="currency" name="currency" placeholder="Currency" value={this.state.input.currency} onChange={this.onChange} />
+							<span className='label'>{this.state.type === PAYMENT_DIRECT_OUT ? 'Payed' : 'Invoice'} amount</span>
+							<input
+								type='text'
+								name='invoice_amount'
+								placeholder='Amount'
+								value={this.state.input.invoice_amount}
+								onChange={this.onChange}
+							/>
+							<input
+								type='text'
+								className='currency'
+								name='currency'
+								placeholder='Currency'
+								value={this.state.input.currency}
+								onChange={this.onChange}
+							/>
 						</div>
-						<div className={this.state.input.currency === 'SEK' || this.state.input.type === INVOICE_IN ? 'hidden' : ''}>
-							<span className="label">Payed in SEK</span>
-							<input type="text" name="payed_in_sek" placeholder="Amount" value={this.state.input.payed_in_sek} onChange={this.onChange} />
+						<div
+							className={
+								this.state.input.currency === localStorage.getItem('localCurrencyCode') ||
+								this.state.input.type === INVOICE_IN
+									? 'hidden'
+									: ''
+							}
+						>
+							<span className='label'>Payed in SEK</span>
+							<input
+								type='text'
+								name='payed_in_sek'
+								placeholder='Amount'
+								value={this.state.input.payed_in_sek}
+								onChange={this.onChange}
+							/>
 						</div>
 						<div className={this.state.input.type === INVOICE_IN_PAYMENT ? 'hidden' : ''}>
-							<span className="label">Cost account (debit)</span>
-							<AccountSelect options={this.state.accounts} value={this.state.input.account_to} onChange={this.onAccountToChange} />
+							<span className='label'>Cost account (debit)</span>
+							<AccountSelect
+								options={this.state.accounts}
+								value={this.state.input.account_to}
+								onChange={this.onAccountToChange}
+							/>
 						</div>
 						<div className={this.state.input.type === INVOICE_IN ? 'hidden' : ''}>
-							<span className="label">From account (credit)</span>
-							<AccountSelect options={this.state.accounts} value={this.state.input.account_from} onChange={this.onAccountFromChange} />
+							<span className='label'>From account (credit)</span>
+							<AccountSelect
+								options={this.state.accounts}
+								value={this.state.input.account_from}
+								onChange={this.onAccountFromChange}
+							/>
 						</div>
 					</div>
-					<input type="submit" value="Add" />
+					<input type='submit' value='Add' />
 				</form>
-			</div >
+			</div>
 		)
 	}
 
@@ -97,7 +131,7 @@ class PaymentNew extends React.Component {
 		return [
 			{ value: INVOICE_IN, label: 'Invoice' },
 			{ value: INVOICE_IN_PAYMENT, label: 'Payed invoice' },
-			{ value: PAYMENT_DIRECT, label: 'Payed directly' }
+			{ value: PAYMENT_DIRECT_OUT, label: 'Payed directly' },
 		]
 	}
 
@@ -108,14 +142,14 @@ class PaymentNew extends React.Component {
 		// Account From
 		if (this.state.input.account_from !== null) {
 			accountData = {
-				account_from: this.state.input.account_from.value
+				account_from: this.state.input.account_from.value,
 			}
 		}
 		// Account to
 		if (this.state.input.account_to !== null) {
 			accountData = {
 				...accountData,
-				account_to: this.state.input.account_to.value
+				account_to: this.state.input.account_to.value,
 			}
 		}
 
@@ -127,23 +161,21 @@ class PaymentNew extends React.Component {
 		formData.append('json', JSON.stringify(toJson))
 		formData.append('file', this.fileRef.current.files[0])
 
-		Axios.post(
-			config.apiUrl('/verification/create-payment'),
-			formData,
-			{ headers: { 'Content-Type': 'multipart/form-data' } }
-		).then(response => {
-
-		}).catch(error => {
-			console.log(error)
+		Axios.post(config.apiUrl('/verification/create-payment'), formData, {
+			headers: { 'Content-Type': 'multipart/form-data' },
 		})
+			.then((response) => {})
+			.catch((error) => {
+				console.log(error)
+			})
 	}
 
 	onChange(event) {
 		this.setState({
 			input: {
 				...this.state.input,
-				[event.target.name]: event.target.value
-			}
+				[event.target.name]: event.target.value,
+			},
 		})
 	}
 
@@ -151,8 +183,8 @@ class PaymentNew extends React.Component {
 		this.setState({
 			input: {
 				...this.state.input,
-				account_to: selectedOption
-			}
+				account_to: selectedOption,
+			},
 		})
 	}
 
@@ -161,17 +193,17 @@ class PaymentNew extends React.Component {
 		this.setState({
 			input: {
 				...this.state.input,
-				account_from: selectedOption
-			}
+				account_from: selectedOption,
+			},
 		})
 	}
 
 	onTypeChange(type) {
-		this.setState(prevState => ({
+		this.setState((prevState) => ({
 			input: {
 				...prevState.input,
-				type: type
-			}
+				type: type,
+			},
 		}))
 		switch (type) {
 			case 'INVOICE_IN':

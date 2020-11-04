@@ -1,9 +1,4 @@
 import { InteractorAdapter } from './InteractorAdapter'
-import { VerificationBindInvoiceToPaymentRepository } from '../../app/verification/bind-invoice-to-payment/VerificationBindInvoiceToPaymentRepository'
-import { VerificationNewCustomTransactionRepository } from '../../app/verification/new-custom-transaction/VerificationNewCustomTransactionRepository'
-import { VerificationNewFromParserRepository } from '../../app/verification/new-from-parser/VerificationNewFromParserRepository'
-import { VerificationNewRepository } from '../../app/verification/new/VerificationNewRepository'
-import { VerificationSaveRepository } from '../../app/verification/save/VerificationSaveRepository'
 import { VerificationBindInvoiceToPaymentRepositoryAdapter } from '../repository/VerificationBindInvoiceToPaymentRepositoryAdapter'
 import { VerificationNewCustomTransactionRepositoryAdapter } from '../repository/VerificationNewCustomTransactionRepositoryAdapter'
 import { VerificationNewFromParserRepositoryAdapter } from '../repository/VerificationNewFromParserRepositoryAdapter'
@@ -24,25 +19,25 @@ import { UserCreateInteractor } from '../../app/user/create/UserCreateInteractor
 import { UserCreateRepositoryAdapter } from '../repository/UserCreateRepositoryAdapter'
 
 export class InteractorAppAdapter implements InteractorAdapter {
-	verification = {
-		bindInvoiceToPayment: new VerificationBindInvoiceToPaymentInteractor(
-			new VerificationBindInvoiceToPaymentRepositoryAdapter()
-		),
-		newCustomTransaction: new VerificationNewCustomTransactionInteractor(
-			new VerificationNewCustomTransactionRepositoryAdapter()
-		),
-		newFromParser: new VerificationNewFromParserInteractor(new VerificationNewFromParserRepositoryAdapter()),
-		new: new VerificationNewInteractor(new VerificationNewRepositoryAdapter()),
-		save: new VerificationSaveInteractor(new VerificationSaveRepositoryAdapter()),
-		getAll: new VerificationGetAllInteractor(new VerificationGetAllRepositoryAdapter()),
-	}
+  verification = {
+    bindInvoiceToPayment: new VerificationBindInvoiceToPaymentInteractor(
+      new VerificationBindInvoiceToPaymentRepositoryAdapter()
+    ),
+    newCustomTransaction: new VerificationNewCustomTransactionInteractor(
+      new VerificationNewCustomTransactionRepositoryAdapter()
+    ),
+    newFromParser: new VerificationNewFromParserInteractor(new VerificationNewFromParserRepositoryAdapter()),
+    new: new VerificationNewInteractor(new VerificationNewRepositoryAdapter()),
+    save: new VerificationSaveInteractor(new VerificationSaveRepositoryAdapter()),
+    getAll: new VerificationGetAllInteractor(new VerificationGetAllRepositoryAdapter()),
+  }
 
-	user = {
-		getByKey: new UserGetByKeyInteractor(new UserGetByKeyRepositoryAdapter()),
-		create: new UserCreateInteractor(new UserCreateRepositoryAdapter()),
-	}
+  user = {
+    getByKey: new UserGetByKeyInteractor(new UserGetByKeyRepositoryAdapter()),
+    create: new UserCreateInteractor(new UserCreateRepositoryAdapter()),
+  }
 
-	fiscalYear = {
-		getAll: new FiscalYearGetAllInteractor(new FiscalYearGetAllRepositoryAdapter()),
-	}
+  fiscalYear = {
+    getAll: new FiscalYearGetAllInteractor(new FiscalYearGetAllRepositoryAdapter()),
+  }
 }

@@ -1,6 +1,7 @@
 import { ApiAdapter } from '../../adapters/api/ApiAdapter'
 import express, { Request, Response } from 'express'
 import fileUpload from 'express-fileupload'
+import cors from 'cors'
 import { config } from '../../config'
 import { ExpressSerializer } from './ExpressSerializer'
 import { OutputError } from '../../app/core/definitions/OutputError'
@@ -32,6 +33,12 @@ export class ExpressApiHelper {
 		fs.ensureDirSync(this.tmpDir)
 
 		this.express.listen(config.server.port)
+
+		// Enable CORS for testing and development
+		if (config.env.isTesting() || config.env.isDevelopment()) {
+			this.express.use(cors())
+		}
+
 		this.express.use(express.json())
 		this.express.use(
 			fileUpload({
