@@ -13,7 +13,7 @@ class ParserFactory {
 		if (strpos($text, '5345-5088-6911') !== FALSE) {
 			$parser = new GoogleInvoiceParser($text);
 		}
-		// Google EUR
+		// Google EUR/SEK
 		elseif (strpos($text, '9258-6331-6332') !== FALSE) {
 			$parser = new GoogleInvoiceParser($text);
 		}
@@ -21,8 +21,12 @@ class ParserFactory {
 		elseif (strpos($text, 'Löpnummer:') !== FALSE && strpos($text, 'Inköpsställe:') !== FALSE) {
 			$parser = new VisaGoldParser($text);
 		}
-		elseif (strpos($text, 'E-FAKTURA BUSINESS GOLD') !== FALSE) {
+		elseif (strpos($text, 'FAKTURA BUSINESS GOLD') !== FALSE) {
 			$parser = new VisaInvoiceParser($text_layout);
+		}
+		// First Card Invoice
+		elseif (strpos($text, '8010630') !== FALSE && strpos($text, 'First Card') !== FALSE) {
+			$parser = new FirstCardInvoiceParser($text_layout);
 		}
 		// Skattekonto
 		elseif (strpos($text, 'Skattekonto') !== FALSE && strpos($text, 'Omfattar transaktionstyp:') !== FALSE) {

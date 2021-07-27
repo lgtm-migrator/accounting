@@ -16,6 +16,9 @@ class Verification extends ApiController {
 		if ($userId === null) {
 			return $this->fail('Failed to get user');
 		}
+		if ($fiscalId === null) {
+			$fiscalId = $this->request->getVar('fiscal_id');
+		}
 
 		$verifications = $verificationModel->getAll($userId, $fiscalId);
 
@@ -92,14 +95,14 @@ class Verification extends ApiController {
 		helper('verification_file');
 		$verificationModel = new VerificationModel();
 		$transactionModel = new TransactionModel();
-		
+
 		// Check for duplicates (but save additional PDFs)
 		$duplicate = $verificationModel->getDuplicate($verification);
 		if ($duplicate) {
 			// Try to save additional PDFs
 			if ($file) {
 				$duplicate->file_count += 1;
-				
+
 				// Save additional PDF
 				$filepath = $file->getPathName();
 				$saved = saveVerificationFile($filepath, $duplicate);
@@ -120,8 +123,9 @@ class Verification extends ApiController {
 		}
 
 		// Save verification
+		$verification->fiscal_id = 2;
 		$verification->id = $verificationModel->insert($verification);
-		
+
 		// Bind transactions to the created verifications
 		$verification->updateIdForTransactions();
 

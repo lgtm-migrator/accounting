@@ -17,6 +17,12 @@
 	display: inline-block;
 }
 
+.verificationSum {
+	width: 50px;
+	display: inline-block;
+	margin-left: 10px;
+}
+
 .transactions {
 	padding: var(--padding-small);
 	margin-top: var(--padding-default);
@@ -24,6 +30,10 @@
 	border-radius: var(--border-radius);
 	background-color: var(--inner-background-color);
 	font-size: small;
+}
+
+.deleted span {
+	text-decoration: line-through;
 }
 
 .transaction .accountId {

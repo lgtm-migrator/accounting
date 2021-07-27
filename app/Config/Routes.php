@@ -41,11 +41,17 @@ $routes->get('verifications', 'Verification::getAll');
 $routes->post('verification/create-payment', 'Verification::createPayment');
 $routes->post('verification/create-transaction', 'Verification::createTransaction');
 $routes->post('verification/create-from-pdf', 'Verification::createFromPdf');
+$routes->get('verifications/bind', 'Verification::bind');
 
 // Account
 $routes->get('accounts', 'Account::getAll');
 $routes->get('account/get-vat-info', 'Account::getVatInfo');
 $routes->post('account/fill', 'Account::fill');
+
+// SIE
+$routes->get('sie/old', 'Sie::old');
+$routes->get('sie', 'Sie::export');
+$routes->get('ledger', 'Sie::ledger');
 
 /**
  * --------------------------------------------------------------------

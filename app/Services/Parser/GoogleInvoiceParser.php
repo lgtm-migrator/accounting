@@ -27,6 +27,11 @@ class GoogleInvoiceParser extends BaseParser {
 				->setName('Google Cloud Platform (faktura)')
 				->setInternalName(BaseParser::GOOGLE_INVOICE_CLOUD_PLATFORM_USD)
 				->setAccountTo(5422);
+		} elseif ($verificationFactory->currency === 'SEK') {
+			$verificationFactory
+				->setName('Google G Suite (faktura)')
+				->setInternalName(BaseParser::GOOGLE_INVOICE_G_SUITE_SEK)
+				->setAccountTo(5421);
 		}
 		return $verificationFactory->create();
 	}
@@ -46,13 +51,20 @@ class GoogleInvoiceParser extends BaseParser {
 			return 'EUR';
 		} elseif (strpos($text, 'USD') !== FALSE) {
 			return 'USD';
+		} elseif (strpos($text, 'SEK') !== FALSE) {
+			return 'SEK';
 		} else {
 			return null;
 		}
 	}
 
 	private static function findTotal(string &$text) {
+		// EUR/USD
 		$found = preg_match('/[$€](\d{1,2}\.\d{2})/', $text, $matches);
+
+		if ($found === 0) {
+			$found = preg_match('/SEK (\d{1,3}\.\d{2})/', $text, $matches);
+		}
 
 		if ($found === 1) {
 			return doubleval($matches[1]);

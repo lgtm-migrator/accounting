@@ -7,6 +7,7 @@ class VerificationModel extends Model {
 	protected $returnType = 'App\Entities\Verification';
 	protected $allowedFields = [
 		'user_id',
+		'fiscal_id',
 		'verification_number',
 		'date',
 		'commit_date',
@@ -19,6 +20,7 @@ class VerificationModel extends Model {
 		'file_count',
 		'invoice_id',
 		'require_confirmation',
+		'deleted',
 	];
 
 	public function getDuplicate($verification) {
@@ -28,7 +30,7 @@ class VerificationModel extends Model {
 			->where('type', $verification->type)
 			->where('total', $verification->total)
 			->first();
-		
+
 		if (!$result) {
 			$result = $this
 				->where('user_id', $verification->user_id)
@@ -40,11 +42,18 @@ class VerificationModel extends Model {
 		return $result;
 	}
 
-	public function getAll(int $userId) {
-		$builder = $this->where('user_id', $userId);
-		
-		$builder = $builder->orderBy('date', 'ASC');
-		
-		return $builder->findAll();
+	public function getAll(int $userId, $fiscalId) {
+		if ($fiscalId != NULL) {
+			return $this->
+				where('user_id', $userId)->
+				where('fiscal_id', $fiscalId)->
+				orderBy('date', 'ASC')->
+				findAll();
+		} else {
+			return $this->
+				where('user_id', $userId)->
+				orderBy('date', 'ASC')->
+				findAll();
+		}
 	}
 }

@@ -2,15 +2,23 @@ import React from 'react'
 import Axios from 'axios'
 import './verifications.css'
 import config from '../config'
+import Button from '../ui/Button'
 
 class Verifications extends React.Component {
   state = {
-    verifications: []
+    verifications: [],
+    json: '',
+  }
+
+  constructor(props) {
+    super(props)
+
+    this.copyJson = this.copyJson.bind(this)
   }
 
   render() {
     const verifications = this.state.verifications
-    const listVerifications = verifications.map((verification) =>
+    const listVerifications = verifications.map((verification) => (
       <Verification
         key={verification.id}
         number={verification.verification_number}
@@ -18,27 +26,39 @@ class Verifications extends React.Component {
         date={verification.date}
         transactions={verification.transactions}
       />
-    )
+    ))
     return (
       <React.Fragment>
         <h1>Verifications</h1>
-        <div id="verifications">
-          {listVerifications}
-        </div>
+        <Button name="copyJson" text="Copy JSON" onClick={this.copyJson} />
+        <div id="verifications">{listVerifications}</div>
       </React.Fragment>
     )
   }
 
+  copyJson(event) {
+    navigator.clipboard
+      .writeText(this.state.json)
+      .then(() => {
+        console.log('Copied text')
+      })
+      .catch(() => {
+        console.log('Error copying text')
+      })
+  }
+
   async componentDidMount() {
-    Axios.get(
-      config.apiUrl("/verifications")
-    ).then(response => {
-      if (typeof response.data !== 'undefined') {
-        this.setState({ verifications: response.data })
-      }
-    }).catch(error =>
-      console.log(error)
-    )
+    // Get additional parameters
+    const params = window.location.search
+
+    Axios.get(config.apiUrl('verifications' + params))
+      .then((response) => {
+        if (typeof response.data !== 'undefined') {
+          this.setState({ verifications: response.data })
+          this.setState({ json: JSON.stringify(response.data) })
+        }
+      })
+      .catch((error) => console.log(error))
   }
 }
 
@@ -49,12 +69,24 @@ class Verification extends React.Component {
       number = '#' + this.props.number
     }
 
+    let sum = 0
+
+    for (const transaction of this.props.transactions) {
+      if (!transaction.deleted) {
+        sum += Number(transaction.amount)
+      }
+    }
+    sum *= 100
+    sum = Math.round(sum)
+    sum /= 100
+
     return (
       <div className="verification">
         <div className="verificationInfo">
           <span className="verificationNumber">{number}</span>
           <span className="verificationDate">{this.props.date}</span>
           <span className="verificationName">{this.props.name}</span>
+          <span className="verificationSum">{sum}</span>
         </div>
         <Transactions transactions={this.props.transactions} />
       </div>
@@ -65,7 +97,7 @@ class Verification extends React.Component {
 class Transactions extends React.Component {
   render() {
     const transactions = this.props.transactions
-    const listTransactions = transactions.map((transaction) =>
+    const listTransactions = transactions.map((transaction) => (
       <Transaction
         key={transaction.id}
         date={transaction.date}
@@ -74,17 +106,12 @@ class Transactions extends React.Component {
         amount={transaction.amount}
         currency={transaction.currency}
         originalAmount={transaction.original_amount}
+        deleted={transaction.deleted}
       />
-    )
+    ))
     return (
       <div className="transactions">
-        <Transaction
-          date="Date"
-          accountId="#"
-          accountName="Account Name"
-          debit="Debit"
-          credit="Credit"
-        />
+        <Transaction date="Date" accountId="#" accountName="Account Name" debit="Debit" credit="Credit" />
         {listTransactions}
       </div>
     )
@@ -109,13 +136,16 @@ class Transaction extends React.Component {
     let renderCurrency = ''
     if (typeof this.props.currency !== 'undefined' && this.props.currency !== 'SEK') {
       const originalAmount = this.addCurrencySymbol(this.formatAmount(this.props.originalAmount))
-      renderCurrency = (
-        <span className="amount originalAmount">{originalAmount}</span>
-      )
+      renderCurrency = <span className="amount originalAmount">{originalAmount}</span>
+    }
+
+    let transactionClass = 'transaction'
+    if (this.props.deleted) {
+      transactionClass += ' deleted'
     }
 
     return (
-      <div className="transaction">
+      <div className={transactionClass}>
         <span className="accountId">{this.props.accountId}</span>
         <span className="accountName">{this.props.accountName}</span>
         <span className="amount debit">{debit}</span>
@@ -138,9 +168,11 @@ class Transaction extends React.Component {
 
   formatAmount(amount) {
     if (amount) {
-      return parseFloat(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+      return parseFloat(amount)
+        .toFixed(2)
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
     } else {
-      return this.formatAmount("0.00")
+      return this.formatAmount('0.00')
     }
   }
 }

@@ -1,11 +1,7 @@
 import React from 'react'
 import Login from './pages/Login'
 import './App.css'
-import {
-  Switch,
-  Route,
-  withRouter
-} from 'react-router-dom'
+import { Switch, Route, withRouter } from 'react-router-dom'
 import Verifications from './pages/Verifications'
 import { PageFunctionContext } from './contexts/PageFunctions'
 import Menu from './pages/Menu'
@@ -14,7 +10,7 @@ import TransactionNew from './pages/TransactionNew'
 import VatExport from './pages/VatExport'
 
 class App extends React.Component {
-  static contextType = PageFunctionContext;
+  static contextType = PageFunctionContext
 
   constructor(props) {
     super(props)
@@ -26,10 +22,8 @@ class App extends React.Component {
     this.context.history = this.props.history
 
     let menu = ''
-    if (this.isLoggedIn) {
-      menu = (
-        <Menu />
-      )
+    if (this.isLoggedIn()) {
+      menu = <Menu />
     }
 
     return (
@@ -76,7 +70,5 @@ class App extends React.Component {
     }
   }
 }
-
-
 
 export default withRouter(App)

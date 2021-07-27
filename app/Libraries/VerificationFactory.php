@@ -346,7 +346,7 @@ class VerificationFactory {
 		$account_to_exchange_rate = $this->exchange_rate;
 
 		// INVOICE_IN
-		if ($this->type == Verification::TYPE_INVOICE_IN) {
+		if ($this->type == Verification::TYPE_INVOICE_IN || $this->type == Verification::TYPE_PAYMENT_DIRECT) {
 			// Add Swedish VAT 25%
 			if ($this->vat_code == 1025) {
 				$account_to_payed = round($this->payed_in_sek / 1.25, 2);

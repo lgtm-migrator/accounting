@@ -4,8 +4,8 @@ use App\Entities\Verification;
 use App\Libraries\VerificationFactory;
 use RuntimeException;
 
-class VisaInvoiceParser extends BaseParser {
-	private const REGEX_PATTERN = '/Datum\s+(\d{6}).*KORTTOTAL:\s+(.*?,\d{2})/s';
+class FirstCardInvoiceParser extends BaseParser {
+	private const REGEX_PATTERN = '/Datum\s+(\d{2}-\d{2}-\d{2}).*KORTTOTAL:\s+(.*?,\d{2})/s';
 	private $date = null;
 	private $amount = null;
 
@@ -21,8 +21,8 @@ class VisaInvoiceParser extends BaseParser {
 			->setDate($this->date)
 			->setType(Verification::TYPE_TRANSACTION)
 			->setAmount($this->amount)
-			->setName('Nordea VISA Business Gold (faktura)')
-			->setInternalName(static::VISA_GOLD_INVOICE);
+			->setName('First Card (faktura)')
+			->setInternalName(static::FIRST_CARD_INVOICE);
 
 		// Add transactions (Skulder till närstående personer)
 		$verificationFactory
@@ -36,7 +36,7 @@ class VisaInvoiceParser extends BaseParser {
 		$found = preg_match(static::REGEX_PATTERN, $this->text_layout, $matches);
 
 		if ($found === 0) {
-			throw new RuntimeException("Could not parse the PDF as VisaInvoiceParser");
+			throw new RuntimeException("Could not parse the PDF as FirstCardInvoiceParser");
 		}
 
 		$this->setDate($matches[1]);
@@ -49,7 +49,7 @@ class VisaInvoiceParser extends BaseParser {
 	 * @return void 
 	 */
 	private function setDate(string $date) {
-		$this->date = '20' . substr($date, 0, 2) . "-" . substr($date, 2, 2) . "-" . substr($date, 4);
+		$this->date = '20' . $date;
 	}
 
 	/**

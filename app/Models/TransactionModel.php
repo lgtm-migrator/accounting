@@ -13,6 +13,7 @@ class TransactionModel extends Model {
 		'currency',
 		'original_amount',
 		'exchange_rate',
+		'deleted',
 	];
 
 	public function getByVerificationId($verificationId) {

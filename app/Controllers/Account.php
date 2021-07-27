@@ -16,8 +16,8 @@ class Account extends ApiController {
 	}
 
 	public function getVatInfo() {
-		$start_date = '2019-01-01';
-		$end_date = '2019-12-31';
+		$start_date = '2020-01-01';
+		$end_date = '2020-12-31';
 		$user_id = Services::auth()->getUserId();
 
 		// Get all accounts with VAT information
@@ -53,10 +53,12 @@ class Account extends ApiController {
 				->findAll();
 
 			foreach ($transactions as $transaction) {
-				$account_id = $transaction->account_id;
-				if (isset($account_to_vat_code[$account_id])) {
-					$vat_code = $account_to_vat_code[$account_id];
-					$amounts[$vat_code] += $transaction->amount;
+				if (!$transaction->deleted) {
+					$account_id = $transaction->account_id;
+					if (isset($account_to_vat_code[$account_id])) {
+						$vat_code = $account_to_vat_code[$account_id];
+						$amounts[$vat_code] += $transaction->amount;
+					}
 				}
 			}
 		}
@@ -77,7 +79,7 @@ class Account extends ApiController {
 		$this->accountModel = new AccountModel();
 		ini_set('auto_detect_line_endings', TRUE);
 		$handle = fopen($file->getPathName(), 'r');
-		
+
 		// Read one row
 		while (($data = fgetcsv($handle)) !== FALSE) {
 			if (is_numeric($data[0])) {
