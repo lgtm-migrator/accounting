@@ -72,14 +72,6 @@ writable/debugbar/*
 php_errors.log
 
 #-------------------------
-# User Guide Temp Files
-#-------------------------
-user_guide_src/build/*
-user_guide_src/cilexer/build/*
-user_guide_src/cilexer/dist/*
-user_guide_src/cilexer/pycilexer.egg-info/*
-
-#-------------------------
 # Test Files
 #-------------------------
 tests/coverage*
@@ -128,6 +120,7 @@ nb-configuration.xml
 
 # Visual Studio Code
 .vscode/
+*.code-workspace
 
 /results/
 /phpunit*.xml

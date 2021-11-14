@@ -1,0 +1,64 @@
+                                                                                                                  Google Ireland Limited
+                                                                                                                           Gordon House
+
+
+Invoice
+                                                                                                                           Barrow Street
+                                                                                                                                 Dublin 4
+Invoice number: 555666777                                                                                                        Ireland
+                                                                                                               VAT number: IE 6388047V
+
+
+Bill to
+Company Name AB
+Adresss 5H LGH3333
+222 22 City
+Sweden
+VAT number: SE 55555555555
+
+
+Details                                                             Google Cloud - GSuite
+..............................................................
+Invoice   number                            555666777
+..............................................................
+Invoice   date                              Jan 31, 2019            Total in EUR                                                €6.66
+..............................................................
+Billing ID                                  1111-2222-3333
+..............................................................
+Domain    name                              mydomain.com
+                                                                    Summary for Jan 1, 2019 - Jan 31, 2019
+
+
+                                                                    Subtotal in EUR                                                €6.66
+                                                                    VAT (0%)                                                       €0.00
+                                                                    Total in EUR                                                   €6.66
+
+
+Services subject to the reverse charge - VAT to be accounted for by the recipient as per Article 196 of Council Directive 2006/112/EC
+
+
+You will be automatically charged for any amount due.
+
+
+
+
+                                                                                                                              Page 1 of 2
+                Invoice                                           Invoice number: 555666777
+
+
+
+Subscription       Description   Interval                     Quantity            Amount(€)
+
+G Suite Basic      Commitment    Jan 1 - Jan 31                     2                   6.66
+
+                                            Subtotal in EUR                           €6.66
+                                            VAT (0%)                                  €0.00
+
+
+                                            Total in EUR                           €6.66
+
+
+
+
+                                                                                 Page 2 of 2
+
