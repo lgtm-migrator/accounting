@@ -1,45 +1,45 @@
 #verifications .verification {
-	padding: var(--padding-default);
-	border: var(--border-width) solid var(--border-color);
-	border-radius: var(--border-radius);
-	margin-bottom: 2px;
-	background-color: var(--outer-background-color);
-	font-size: medium;
+  padding: var(--padding-default);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  margin-bottom: 2px;
+  background-color: var(--outer-background-color);
+  font-size: medium;
 }
 
 .verificationNumber {
-	width: 50px;
-	display: inline-block;
+  width: 50px;
+  display: inline-block;
 }
 
 .verificationDate {
-	width: 100px;
-	display: inline-block;
+  width: 100px;
+  display: inline-block;
 }
 
 .transactions {
-	padding: var(--padding-small);
-	margin-top: var(--padding-default);
-	border: var(--border-width) solid var(--border-color);
-	border-radius: var(--border-radius);
-	background-color: var(--inner-background-color);
-	font-size: small;
+  padding: var(--padding-small);
+  margin-top: var(--padding-default);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--inner-background-color);
+  font-size: small;
 }
 
 .transaction .accountId {
-	display: inline-block;
-	width: 50px;
+  display: inline-block;
+  width: 50px;
 }
 
 .transaction .accountName {
-	display: inline-block;
-	white-space: nowrap;
-	overflow-x: hidden;
-	width: 25%;
+  display: inline-block;
+  white-space: nowrap;
+  overflow-x: hidden;
+  width: 25%;
 }
 
 .transaction .amount {
-	display: inline-block;
-	width: 100px;
-	text-align: right;
+  display: inline-block;
+  width: 100px;
+  text-align: right;
 }

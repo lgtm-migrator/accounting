@@ -1,0 +1,8 @@
+excraction:
+  javascript:
+    index:
+      exclude:
+        - node_modules
+
+queries:
+  - include: "*"

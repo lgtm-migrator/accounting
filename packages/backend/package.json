@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@senth/accounting-api": "^0.1.0",
+    "axios": "^0.24.0",
     "express": "^4.17.1",
     "express-fileupload": "^1.2.1",
     "fs-extra": "^10.0.0",

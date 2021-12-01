@@ -1,11 +1,11 @@
-import React, { createContext } from 'react';
+import React, { createContext } from "react";
 
 export const PageFunctionContext = createContext();
 
 class PageFunctionContextProvider extends React.Component {
   state = {
     history: null,
-  }
+  };
 
   render() {
     return (

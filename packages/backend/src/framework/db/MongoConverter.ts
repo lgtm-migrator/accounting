@@ -1,16 +1,16 @@
-import { ObjectId } from 'mongodb'
-import { InternalError } from '../../app/core/definitions/InternalError'
-import { Account } from '../../app/core/entities/Account'
-import { Verification } from '../../app/core/entities/Verification'
-import { Parser } from '../../app/core/entities/Parser'
-import { User } from '../../app/core/entities/User'
-import { ParserSingle } from '../../app/core/entities/ParserSingle'
-import { ParserMulti } from '../../app/core/entities/ParserMulti'
-import { FiscalYear } from '../../app/core/entities/FiscalYear'
-import { Currency } from '../../app/core/entities/Currency'
+import { ObjectId } from "mongodb";
+import { InternalError } from "../../app/core/definitions/InternalError";
+import { Account } from "../../app/core/entities/Account";
+import { Verification } from "../../app/core/entities/Verification";
+import { Parser } from "../../app/core/entities/Parser";
+import { User } from "../../app/core/entities/User";
+import { ParserSingle } from "../../app/core/entities/ParserSingle";
+import { ParserMulti } from "../../app/core/entities/ParserMulti";
+import { FiscalYear } from "../../app/core/entities/FiscalYear";
+import { Currency } from "../../app/core/entities/Currency";
 
-type AddId = 'add-id' | 'dont-add-id'
-type RemoveUndefined = 'remove-undefined' | 'keep-undefined'
+type AddId = "add-id" | "dont-add-id";
+type RemoveUndefined = "remove-undefined" | "keep-undefined";
 
 export namespace MongoConverter {
   /**
@@ -25,70 +25,85 @@ export namespace MongoConverter {
    */
   export function toDbObject(
     entity: {},
-    addId: AddId = 'add-id',
-    removeUndefined: RemoveUndefined = 'remove-undefined'
+    addId: AddId = "add-id",
+    removeUndefined: RemoveUndefined = "remove-undefined"
   ): { _id: ObjectId } {
     if (!entity || Object.keys(entity).length === 0) {
-      throw new InternalError(InternalError.Types.dbError, 'toEntity() empty object')
+      throw new InternalError(
+        InternalError.Types.dbError,
+        "toEntity() empty object"
+      );
     }
 
-    const dbObject = serialize(entity, removeUndefined) as { _id: ObjectId }
+    const dbObject = serialize(entity, removeUndefined) as { _id: ObjectId };
 
-    if (typeof dbObject === 'undefined') {
-      throw new InternalError(InternalError.Types.dbError, 'toDbObject() supplied empty object')
+    if (typeof dbObject === "undefined") {
+      throw new InternalError(
+        InternalError.Types.dbError,
+        "toDbObject() supplied empty object"
+      );
     }
 
-    if (addId === 'add-id' && typeof dbObject._id === 'undefined') {
-      dbObject._id = new ObjectId()
+    if (addId === "add-id" && typeof dbObject._id === "undefined") {
+      dbObject._id = new ObjectId();
     }
 
-    return dbObject
+    return dbObject;
   }
 
-  function serialize(entity: {}, removeUndefined: RemoveUndefined): {} | undefined {
-    const object: any = entity instanceof Array ? [] : {}
+  function serialize(
+    entity: {},
+    removeUndefined: RemoveUndefined
+  ): {} | undefined {
+    const object: any = entity instanceof Array ? [] : {};
     for (let [key, value] of Object.entries(entity)) {
-      if ((typeof value !== 'undefined' && value !== null) || removeUndefined === 'keep-undefined') {
+      if (
+        (typeof value !== "undefined" && value !== null) ||
+        removeUndefined === "keep-undefined"
+      ) {
         // Convert id
-        if ((key === 'id' || key.endsWith('Id')) && (typeof value === 'string' || typeof value === 'number')) {
-          if (key === 'id') {
-            object._id = new ObjectId(value)
+        if (
+          (key === "id" || key.endsWith("Id")) &&
+          (typeof value === "string" || typeof value === "number")
+        ) {
+          if (key === "id") {
+            object._id = new ObjectId(value);
           } else {
-            object[key] = new ObjectId(value)
+            object[key] = new ObjectId(value);
           }
         }
 
         // Convert bigint
-        else if (typeof value === 'bigint') {
-          object[key] = `${value}n`
+        else if (typeof value === "bigint") {
+          object[key] = `${value}n`;
         }
 
         // Currency code - only use name
         else if (value instanceof Currency.Codes) {
-          object[key] = value.name
+          object[key] = value.name;
         }
 
         // Regexp - Use value directly
         else if (value instanceof RegExp) {
-          object[key] = value
+          object[key] = value;
         }
 
         // Recursive object
-        else if (typeof value === 'object' && value) {
-          const child = serialize(value!, removeUndefined)
+        else if (typeof value === "object" && value) {
+          const child = serialize(value!, removeUndefined);
           if (child) {
-            object[key] = child
+            object[key] = child;
           }
         }
 
         // Use value
         else {
-          object[key] = value
+          object[key] = value;
         }
       }
     }
 
-    return object
+    return object;
   }
 
   /**
@@ -101,84 +116,87 @@ export namespace MongoConverter {
    */
   export function toOption(object: any): any {
     if (!object || Object.keys(object).length === 0) {
-      throw new InternalError(InternalError.Types.dbError, 'toEntity() empty object')
+      throw new InternalError(
+        InternalError.Types.dbError,
+        "toEntity() empty object"
+      );
     }
 
-    return deserialize(object)
+    return deserialize(object);
   }
 
   export function toAccount(object: any): Account {
-    const entityOption = toOption(object)
-    return new Account(entityOption)
+    const entityOption = toOption(object);
+    return new Account(entityOption);
   }
 
   export function toVerification(object: any): Verification {
-    const entityOption = toOption(object)
-    return new Verification(entityOption)
+    const entityOption = toOption(object);
+    return new Verification(entityOption);
   }
 
   export function toParser(object: any): Parser {
-    const entityOption = toOption(object)
+    const entityOption = toOption(object);
 
     switch (entityOption.type) {
       case Parser.Types.single:
-        return new ParserSingle(entityOption)
+        return new ParserSingle(entityOption);
       case Parser.Types.multi:
-        return new ParserMulti(entityOption)
+        return new ParserMulti(entityOption);
       default:
         throw new InternalError(
           InternalError.Types.notImplemented,
           `Parser type ${entityOption.type} not implementd in MongoConverter`
-        )
+        );
     }
   }
 
   export function toUser(object: any): User {
-    const entityOption = toOption(object)
-    return new User(entityOption)
+    const entityOption = toOption(object);
+    return new User(entityOption);
   }
 
   export function toFiscalYear(object: any): FiscalYear {
-    const entityOption = toOption(object)
-    return new FiscalYear(entityOption)
+    const entityOption = toOption(object);
+    return new FiscalYear(entityOption);
   }
 
   function deserialize(object: any): {} {
-    const entity: any = object instanceof Array ? [] : {}
+    const entity: any = object instanceof Array ? [] : {};
 
     for (let [key, value] of Object.entries(object)) {
       // Convert id
       if (value instanceof ObjectId) {
-        if (key === '_id') {
-          entity.id = value.toHexString()
+        if (key === "_id") {
+          entity.id = value.toHexString();
         } else {
-          entity[key] = value.toHexString()
+          entity[key] = value.toHexString();
         }
       }
 
       // Convert bigint
-      else if (typeof value === 'string' && /^-?\d+n$/.test(value)) {
-        entity[key] = BigInt(value.substr(0, value.length - 1))
+      else if (typeof value === "string" && /^-?\d+n$/.test(value)) {
+        entity[key] = BigInt(value.substr(0, value.length - 1));
       }
 
       // Object
-      else if (typeof value === 'object' && value) {
+      else if (typeof value === "object" && value) {
         // Regexp - use value directly
         if (value instanceof RegExp) {
-          entity[key] = value
+          entity[key] = value;
         }
         // Recursive object
         else {
-          entity[key] = deserialize(value)
+          entity[key] = deserialize(value);
         }
       }
 
       // Use value
       else {
-        entity[key] = value
+        entity[key] = value;
       }
     }
 
-    return entity
+    return entity;
   }
 }

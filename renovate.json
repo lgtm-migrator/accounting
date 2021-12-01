@@ -1,8 +1,5 @@
 {
-  "extends": [
-    "config:base",
-    "schedule:monthly"
-  ],
+  "extends": ["config:base", "schedule:monthly"],
   "automerge": true,
   "automergeStrategy": "squash",
   "dependencyDashboard": false
