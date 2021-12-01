@@ -20,7 +20,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Prettier
-        uses: creyD/prettier_action@v4.1
+        uses: creyD/prettier_action@v4
         with:
           # This part is also where you can pass other options, for example:
           prettier_options: --write **/*.{js,jsx,ts,tsx,yml,yaml,md}
