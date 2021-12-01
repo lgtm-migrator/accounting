@@ -1,4 +1,4 @@
-import { Verification } from "../../app/core/entities/Verification";
+import { Verification } from '../../app/core/entities/Verification'
 
 export interface FileGateway {
   /**

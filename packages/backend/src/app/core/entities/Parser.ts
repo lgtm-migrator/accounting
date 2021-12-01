@@ -1,21 +1,21 @@
-import { Currency } from "./Currency";
-import { Verification } from "./Verification";
-import { Consts } from "../definitions/Consts";
-import "../definitions/String";
-import { OutputError } from "../definitions/OutputError";
-import { UserEntity } from "./UserEntity";
+import { Currency } from './Currency'
+import { Verification } from './Verification'
+import { Consts } from '../definitions/Consts'
+import '../definitions/String'
+import { OutputError } from '../definitions/OutputError'
+import { UserEntity } from './UserEntity'
 
 export abstract class Parser extends UserEntity implements Parser.Option {
-  name: string;
-  type: Parser.Types;
-  identifier: RegExp;
+  name: string
+  type: Parser.Types
+  identifier: RegExp
 
   constructor(data: Parser.Option, type: Parser.Types) {
-    super(data);
+    super(data)
 
-    this.name = data.name;
-    this.identifier = data.identifier;
-    this.type = type;
+    this.name = data.name
+    this.identifier = data.identifier
+    this.type = type
   }
 
   /**
@@ -28,14 +28,14 @@ export abstract class Parser extends UserEntity implements Parser.Option {
   abstract parse(text: string): Parser.VerificationInfo[];
 
   validate(): OutputError.Info[] {
-    const errors = super.validate();
+    const errors = super.validate()
 
     // Name
     if (this.name.length < Consts.NAME_LENGTH_MIN) {
-      errors.push({ type: OutputError.Types.nameTooShort, data: this.name });
+      errors.push({ type: OutputError.Types.nameTooShort, data: this.name })
     }
 
-    return errors;
+    return errors
   }
 
   /**
@@ -44,7 +44,7 @@ export abstract class Parser extends UserEntity implements Parser.Option {
    * @return true if the text should be parsed by this Parser, false otherwise
    */
   isOfType(text: string): boolean {
-    return this.identifier.test(text);
+    return this.identifier.test(text)
   }
 
   /**
@@ -69,31 +69,31 @@ export abstract class Parser extends UserEntity implements Parser.Option {
       /[Oo]c(tober|t)/,
       /[Nn]o(vember|v)/,
       /[Dd]e(cember|c)/,
-    ];
+    ]
 
     // Fix month
     for (let i = 0; i < regexs.length; ++i) {
-      const regex = regexs[i];
-      let month = String(i + 1);
+      const regex = regexs[i]
+      let month = String(i + 1)
       // Add 0 before month
       if (month.length == 1) {
-        month = "0" + month;
+        month = '0' + month
       }
-      date = date.replace(regex, month);
+      date = date.replace(regex, month)
     }
 
     // Fix year
     if (/^\d{2}-\d{2}-\d{2}$/.test(date)) {
       // Append 20 to the start of the year
-      date = "20" + date;
+      date = '20' + date
     }
 
     // Validate
     if (!date.isValidIsoDate()) {
-      throw OutputError.create(OutputError.Types.parserDateInputInvalid, date);
+      throw OutputError.create(OutputError.Types.parserDateInputInvalid, date)
     }
 
-    return date;
+    return date
   }
 
   /**
@@ -116,10 +116,10 @@ export abstract class Parser extends UserEntity implements Parser.Option {
    */
   protected static fixAmount(amount: string): number {
     const regex =
-      /^(\d{0,3})?[\. ,']?(\d{0,3})[.,](\d{2})$|^(\d{0,3})?[\.\ ,']?(\d{0,3})$/;
-    const replacement = "$1$2$4$5.$3";
-    const converted = amount.replace(regex, replacement);
-    return Number.parseFloat(converted);
+      /^(\d{0,3})?[\. ,']?(\d{0,3})[.,](\d{2})$|^(\d{0,3})?[\.\ ,']?(\d{0,3})$/
+    const replacement = '$1$2$4$5.$3'
+    const converted = amount.replace(regex, replacement)
+    return Number.parseFloat(converted)
   }
 
   /**
@@ -128,9 +128,9 @@ export abstract class Parser extends UserEntity implements Parser.Option {
    * @return fixed name without tabs and multiple spaces
    */
   protected static fixName(name: string): string {
-    let fixed = name.replace(/\n\t/g, " ");
-    fixed = fixed.replace(/\s\s+/g, " ");
-    return fixed;
+    let fixed = name.replace(/\n\t/g, ' ')
+    fixed = fixed.replace(/\s\s+/g, ' ')
+    return fixed
   }
 
   /**
@@ -143,17 +143,17 @@ export abstract class Parser extends UserEntity implements Parser.Option {
     errors: OutputError.Info[]
   ) {
     if (exception instanceof OutputError) {
-      errors.push(...exception.errors);
+      errors.push(...exception.errors)
     } else {
-      throw exception;
+      throw exception
     }
   }
 }
 
 export namespace Parser {
   export enum Types {
-    single = "single",
-    multi = "multi",
+    single = 'single',
+    multi = 'multi',
   }
 
   export interface Option extends UserEntity.Option {

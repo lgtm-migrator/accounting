@@ -1,7 +1,7 @@
-import { UserEntity } from "./UserEntity";
-import { OutputError } from "../definitions/OutputError";
-import { Consts } from "../definitions/Consts";
-import "../definitions/String";
+import { UserEntity } from './UserEntity'
+import { OutputError } from '../definitions/OutputError'
+import { Consts } from '../definitions/Consts'
+import '../definitions/String'
 
 interface AccountBalance {
   accountNumber: number;
@@ -18,29 +18,29 @@ export namespace FiscalYear {
 }
 
 export class FiscalYear extends UserEntity implements FiscalYear.Option {
-  simpleName?: string;
-  from: string;
-  to: string;
-  startingBalances: AccountBalance[];
+  simpleName?: string
+  from: string
+  to: string
+  startingBalances: AccountBalance[]
 
   constructor(data: FiscalYear.Option) {
-    super(data);
+    super(data)
 
-    this.simpleName = data.simpleName;
-    this.from = data.from;
-    this.to = data.to;
-    this.startingBalances = data.startingBalances;
+    this.simpleName = data.simpleName
+    this.from = data.from
+    this.to = data.to
+    this.startingBalances = data.startingBalances
   }
 
   validate(): OutputError.Info[] {
-    const errors = super.validate();
+    const errors = super.validate()
 
     // Name
     if (this.simpleName && this.simpleName.length < Consts.NAME_LENGTH_MIN) {
       errors.push({
         type: OutputError.Types.nameTooShort,
         data: this.simpleName,
-      });
+      })
     }
 
     // Dates
@@ -48,17 +48,17 @@ export class FiscalYear extends UserEntity implements FiscalYear.Option {
       errors.push({
         type: OutputError.Types.dateFormatInvalid,
         data: this.from,
-      });
+      })
     }
 
     if (!this.to.isValidIsoDate()) {
-      errors.push({ type: OutputError.Types.dateFormatInvalid, data: this.to });
+      errors.push({ type: OutputError.Types.dateFormatInvalid, data: this.to })
     }
 
     // Date order
-    const [first] = [this.from, this.to].sort();
+    const [first] = [this.from, this.to].sort()
     if (first !== this.from) {
-      errors.push({ type: OutputError.Types.fiscalYearToBeforeFrom });
+      errors.push({ type: OutputError.Types.fiscalYearToBeforeFrom })
     }
 
     // Starting balances, account number
@@ -70,10 +70,10 @@ export class FiscalYear extends UserEntity implements FiscalYear.Option {
         errors.push({
           type: OutputError.Types.accountNumberOutOfRange,
           data: String(account.accountNumber),
-        });
+        })
       }
     }
 
-    return errors;
+    return errors
   }
 }

@@ -1,17 +1,17 @@
-import { Interactor } from "../../core/definitions/Interactor";
-import { VerificationBindInvoiceToPaymentInput } from "./VerificationBindInvoiceToPaymentInput";
-import { VerificationBindInvoiceToPaymentOutput } from "./VerificationBindInvoiceToPaymentOutput";
-import { VerificationBindInvoiceToPaymentRepository } from "./VerificationBindInvoiceToPaymentRepository";
-import { Verification } from "../../core/entities/Verification";
-import { OutputError } from "../../core/definitions/OutputError";
-import { Transaction } from "../../core/entities/Transaction";
-import { Currency } from "../../core/entities/Currency";
-import { InternalError } from "../../core/definitions/InternalError";
+import { Interactor } from '../../core/definitions/Interactor'
+import { VerificationBindInvoiceToPaymentInput } from './VerificationBindInvoiceToPaymentInput'
+import { VerificationBindInvoiceToPaymentOutput } from './VerificationBindInvoiceToPaymentOutput'
+import { VerificationBindInvoiceToPaymentRepository } from './VerificationBindInvoiceToPaymentRepository'
+import { Verification } from '../../core/entities/Verification'
+import { OutputError } from '../../core/definitions/OutputError'
+import { Transaction } from '../../core/entities/Transaction'
+import { Currency } from '../../core/entities/Currency'
+import { InternalError } from '../../core/definitions/InternalError'
 
-const ACCOUNT_INVOICE_DEBT = 2440;
-const ACCOUNT_CURRENCY_GAIN = 3960;
-const ACCOUNT_CURRENCY_LOSS = 7960;
-const ACCOUNT_BANK_EXPENSES = 6570;
+const ACCOUNT_INVOICE_DEBT = 2440
+const ACCOUNT_CURRENCY_GAIN = 3960
+const ACCOUNT_CURRENCY_LOSS = 7960
+const ACCOUNT_BANK_EXPENSES = 6570
 
 /**
  * Binds two verifications (one invoice the other payment) to each other.
@@ -24,7 +24,7 @@ export class VerificationBindInvoiceToPaymentInteractor extends Interactor<
   VerificationBindInvoiceToPaymentRepository
 > {
   constructor(repository: VerificationBindInvoiceToPaymentRepository) {
-    super(repository);
+    super(repository)
   }
 
   /**
@@ -37,42 +37,42 @@ export class VerificationBindInvoiceToPaymentInteractor extends Interactor<
   async execute(
     input: VerificationBindInvoiceToPaymentInput
   ): Promise<VerificationBindInvoiceToPaymentOutput> {
-    this.input = input;
+    this.input = input
 
     const getInvoicePromise = this.repository.getVerification(
       input.userId,
       input.invoiceId
-    );
+    )
     const getPaymentPromise = this.repository.getVerification(
       input.userId,
       input.paymentId
-    );
+    )
 
     return Promise.all([getInvoicePromise, getPaymentPromise])
       .then(([invoice, payment]) => {
-        this.validateCanBeBound(invoice, payment);
+        this.validateCanBeBound(invoice, payment)
 
-        return this.bind(invoice, payment);
+        return this.bind(invoice, payment)
       })
       .then(([invoice, payment]) => {
-        const saveInvoicePromise = this.repository.saveVerification(invoice);
-        const savePaymentPromise = this.repository.saveVerification(payment);
+        const saveInvoicePromise = this.repository.saveVerification(invoice)
+        const savePaymentPromise = this.repository.saveVerification(payment)
 
-        return Promise.all([saveInvoicePromise, savePaymentPromise]);
+        return Promise.all([saveInvoicePromise, savePaymentPromise])
       })
       .then(([invoice, payment]) => {
         const output: VerificationBindInvoiceToPaymentOutput = {
           invoice: invoice,
           payment: payment,
-        };
-        return output;
+        }
+        return output
       })
       .catch((reason) => {
         if (reason instanceof OutputError) {
-          throw reason;
+          throw reason
         }
-        throw OutputError.create(OutputError.Types.internalError);
-      });
+        throw OutputError.create(OutputError.Types.internalError)
+      })
   }
 
   /**
@@ -92,7 +92,7 @@ export class VerificationBindInvoiceToPaymentInteractor extends Interactor<
       throw OutputError.create(
         OutputError.Types.invoiceNotValidType,
         invoice.type
-      );
+      )
     }
 
     // Payment needs to be a payment type
@@ -105,26 +105,26 @@ export class VerificationBindInvoiceToPaymentInteractor extends Interactor<
       throw OutputError.create(
         OutputError.Types.paymentNotValidType,
         payment.type
-      );
+      )
     }
 
     // Payment and invoice must match types
     if (invoice.type === Verification.Types.INVOICE_IN) {
       if (payment.type !== Verification.Types.INVOICE_IN_PAYMENT) {
-        throw OutputError.create(OutputError.Types.invoicePaymentTypeMismatch);
+        throw OutputError.create(OutputError.Types.invoicePaymentTypeMismatch)
       }
     } else {
       if (payment.type !== Verification.Types.INVOICE_OUT_PAYMENT) {
-        throw OutputError.create(OutputError.Types.invoicePaymentTypeMismatch);
+        throw OutputError.create(OutputError.Types.invoicePaymentTypeMismatch)
       }
     }
 
     // Already bound
     if (invoice.paymentId || invoice.invoiceId) {
-      throw OutputError.create(OutputError.Types.invoiceAlreadyBound);
+      throw OutputError.create(OutputError.Types.invoiceAlreadyBound)
     }
     if (payment.paymentId || payment.invoiceId) {
-      throw OutputError.create(OutputError.Types.paymentAlreadyBound);
+      throw OutputError.create(OutputError.Types.paymentAlreadyBound)
     }
   }
 
@@ -132,37 +132,37 @@ export class VerificationBindInvoiceToPaymentInteractor extends Interactor<
     invoice: Verification,
     payment: Verification
   ): Promise<[Verification, Verification]> {
-    invoice.setPaymentId(payment.id);
-    payment.setInvoiceId(invoice.id);
+    invoice.setPaymentId(payment.id)
+    payment.setInvoiceId(invoice.id)
 
     // It's only necessary to do anything if the currency has a local code (meaning dealing with foreign currencies)
     if (!(invoice.totalAmount.localCode && payment.totalAmount.localCode)) {
       if (invoice.totalAmount.code !== payment.totalAmount.code) {
         throw OutputError.create(
           OutputError.Types.transactionsCurrencyCodeLocalMismatch
-        );
+        )
       }
-      return [invoice, payment];
+      return [invoice, payment]
     }
 
     if (invoice.totalAmount.localCode !== payment.totalAmount.localCode) {
       throw OutputError.create(
         OutputError.Types.transactionsCurrencyCodeLocalMismatch
-      );
+      )
     }
 
     if (invoice.type === Verification.Types.INVOICE_IN) {
-      return this.bindInvoiceIn(invoice, payment);
+      return this.bindInvoiceIn(invoice, payment)
     } else if (invoice.type === Verification.Types.INVOICE_OUT) {
-      return this.bindInvoiceOut(invoice, payment);
+      return this.bindInvoiceOut(invoice, payment)
     } else {
       const errorObject = {
         message:
-          "VerificationBindInvoiceToPaymentInteractor.bind() but invoice should only be INVOICE_IN or INVOICE_OUT",
+          'VerificationBindInvoiceToPaymentInteractor.bind() but invoice should only be INVOICE_IN or INVOICE_OUT',
         invoice: invoice,
         payment: payment,
-      };
-      throw new InternalError(InternalError.Types.stateInvalid, errorObject);
+      }
+      throw new InternalError(InternalError.Types.stateInvalid, errorObject)
     }
   }
 
@@ -170,45 +170,45 @@ export class VerificationBindInvoiceToPaymentInteractor extends Interactor<
     invoice: Verification,
     payment: Verification
   ): Promise<[Verification, Verification]> {
-    const localCode = invoice.totalAmount.localCode!;
+    const localCode = invoice.totalAmount.localCode!
 
     // Get the invoice amount
     const invoiceDebtsTransaction =
-      invoice.getTransaction(ACCOUNT_INVOICE_DEBT);
+      invoice.getTransaction(ACCOUNT_INVOICE_DEBT)
     if (!invoiceDebtsTransaction) {
       throw OutputError.create(
         OutputError.Types.transactionInvoiceAccountNotFound,
         `${ACCOUNT_INVOICE_DEBT}`
-      );
+      )
     }
 
     // Get the payment amount
     const paymentDebtsTransaction =
-      payment.getTransaction(ACCOUNT_INVOICE_DEBT);
+      payment.getTransaction(ACCOUNT_INVOICE_DEBT)
     if (!paymentDebtsTransaction) {
       throw OutputError.create(
         OutputError.Types.transactionInvoiceAccountNotFound,
         `${ACCOUNT_INVOICE_DEBT}`
-      );
+      )
     }
-    payment.removeTransaction(ACCOUNT_INVOICE_DEBT);
+    payment.removeTransaction(ACCOUNT_INVOICE_DEBT)
 
     // Update invoice account (use invoice amount)
     const updatedDebtTransaction = new Transaction({
       accountNumber: ACCOUNT_INVOICE_DEBT,
       currency: invoiceDebtsTransaction.currency.negate(),
-    });
-    payment.addTransaction(updatedDebtTransaction);
+    })
+    payment.addTransaction(updatedDebtTransaction)
 
     // Calculate gain/loss depending on currency fluctuations between invoice and payed date
     let localAmountDiff =
       paymentDebtsTransaction.currency.localAmount! +
-      invoiceDebtsTransaction.currency.localAmount!;
+      invoiceDebtsTransaction.currency.localAmount!
     const exchangeRateDiff =
       paymentDebtsTransaction.currency.exchangeRate! -
-      invoiceDebtsTransaction.currency.exchangeRate!;
+      invoiceDebtsTransaction.currency.exchangeRate!
 
-    let gainLossCurrency: Currency | undefined;
+    let gainLossCurrency: Currency | undefined
 
     if (exchangeRateDiff > 0 || exchangeRateDiff < 0) {
       gainLossCurrency = new Currency({
@@ -216,25 +216,25 @@ export class VerificationBindInvoiceToPaymentInteractor extends Interactor<
         code: invoiceDebtsTransaction.currency.code,
         localCode: localCode,
         exchangeRate: exchangeRateDiff,
-      });
-      let accountNumber;
+      })
+      let accountNumber
 
       // Gain
       if (exchangeRateDiff > 0) {
-        accountNumber = ACCOUNT_CURRENCY_GAIN;
+        accountNumber = ACCOUNT_CURRENCY_GAIN
       }
       // Loss
       else {
-        accountNumber = ACCOUNT_CURRENCY_LOSS;
+        accountNumber = ACCOUNT_CURRENCY_LOSS
       }
       payment.addTransaction(
         new Transaction({
           accountNumber: accountNumber,
           currency: gainLossCurrency,
         })
-      );
+      )
 
-      localAmountDiff -= gainLossCurrency.localAmount!;
+      localAmountDiff -= gainLossCurrency.localAmount!
     }
 
     // Add bank expenses
@@ -246,14 +246,14 @@ export class VerificationBindInvoiceToPaymentInteractor extends Interactor<
           code: localCode,
         },
       })
-    );
+    )
 
-    const errors = payment.validate();
+    const errors = payment.validate()
     if (errors.length > 0) {
-      throw new OutputError(errors);
+      throw new OutputError(errors)
     }
 
-    return [invoice, payment];
+    return [invoice, payment]
   }
 
   private async bindInvoiceOut(
@@ -261,6 +261,6 @@ export class VerificationBindInvoiceToPaymentInteractor extends Interactor<
     payment: Verification
   ): Promise<[Verification, Verification]> {
     // TODO INVOICE_OUT hasn't been implemented yet
-    throw OutputError.create(OutputError.Types.invoiceOutBindNotImplemented);
+    throw OutputError.create(OutputError.Types.invoiceOutBindNotImplemented)
   }
 }

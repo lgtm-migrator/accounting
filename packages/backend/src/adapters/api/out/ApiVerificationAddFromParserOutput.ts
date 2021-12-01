@@ -1,7 +1,7 @@
-import { VerificationSaveOutput } from "../../../app/verification/save/VerificationSaveOutput";
-import { ApiVerificationOutput } from "./helpers/ApiVerificationOutput";
-import { Immutable } from "../../../app/core/definitions/Immutable";
-import { ApiVerificationAddOutput } from "./ApiVerificationAddOutput";
+import { VerificationSaveOutput } from '../../../app/verification/save/VerificationSaveOutput'
+import { ApiVerificationOutput } from './helpers/ApiVerificationOutput'
+import { Immutable } from '../../../app/core/definitions/Immutable'
+import { ApiVerificationAddOutput } from './ApiVerificationAddOutput'
 
 export interface ApiVerificationAddFromParserOutput {
   readonly added: Immutable<ApiVerificationAddOutput[]>;
@@ -17,10 +17,10 @@ export namespace ApiVerificationAddFromParserOutput {
           saved.verification
         ),
         successType: saved.successType,
-      };
-      return array;
-    }, new Array<ApiVerificationAddOutput>());
+      }
+      return array
+    }, new Array<ApiVerificationAddOutput>())
 
-    return { added: added };
+    return { added: added }
   }
 }

@@ -1,6 +1,6 @@
-import { Repository } from "../../core/definitions/Repository";
-import { Id } from "../../core/definitions/Id";
-import { FiscalYear } from "../../core/entities/FiscalYear";
+import { Repository } from '../../core/definitions/Repository'
+import { Id } from '../../core/definitions/Id'
+import { FiscalYear } from '../../core/entities/FiscalYear'
 
 export interface FiscalYearGetAllRepository extends Repository {
   /**

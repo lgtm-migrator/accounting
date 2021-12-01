@@ -1,17 +1,17 @@
-import { FiscalYearGetAllInput } from "../../app/fiscal-year/get-all/FiscalYearGetAllInput";
-import { UserGetByKeyInput } from "../../app/user/get-by-key/UserGetByKeyInput";
-import { VerificationGetAllInput } from "../../app/verification/get-all/VerificationGetAllInput";
-import { VerificationNewCustomTransactionInput } from "../../app/verification/new-custom-transaction/VerificationNewCustomTransactionInput";
-import { VerificationNewFromParserInput } from "../../app/verification/new-from-parser/VerificationNewFromParserInput";
-import { VerificationNewInput } from "../../app/verification/new/VerificationNewInput";
-import { ApiFiscalYearGetAllOutput } from "./out/ApiFiscalYearGetAllOutput";
-import { ApiUserGetByKeyOutput } from "./out/ApiUserGetByKeyOutput";
-import { ApiVerificationAddCustomOutput } from "./out/ApiVerificationAddCustomOutput";
-import { ApiVerificationAddFromParserOutput } from "./out/ApiVerificationAddFromParserOutput";
-import { ApiVerificationAddOutput } from "./out/ApiVerificationAddOutput";
-import { ApiVerificationGetAllOutput } from "./out/ApiVerificationGetAllOutput";
-import { UserCreateInput } from "../../app/user/create/UserCreateInput";
-import { ApiUserCreateOutput } from "./out/ApiUserCreateOutput";
+import { FiscalYearGetAllInput } from '../../app/fiscal-year/get-all/FiscalYearGetAllInput'
+import { UserGetByKeyInput } from '../../app/user/get-by-key/UserGetByKeyInput'
+import { VerificationGetAllInput } from '../../app/verification/get-all/VerificationGetAllInput'
+import { VerificationNewCustomTransactionInput } from '../../app/verification/new-custom-transaction/VerificationNewCustomTransactionInput'
+import { VerificationNewFromParserInput } from '../../app/verification/new-from-parser/VerificationNewFromParserInput'
+import { VerificationNewInput } from '../../app/verification/new/VerificationNewInput'
+import { ApiFiscalYearGetAllOutput } from './out/ApiFiscalYearGetAllOutput'
+import { ApiUserGetByKeyOutput } from './out/ApiUserGetByKeyOutput'
+import { ApiVerificationAddCustomOutput } from './out/ApiVerificationAddCustomOutput'
+import { ApiVerificationAddFromParserOutput } from './out/ApiVerificationAddFromParserOutput'
+import { ApiVerificationAddOutput } from './out/ApiVerificationAddOutput'
+import { ApiVerificationGetAllOutput } from './out/ApiVerificationGetAllOutput'
+import { UserCreateInput } from '../../app/user/create/UserCreateInput'
+import { ApiUserCreateOutput } from './out/ApiUserCreateOutput'
 
 export interface ApiAdapter {
   verification: {

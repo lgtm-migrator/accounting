@@ -1,4 +1,4 @@
-import { Input } from "../../core/definitions/Input";
+import { Input } from '../../core/definitions/Input'
 
 export interface UserCreateInput extends Input {
   user: {

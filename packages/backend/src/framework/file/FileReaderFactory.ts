@@ -1,7 +1,7 @@
-import { FileReader } from "./FileReader";
-import { PdfReader } from "./PdfReader";
-import { InternalError } from "../../app/core/definitions/InternalError";
-import { TxtReader } from "./TxtReader";
+import { FileReader } from './FileReader'
+import { PdfReader } from './PdfReader'
+import { InternalError } from '../../app/core/definitions/InternalError'
+import { TxtReader } from './TxtReader'
 
 export class FileReaderFactory {
   /**
@@ -11,25 +11,25 @@ export class FileReaderFactory {
    * @throws {InternalError.Types.notImplemented} if the file's extension hasn't been implemented
    */
   create(filename: string): FileReader {
-    let fileReader: FileReader | undefined;
-    const extension = FileReaderFactory.getExtension(filename);
+    let fileReader: FileReader | undefined
+    const extension = FileReaderFactory.getExtension(filename)
 
-    if (extension === "pdf") {
-      fileReader = new PdfReader();
-    } else if (extension === "txt") {
-      fileReader = new TxtReader();
+    if (extension === 'pdf') {
+      fileReader = new PdfReader()
+    } else if (extension === 'txt') {
+      fileReader = new TxtReader()
     }
 
     if (fileReader) {
-      return fileReader;
+      return fileReader
     }
 
     const error = {
-      message: "FileReaderDistributor",
+      message: 'FileReaderDistributor',
       file: filename,
       extension: extension,
-    };
-    throw new InternalError(InternalError.Types.notImplemented, error);
+    }
+    throw new InternalError(InternalError.Types.notImplemented, error)
   }
 
   /**
@@ -38,10 +38,10 @@ export class FileReaderFactory {
    * @return lowercase extension of the filename, empty string if no extension was found
    */
   private static getExtension(filename: string): string {
-    const extension = filename.split(".").pop();
+    const extension = filename.split('.').pop()
     if (extension) {
-      return extension.toLowerCase();
+      return extension.toLowerCase()
     }
-    return "";
+    return ''
   }
 }

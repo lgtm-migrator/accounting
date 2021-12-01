@@ -1,9 +1,9 @@
-import { Interactor } from "../../core/definitions/Interactor";
-import { FiscalYearGetAllInput } from "./FiscalYearGetAllInput";
-import { FiscalYearGetAllOutput } from "./FiscalYearGetAllOutput";
-import { FiscalYearGetAllRepository } from "./FiscalYearGetAllRepository";
-import { OutputError } from "../../core/definitions/OutputError";
-import { InternalError } from "../../core/definitions/InternalError";
+import { Interactor } from '../../core/definitions/Interactor'
+import { FiscalYearGetAllInput } from './FiscalYearGetAllInput'
+import { FiscalYearGetAllOutput } from './FiscalYearGetAllOutput'
+import { FiscalYearGetAllRepository } from './FiscalYearGetAllRepository'
+import { OutputError } from '../../core/definitions/OutputError'
+import { InternalError } from '../../core/definitions/InternalError'
 
 /**
  * Get all the user's fiscal years
@@ -14,7 +14,7 @@ export class FiscalYearGetAllInteractor extends Interactor<
   FiscalYearGetAllRepository
 > {
   constructor(repository: FiscalYearGetAllRepository) {
-    super(repository);
+    super(repository)
   }
 
   /**
@@ -26,17 +26,17 @@ export class FiscalYearGetAllInteractor extends Interactor<
       .then((fiscalYears) => {
         return {
           fiscalYears: fiscalYears,
-        };
+        }
       })
       .catch((reason) => {
         if (reason instanceof OutputError) {
-          throw reason;
+          throw reason
         }
         // Log error
         else if (!(reason instanceof InternalError)) {
-          new InternalError(InternalError.Types.unknown, reason);
+          new InternalError(InternalError.Types.unknown, reason)
         }
-        throw OutputError.create(OutputError.Types.internalError);
-      });
+        throw OutputError.create(OutputError.Types.internalError)
+      })
   }
 }

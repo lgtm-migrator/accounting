@@ -1,15 +1,15 @@
-import { Interactor } from "../../core/definitions/Interactor";
+import { Interactor } from '../../core/definitions/Interactor'
 import {
   VerificationNewCustomTransactionInput,
   TransactionInputData,
-} from "./VerificationNewCustomTransactionInput";
-import { VerificationNewCustomTransactionOutput } from "./VerificationNewCustomTransactionOutput";
-import { VerificationNewCustomTransactionRepository } from "./VerificationNewCustomTransactionRepository";
-import { Transaction } from "../../core/entities/Transaction";
-import { Currency } from "../../core/entities/Currency";
-import { Verification } from "../../core/entities/Verification";
-import { OutputError } from "../../core/definitions/OutputError";
-import { Id } from "../../core/definitions/Id";
+} from './VerificationNewCustomTransactionInput'
+import { VerificationNewCustomTransactionOutput } from './VerificationNewCustomTransactionOutput'
+import { VerificationNewCustomTransactionRepository } from './VerificationNewCustomTransactionRepository'
+import { Transaction } from '../../core/entities/Transaction'
+import { Currency } from '../../core/entities/Currency'
+import { Verification } from '../../core/entities/Verification'
+import { OutputError } from '../../core/definitions/OutputError'
+import { Id } from '../../core/definitions/Id'
 
 /**
  * Creates a valid verification with transactions from an input
@@ -20,7 +20,7 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
   VerificationNewCustomTransactionRepository
 > {
   constructor(repository: VerificationNewCustomTransactionRepository) {
-    super(repository);
+    super(repository)
   }
 
   /**
@@ -32,24 +32,24 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
   async execute(
     input: VerificationNewCustomTransactionInput
   ): Promise<VerificationNewCustomTransactionOutput> {
-    this.input = input;
+    this.input = input
 
-    const localCurrencyPromise = this.repository.getLocalCurrency(input.userId);
+    const localCurrencyPromise = this.repository.getLocalCurrency(input.userId)
     const fiscalYearIdPromise = this.repository.getFiscalYear(
       input.userId,
       input.verification.date
-    );
+    )
 
     return localCurrencyPromise
       .then((localCurrency) => {
         return Promise.all([
           this.createTransactions(localCurrency),
           fiscalYearIdPromise,
-        ]);
+        ])
       })
       .then(([transactions, fiscalYearId]) => {
-        return this.createVerification(transactions, fiscalYearId);
-      });
+        return this.createVerification(transactions, fiscalYearId)
+      })
   }
 
   /**
@@ -62,10 +62,10 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
   ): Promise<Transaction[]> {
     const promises = this.input.verification.transactions.map(
       async (transaction) => {
-        return this.createTransaction(transaction, localCurrencyCode);
+        return this.createTransaction(transaction, localCurrencyCode)
       }
-    );
-    return Promise.all(promises);
+    )
+    return Promise.all(promises)
   }
 
   /**
@@ -78,32 +78,32 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
     transactionInputData: TransactionInputData,
     localCurrencyCode: Currency.Codes
   ): Promise<Transaction> {
-    const code = Currency.Codes.fromString(transactionInputData.currencyCode);
+    const code = Currency.Codes.fromString(transactionInputData.currencyCode)
     if (!code) {
       throw OutputError.create(
         OutputError.Types.currencyCodeInvalid,
         transactionInputData.currencyCode
-      );
+      )
     }
 
     let exchangeRatePromise: Promise<number | undefined> =
-      Promise.resolve(undefined);
+      Promise.resolve(undefined)
 
     if (code !== localCurrencyCode) {
       exchangeRatePromise = this.repository.getExchangeRate(
         this.input.verification.date,
         code,
         localCurrencyCode
-      );
+      )
     }
 
     return exchangeRatePromise.then((exchangeRate) => {
-      let localCode: Currency.Codes | undefined;
+      let localCode: Currency.Codes | undefined
       if (code !== localCurrencyCode) {
-        localCode = localCurrencyCode;
+        localCode = localCurrencyCode
       }
 
-      let transactionData: Transaction.Option = {
+      const transactionData: Transaction.Option = {
         accountNumber: transactionInputData.accountNumber,
         currency: new Currency({
           amount: transactionInputData.amount,
@@ -111,9 +111,9 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
           localCode: localCode,
           exchangeRate: exchangeRate,
         }),
-      };
-      return new Transaction(transactionData);
-    });
+      }
+      return new Transaction(transactionData)
+    })
   }
 
   /**
@@ -135,13 +135,13 @@ export class VerificationNewCustomTransactionInteractor extends Interactor<
       type: Verification.Types.TRANSACTION,
       description: this.input.verification.description,
       transactions: transactions,
-    });
+    })
 
-    const errors = verification.validate();
+    const errors = verification.validate()
     if (errors.length > 0) {
-      throw new OutputError(errors);
+      throw new OutputError(errors)
     }
 
-    return verification;
+    return verification
   }
 }

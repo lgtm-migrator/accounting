@@ -1,7 +1,7 @@
-import { Repository } from "../../core/definitions/Repository";
-import { Parser } from "../../core/entities/Parser";
-import { Id } from "../../core/definitions/Id";
-import { VerificationNewRepository } from "../new/VerificationNewRepository";
+import { Repository } from '../../core/definitions/Repository'
+import { Parser } from '../../core/entities/Parser'
+import { Id } from '../../core/definitions/Id'
+import { VerificationNewRepository } from '../new/VerificationNewRepository'
 
 export interface VerificationNewFromParserRepository
   extends VerificationNewRepository {

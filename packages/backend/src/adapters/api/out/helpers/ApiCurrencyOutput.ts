@@ -1,5 +1,5 @@
-import { Currency } from "../../../../app/core/entities/Currency";
-import { Immutable } from "../../../../app/core/definitions/Immutable";
+import { Currency } from '../../../../app/core/entities/Currency'
+import { Immutable } from '../../../../app/core/definitions/Immutable'
 
 export interface ApiCurrencyOutput {
   readonly amount: bigint;
@@ -19,6 +19,6 @@ export namespace ApiCurrencyOutput {
       code: currency.code.name,
       localCode: currency.localCode ? currency.localCode.name : undefined,
       exchangeRate: currency.exchangeRate,
-    };
+    }
   }
 }

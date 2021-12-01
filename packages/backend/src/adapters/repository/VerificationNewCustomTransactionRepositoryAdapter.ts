@@ -1,5 +1,5 @@
-import { VerificationNewBaseRepositoryAdapter } from "./VerificationNewBaseRepositoryAdapter";
-import { VerificationNewCustomTransactionRepository } from "../../app/verification/new-custom-transaction/VerificationNewCustomTransactionRepository";
+import { VerificationNewBaseRepositoryAdapter } from './VerificationNewBaseRepositoryAdapter'
+import { VerificationNewCustomTransactionRepository } from '../../app/verification/new-custom-transaction/VerificationNewCustomTransactionRepository'
 
 export class VerificationNewCustomTransactionRepositoryAdapter
   extends VerificationNewBaseRepositoryAdapter

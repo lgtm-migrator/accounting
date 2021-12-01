@@ -1,6 +1,6 @@
-import { Immutable } from "../../../app/core/definitions/Immutable";
-import { VerificationSaveOutput } from "../../../app/verification/save/VerificationSaveOutput";
-import { ApiVerificationOutput } from "./helpers/ApiVerificationOutput";
+import { Immutable } from '../../../app/core/definitions/Immutable'
+import { VerificationSaveOutput } from '../../../app/verification/save/VerificationSaveOutput'
+import { ApiVerificationOutput } from './helpers/ApiVerificationOutput'
 
 export interface ApiVerificationAddOutput {
   readonly verification: ApiVerificationOutput;
@@ -16,6 +16,6 @@ export namespace ApiVerificationAddOutput {
         interactorOutput.verification
       ),
       successType: interactorOutput.successType,
-    };
+    }
   }
 }

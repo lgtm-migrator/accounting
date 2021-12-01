@@ -1,6 +1,6 @@
-import { ApiCurrencyOutput } from "./ApiCurrencyOutput";
-import { Transaction } from "../../../../app/core/entities/Transaction";
-import { Immutable } from "../../../../app/core/definitions/Immutable";
+import { ApiCurrencyOutput } from './ApiCurrencyOutput'
+import { Transaction } from '../../../../app/core/entities/Transaction'
+import { Immutable } from '../../../../app/core/definitions/Immutable'
 
 export interface ApiTransactionOutput {
   readonly accountNumber: number;
@@ -14,6 +14,6 @@ export namespace ApiTransactionOutput {
     return {
       accountNumber: transaction.accountNumber,
       currency: ApiCurrencyOutput.fromCurrency(transaction.currency),
-    };
+    }
   }
 }

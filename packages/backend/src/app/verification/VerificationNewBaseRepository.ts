@@ -1,6 +1,6 @@
-import { VerificationRepository } from "./VerificationRepository";
-import { Currency } from "../core/entities/Currency";
-import { Id } from "../core/definitions/Id";
+import { VerificationRepository } from './VerificationRepository'
+import { Currency } from '../core/entities/Currency'
+import { Id } from '../core/definitions/Id'
 
 export interface VerificationNewBaseRepository extends VerificationRepository {
   /**

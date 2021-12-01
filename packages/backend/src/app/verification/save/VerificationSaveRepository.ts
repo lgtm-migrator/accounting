@@ -1,6 +1,6 @@
-import { Repository } from "../../core/definitions/Repository";
-import { Verification } from "../../core/entities/Verification";
-import { Id } from "../../core/definitions/Id";
+import { Repository } from '../../core/definitions/Repository'
+import { Verification } from '../../core/entities/Verification'
+import { Id } from '../../core/definitions/Id'
 
 export interface VerificationSaveRepository extends Repository {
   /**

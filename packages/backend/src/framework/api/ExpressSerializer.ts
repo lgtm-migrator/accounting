@@ -5,34 +5,34 @@ export namespace ExpressSerializer {
    * @return serialized object
    */
   export function serialize(apiOutput: {}): {} {
-    const object: any = {};
+    const object: any = {}
 
-    for (let [key, value] of Object.entries(apiOutput)) {
+    for (const [key, value] of Object.entries(apiOutput)) {
       // Convert bigint
-      if (typeof value === "bigint") {
-        object[key] = `${value}n`;
+      if (typeof value === 'bigint') {
+        object[key] = `${value}n`
       }
 
       // Regexp - Use value directly
       else if (value instanceof RegExp) {
-        object[key] = value;
+        object[key] = value
       }
 
       // Recursive object
-      else if (typeof value === "object" && value) {
-        const child = serialize(value!);
+      else if (typeof value === 'object' && value) {
+        const child = serialize(value!)
         if (child) {
-          object[key] = child;
+          object[key] = child
         }
       }
 
       // Use value
       else {
-        object[key] = value;
+        object[key] = value
       }
     }
 
-    return object;
+    return object
   }
 
   /**
@@ -41,36 +41,36 @@ export namespace ExpressSerializer {
    * @param webObject the web object to serialize to internal objects.
    */
   export function deserialize(webObject: any): any {
-    let inputObject: any;
+    let inputObject: any
 
     // Convert number
-    if (typeof webObject === "string" && !isNaN(Number(webObject))) {
-      inputObject = Number(webObject);
+    if (typeof webObject === 'string' && !isNaN(Number(webObject))) {
+      inputObject = Number(webObject)
     }
 
     // Convert bigint
-    else if (typeof webObject === "string" && /^-?\d+n$/.test(webObject)) {
-      inputObject = BigInt(webObject.substr(0, webObject.length - 1));
+    else if (typeof webObject === 'string' && /^-?\d+n$/.test(webObject)) {
+      inputObject = BigInt(webObject.substr(0, webObject.length - 1))
     }
 
     // Regexp - use value directly
     else if (webObject instanceof RegExp) {
-      inputObject = webObject;
+      inputObject = webObject
     }
 
     // Recursive qbject
-    else if (typeof webObject === "object" && webObject) {
-      inputObject = {};
-      for (let [key, value] of Object.entries(webObject)) {
-        inputObject[key] = deserialize(value);
+    else if (typeof webObject === 'object' && webObject) {
+      inputObject = {}
+      for (const [key, value] of Object.entries(webObject)) {
+        inputObject[key] = deserialize(value)
       }
     }
 
     // Use value
     else {
-      inputObject = webObject;
+      inputObject = webObject
     }
 
-    return inputObject;
+    return inputObject
   }
 }

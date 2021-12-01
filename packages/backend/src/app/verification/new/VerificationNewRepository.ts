@@ -1,6 +1,6 @@
-import { VerificationNewBaseRepository as VerificationNewRepositoryBase } from "../VerificationNewBaseRepository";
-import { Account } from "../../core/entities/Account";
-import { Id } from "../../core/definitions/Id";
+import { VerificationNewBaseRepository as VerificationNewRepositoryBase } from '../VerificationNewBaseRepository'
+import { Account } from '../../core/entities/Account'
+import { Id } from '../../core/definitions/Id'
 
 export interface VerificationNewRepository
   extends VerificationNewRepositoryBase {

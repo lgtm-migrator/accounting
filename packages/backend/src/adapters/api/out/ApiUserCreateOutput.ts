@@ -1,6 +1,6 @@
-import { Id } from "../../../app/core/definitions/Id";
-import { UserCreateOutput } from "../../../app/user/create/UserCreateOutput";
-import { Immutable } from "../../../app/core/definitions/Immutable";
+import { Id } from '../../../app/core/definitions/Id'
+import { UserCreateOutput } from '../../../app/user/create/UserCreateOutput'
+import { Immutable } from '../../../app/core/definitions/Immutable'
 
 export interface ApiUserCreateOutput {
   readonly id: Id;
@@ -22,6 +22,6 @@ export namespace ApiUserCreateOutput {
       lastName: interactorOutput.user.lastName,
       localCurrencyCode: interactorOutput.user.localCurrencyCode.name,
       apiKey: interactorOutput.user.apiKey,
-    };
+    }
   }
 }

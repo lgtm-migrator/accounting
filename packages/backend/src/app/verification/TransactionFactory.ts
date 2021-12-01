@@ -1,8 +1,8 @@
-import { Currency } from "../core/entities/Currency";
-import { Account } from "../core/entities/Account";
-import { Transaction } from "../core/entities/Transaction";
-import { OutputError } from "../core/definitions/OutputError";
-import { Id } from "../core/definitions/Id";
+import { Currency } from '../core/entities/Currency'
+import { Account } from '../core/entities/Account'
+import { Transaction } from '../core/entities/Transaction'
+import { OutputError } from '../core/definitions/OutputError'
+import { Id } from '../core/definitions/Id'
 
 type CurrencyOrUndefined = Currency | undefined;
 type TransactionOrUndefined = Transaction | undefined;
@@ -45,58 +45,58 @@ export class TransactionFactory {
       exchangeRate,
       accountFrom,
       accountTo,
-    } = option;
+    } = option
 
-    let exchangeRatePromise: Promise<number | undefined> =
-      Promise.resolve(undefined);
+    const exchangeRatePromise: Promise<number | undefined> =
+      Promise.resolve(undefined)
 
     if (
       localCode !== undefined &&
       code !== localCode &&
       exchangeRate === undefined
     ) {
-      throw OutputError.create(OutputError.Types.exchangeRateNotSet);
+      throw OutputError.create(OutputError.Types.exchangeRateNotSet)
     }
 
     // Unset local code if code and local code is same
     if (code === localCode) {
-      localCode = undefined;
+      localCode = undefined
     }
 
     // Default (full) currency
-    let currencyFull: Currency = new Currency({
+    const currencyFull: Currency = new Currency({
       amount: amount,
       code: code,
       localCode: localCode,
       exchangeRate: exchangeRate,
-    });
+    })
 
     // Create the actual transactions for the accounts
     let transactionsCombined = TransactionFactory.calculateTransactions(
       userId,
       accountFrom,
-      "from",
+      'from',
       currencyFull
-    );
+    )
     transactionsCombined = transactionsCombined.concat(
       TransactionFactory.calculateTransactions(
         userId,
         accountTo,
-        "to",
+        'to',
         currencyFull
       )
-    );
+    )
 
-    const transactions: Transaction[] = [];
+    const transactions: Transaction[] = []
 
     // Only add valid transactions
-    for (let transaction of transactionsCombined) {
+    for (const transaction of transactionsCombined) {
       if (transaction instanceof Transaction) {
-        transactions.push(transaction);
+        transactions.push(transaction)
       }
     }
 
-    return Promise.resolve(transactions);
+    return Promise.resolve(transactions)
   }
 
   /**
@@ -110,32 +110,32 @@ export class TransactionFactory {
   private static calculateTransactions(
     userId: Id,
     account: Account,
-    toOrFrom: "to" | "from",
+    toOrFrom: 'to' | 'from',
     currencyFull: Currency
   ): TransactionOrUndefined[] {
-    let currency: CurrencyOrUndefined;
-    let vatCurrency: CurrencyOrUndefined;
-    let vatAccount: Account | undefined;
-    let reverseVatCurrency: CurrencyOrUndefined;
-    let reverseVatAccount: Account | undefined;
+    let currency: CurrencyOrUndefined
+    let vatCurrency: CurrencyOrUndefined
+    let vatAccount: Account | undefined
+    let reverseVatCurrency: CurrencyOrUndefined
+    let reverseVatAccount: Account | undefined
 
-    let vatPercentage = TransactionFactory.getVatPercentage(account);
+    let vatPercentage = TransactionFactory.getVatPercentage(account)
 
     if (account.vatAccount instanceof Account) {
-      vatAccount = account.vatAccount;
+      vatAccount = account.vatAccount
 
       if (vatPercentage === undefined) {
         throw OutputError.create(
           OutputError.Types.accountVatPercentageNotSet,
           String(account.number)
-        );
+        )
       }
 
       // Reverse VAT
       if (account.reverseVatAccount instanceof Account) {
-        reverseVatAccount = account.reverseVatAccount;
-        vatCurrency = currencyFull.multiply(vatPercentage);
-        reverseVatCurrency = vatCurrency.negate();
+        reverseVatAccount = account.reverseVatAccount
+        vatCurrency = currencyFull.multiply(vatPercentage)
+        reverseVatCurrency = vatCurrency.negate()
       }
       // Regular VAT
       else {
@@ -144,49 +144,49 @@ export class TransactionFactory {
         // For example 0.25 in VAT =>
         // 0.8 = 1 / (0.25 + 1)
         // 0.2 = 1 - 0.8
-        const rest = 1 / (vatPercentage + 1);
+        const rest = 1 / (vatPercentage + 1)
         vatPercentage = 1.0 - rest;
-        [currency, vatCurrency] = currencyFull.split([rest, vatPercentage]);
+        [currency, vatCurrency] = currencyFull.split([rest, vatPercentage])
       }
     }
     if (!currency) {
-      currency = currencyFull;
+      currency = currencyFull
     }
 
     // Negate if it's fro
-    if (toOrFrom == "from") {
-      currency = currency.negate();
+    if (toOrFrom == 'from') {
+      currency = currency.negate()
 
       if (vatCurrency) {
-        vatCurrency = vatCurrency.negate();
+        vatCurrency = vatCurrency.negate()
       }
       if (reverseVatCurrency) {
-        reverseVatCurrency = reverseVatCurrency.negate();
+        reverseVatCurrency = reverseVatCurrency.negate()
       }
     }
 
-    let transaction = new Transaction({
+    const transaction = new Transaction({
       accountNumber: account.number,
       currency: currency,
-    });
+    })
 
-    let vatTransaction: TransactionOrUndefined;
+    let vatTransaction: TransactionOrUndefined
     if (vatCurrency && vatAccount) {
       vatTransaction = new Transaction({
         accountNumber: vatAccount.number,
         currency: vatCurrency,
-      });
+      })
     }
 
-    let reverseVatTransaction: TransactionOrUndefined;
+    let reverseVatTransaction: TransactionOrUndefined
     if (reverseVatCurrency && reverseVatAccount) {
       reverseVatTransaction = new Transaction({
         accountNumber: reverseVatAccount.number,
         currency: reverseVatCurrency,
-      });
+      })
     }
 
-    return [transaction, vatTransaction, reverseVatTransaction];
+    return [transaction, vatTransaction, reverseVatTransaction]
   }
 
   /**
@@ -195,20 +195,20 @@ export class TransactionFactory {
    * @return the VAT percentage or undefined if not found
    */
   private static getVatPercentage(account: Account): number | undefined {
-    if (typeof account.vatPercentage !== "undefined") {
-      return account.vatPercentage;
+    if (typeof account.vatPercentage !== 'undefined') {
+      return account.vatPercentage
     }
     if (account.vatAccount instanceof Account) {
-      if (typeof account.vatAccount.vatPercentage !== "undefined") {
-        return account.vatAccount.vatPercentage;
+      if (typeof account.vatAccount.vatPercentage !== 'undefined') {
+        return account.vatAccount.vatPercentage
       }
     }
     if (account.reverseVatAccount instanceof Account) {
-      if (typeof account.reverseVatAccount.vatPercentage !== "undefined") {
-        return account.reverseVatAccount.vatPercentage;
+      if (typeof account.reverseVatAccount.vatPercentage !== 'undefined') {
+        return account.reverseVatAccount.vatPercentage
       }
     }
 
-    return undefined;
+    return undefined
   }
 }

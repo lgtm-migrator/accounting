@@ -1,4 +1,4 @@
-export {};
+export {}
 
 declare global {
   interface String {
@@ -9,21 +9,21 @@ declare global {
   }
 }
 
-const ISO_DATE_REGEX = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])$/;
+const ISO_DATE_REGEX = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])$/
 
 String.prototype.isValidIsoDate = function (): boolean {
   if (ISO_DATE_REGEX.test(String(this))) {
     // Check so the date is actually valide
-    const parsedDate = Date.parse(String(this));
+    const parsedDate = Date.parse(String(this))
     if (parsedDate === NaN) {
-      return false;
+      return false
     }
     // Special case for February 29
     else if (new Date(parsedDate).toISOString().substr(0, 10) != this) {
-      return false;
+      return false
     }
   } else {
-    return false;
+    return false
   }
-  return true;
-};
+  return true
+}

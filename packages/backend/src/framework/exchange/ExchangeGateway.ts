@@ -1,4 +1,4 @@
-import { Currency } from "../../app/core/entities/Currency";
+import { Currency } from '../../app/core/entities/Currency'
 
 export interface ExchangeGateway {
   /**

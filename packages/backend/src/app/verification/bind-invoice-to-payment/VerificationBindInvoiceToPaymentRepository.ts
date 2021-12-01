@@ -1,7 +1,7 @@
-import { Id } from "../../core/definitions/Id";
-import { Account } from "../../core/entities/Account";
-import { Verification } from "../../core/entities/Verification";
-import { VerificationRepository } from "../VerificationRepository";
+import { Id } from '../../core/definitions/Id'
+import { Account } from '../../core/entities/Account'
+import { Verification } from '../../core/entities/Verification'
+import { VerificationRepository } from '../VerificationRepository'
 
 export interface VerificationBindInvoiceToPaymentRepository
   extends VerificationRepository {

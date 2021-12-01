@@ -1,59 +1,59 @@
-let configData: Config;
-if (process.env.NODE_ENV === "development") {
-  configData = require("./config.development").config;
-} else if (process.env.NODE_ENV === "production") {
-  configData = require("./config.production").config;
-} else if (process.env.NODE_ENV === "test") {
-  configData = require("./config.testing").config;
+let configData: Config
+if (process.env.NODE_ENV === 'development') {
+  configData = require('./config.development').config
+} else if (process.env.NODE_ENV === 'production') {
+  configData = require('./config.production').config
+} else if (process.env.NODE_ENV === 'test') {
+  configData = require('./config.testing').config
 } else {
-  throw new Error("Could not load config file");
+  throw new Error('Could not load config file')
 }
 
 class Config implements Config.Option {
-  mongoDb: MongoDbFunctions;
-  apiKeys: ApiKeys;
-  server: Server;
-  fileSystem: FileSystem;
+  mongoDb: MongoDbFunctions
+  apiKeys: ApiKeys
+  server: Server
+  fileSystem: FileSystem
 
   constructor(data: Config.Option) {
-    this.fileSystem = data.fileSystem;
-    this.apiKeys = data.apiKeys;
-    this.server = data.server;
+    this.fileSystem = data.fileSystem
+    this.apiKeys = data.apiKeys
+    this.server = data.server
 
     this.mongoDb = {
       ...data.mongoDb,
       url: function () {
-        let credentials = "";
+        let credentials = ''
         if (this.username && this.password) {
-          credentials = `${this.username}:${this.password}@`;
+          credentials = `${this.username}:${this.password}@`
         }
 
-        let portString = "";
+        let portString = ''
         if (this.port) {
-          portString = `:${this.port}`;
+          portString = `:${this.port}`
         }
 
-        return `mongodb://${credentials}${this.host}${portString}`;
+        return `mongodb://${credentials}${this.host}${portString}`
       },
-    };
+    }
   }
 
   env = {
     isDevelopment(): boolean {
-      return process.env.NODE_ENV === "development";
+      return process.env.NODE_ENV === 'development'
     },
 
     isTesting(): boolean {
-      return process.env.NODE_ENV === "test";
+      return process.env.NODE_ENV === 'test'
     },
 
     isProduction(): boolean {
-      return process.env.NODE_ENV === "production";
+      return process.env.NODE_ENV === 'production'
     },
-  };
+  }
 }
 
-export const config = new Config(configData);
+export const config = new Config(configData)
 
 export namespace Config {
   export interface Option {

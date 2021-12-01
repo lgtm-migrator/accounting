@@ -1,6 +1,6 @@
-import { FiscalYear } from "../../../../app/core/entities/FiscalYear";
-import { Id } from "../../../../app/core/definitions/Id";
-import { Immutable } from "../../../../app/core/definitions/Immutable";
+import { FiscalYear } from '../../../../app/core/entities/FiscalYear'
+import { Id } from '../../../../app/core/definitions/Id'
+import { Immutable } from '../../../../app/core/definitions/Immutable'
 
 export interface ApiFiscalYearBaseOutput {
   readonly id: Id;
@@ -25,6 +25,6 @@ export namespace ApiFiscalYearBaseOutput {
       from: fiscalYear.from,
       to: fiscalYear.to,
       startingBalances: fiscalYear.startingBalances,
-    };
+    }
   }
 }

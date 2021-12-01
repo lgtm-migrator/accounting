@@ -1,10 +1,10 @@
-import { Verification } from "../../app/core/entities/Verification";
-import { Id } from "../../app/core/definitions/Id";
-import { Currency } from "../../app/core/entities/Currency";
-import { Account } from "../../app/core/entities/Account";
-import { User } from "../../app/core/entities/User";
-import { Parser } from "../../app/core/entities/Parser";
-import { FiscalYear } from "../../app/core/entities/FiscalYear";
+import { Verification } from '../../app/core/entities/Verification'
+import { Id } from '../../app/core/definitions/Id'
+import { Currency } from '../../app/core/entities/Currency'
+import { Account } from '../../app/core/entities/Account'
+import { User } from '../../app/core/entities/User'
+import { Parser } from '../../app/core/entities/Parser'
+import { FiscalYear } from '../../app/core/entities/FiscalYear'
 
 export interface DbGateway {
   /**

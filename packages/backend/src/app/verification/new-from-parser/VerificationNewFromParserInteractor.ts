@@ -1,13 +1,13 @@
-import { Interactor } from "../../core/definitions/Interactor";
-import { VerificationNewFromParserInput } from "./VerificationNewFromParserInput";
-import { VerificationNewFromParserOutput } from "./VerificationNewFromParserOutput";
-import { VerificationNewFromParserRepository } from "./VerificationNewFromParserRepository";
-import { Parser } from "../../core/entities/Parser";
-import { OutputError } from "../../core/definitions/OutputError";
-import { Currency } from "../../core/entities/Currency";
-import { Verification } from "../../core/entities/Verification";
-import { TransactionFactory } from "../TransactionFactory";
-import { InternalError } from "../../core/definitions/InternalError";
+import { Interactor } from '../../core/definitions/Interactor'
+import { VerificationNewFromParserInput } from './VerificationNewFromParserInput'
+import { VerificationNewFromParserOutput } from './VerificationNewFromParserOutput'
+import { VerificationNewFromParserRepository } from './VerificationNewFromParserRepository'
+import { Parser } from '../../core/entities/Parser'
+import { OutputError } from '../../core/definitions/OutputError'
+import { Currency } from '../../core/entities/Currency'
+import { Verification } from '../../core/entities/Verification'
+import { TransactionFactory } from '../TransactionFactory'
+import { InternalError } from '../../core/definitions/InternalError'
 
 /**
  * Create a verification from any supported file types
@@ -18,7 +18,7 @@ export class VerificationNewFromParserInteractor extends Interactor<
   VerificationNewFromParserRepository
 > {
   constructor(repository: VerificationNewFromParserRepository) {
-    super(repository);
+    super(repository)
   }
 
   /**
@@ -30,34 +30,34 @@ export class VerificationNewFromParserInteractor extends Interactor<
   async execute(
     input: VerificationNewFromParserInput
   ): Promise<VerificationNewFromParserOutput> {
-    this.input = input;
+    this.input = input
 
     const localCurrencyCodePromise = this.repository.getLocalCurrency(
       input.userId
-    );
-    const getParsersPromise = this.repository.getParsers(input.userId);
+    )
+    const getParsersPromise = this.repository.getParsers(input.userId)
 
     return Promise.all([localCurrencyCodePromise, getParsersPromise])
       .then(([localCurrencyCode, parsers]) => {
         // Parse one file at a time
         const promises = input.files.map(async (file) => {
-          return this.parseFile(file, parsers, localCurrencyCode);
-        });
-        return Promise.all(promises);
+          return this.parseFile(file, parsers, localCurrencyCode)
+        })
+        return Promise.all(promises)
       })
       .then((verifications) => {
         // Flatten
-        return Promise.resolve({ verifications: verifications.flat() });
+        return Promise.resolve({ verifications: verifications.flat() })
       })
       .catch((exception) => {
         if (exception instanceof InternalError) {
-          throw OutputError.create(OutputError.Types.internalError);
+          throw OutputError.create(OutputError.Types.internalError)
         } else if (exception instanceof Error) {
-          throw OutputError.create(OutputError.Types.internalError);
+          throw OutputError.create(OutputError.Types.internalError)
         }
 
-        throw exception;
-      });
+        throw exception
+      })
   }
 
   private async parseFile(
@@ -68,7 +68,7 @@ export class VerificationNewFromParserInteractor extends Interactor<
     return this.repository
       .readFile(file)
       .then((text) => {
-        return this.parseText(text, parsers);
+        return this.parseText(text, parsers)
       })
       .then((verificationInfos) => {
         const promises = verificationInfos.map((verificationInfo) =>
@@ -77,9 +77,9 @@ export class VerificationNewFromParserInteractor extends Interactor<
             localCurrencyCode,
             file
           )
-        );
-        return Promise.all(promises);
-      });
+        )
+        return Promise.all(promises)
+      })
   }
 
   private async parseText(
@@ -88,11 +88,11 @@ export class VerificationNewFromParserInteractor extends Interactor<
   ): Promise<Parser.VerificationInfo[]> {
     for (const parser of parsers) {
       if (parser.isOfType(text)) {
-        return Promise.resolve(parser.parse(text));
+        return Promise.resolve(parser.parse(text))
       }
     }
 
-    throw OutputError.create(OutputError.Types.parserNotFound);
+    throw OutputError.create(OutputError.Types.parserNotFound)
   }
 
   private async createVerificationFromInfo(
@@ -102,35 +102,35 @@ export class VerificationNewFromParserInteractor extends Interactor<
   ): Promise<Verification> {
     // Get exchange rate
     let exchangeRatePromise: Promise<number | undefined> =
-      Promise.resolve(undefined);
+      Promise.resolve(undefined)
 
     if (info.code != localCurrencyCode) {
       exchangeRatePromise = this.repository.getExchangeRate(
         info.date,
         info.code,
         localCurrencyCode
-      );
+      )
     }
 
     // Get accounts
     const accountFromPromise = this.repository.getAccountDetails(
       this.input.userId,
       info.accountFrom
-    );
+    )
     const acountToPromise = this.repository.getAccountDetails(
       this.input.userId,
       info.accountTo
-    );
+    )
     const fiscalYearIdPromise = this.repository.getFiscalYear(
       this.input.userId,
       info.date
-    );
+    )
 
     const promises = Promise.all([
       exchangeRatePromise,
       accountFromPromise,
       acountToPromise,
-    ]);
+    ])
 
     return promises
       .then(([exchangeRate, accountFrom, accountTo]) => {
@@ -143,11 +143,11 @@ export class VerificationNewFromParserInteractor extends Interactor<
           exchangeRate: exchangeRate,
           accountFrom: accountFrom,
           accountTo: accountTo,
-        };
+        }
 
         const transactionPromises =
-          TransactionFactory.createTransactions(transactionInfo);
-        return Promise.all([transactionPromises, fiscalYearIdPromise]);
+          TransactionFactory.createTransactions(transactionInfo)
+        return Promise.all([transactionPromises, fiscalYearIdPromise])
       })
       .then(([transactions, fiscalYearId]) => {
         // Create
@@ -159,9 +159,9 @@ export class VerificationNewFromParserInteractor extends Interactor<
           type: info.type,
           date: info.date,
           transactions: transactions,
-        };
+        }
 
-        return new Verification(option);
-      });
+        return new Verification(option)
+      })
   }
 }

@@ -1,16 +1,16 @@
-import { VerificationNewInteractor } from "./VerificationNewInteractor";
-import { VerificationNewOutput } from "./VerificationNewOutput";
-import { VerificationRepositoryTest } from "../../../jest/VerificationRepositoryTest";
-import { Accounts } from "../../../jest/AccountTestData";
-import { Currency } from "../../core/entities/Currency";
-import { Verification } from "../../core/entities/Verification";
-import { OutputError } from "../../core/definitions/OutputError";
-import { VerificationNewInput } from "./VerificationNewInput";
-import { Id } from "../../core/definitions/Id";
+import { VerificationNewInteractor } from './VerificationNewInteractor'
+import { VerificationNewOutput } from './VerificationNewOutput'
+import { VerificationRepositoryTest } from '../../../jest/VerificationRepositoryTest'
+import { Accounts } from '../../../jest/AccountTestData'
+import { Currency } from '../../core/entities/Currency'
+import { Verification } from '../../core/entities/Verification'
+import { OutputError } from '../../core/definitions/OutputError'
+import { VerificationNewInput } from './VerificationNewInput'
+import { Id } from '../../core/definitions/Id'
 
-const LOCAL_CODE = VerificationRepositoryTest.LOCAL_CODE;
-const EXCHANGE_RATE = VerificationRepositoryTest.EXCHANGE_RATE;
-const MIN_ASSERTIONS = 9;
+const LOCAL_CODE = VerificationRepositoryTest.LOCAL_CODE
+const EXCHANGE_RATE = VerificationRepositoryTest.EXCHANGE_RATE
+const MIN_ASSERTIONS = 9
 
 function validFromInput(input: VerificationNewInput): Verification.Option {
   return {
@@ -35,29 +35,29 @@ function validFromInput(input: VerificationNewInput): Verification.Option {
         }),
       },
     ],
-  };
+  }
 }
 
 function testEquality(
   verification: VerificationNewOutput,
   valid: Verification.Option
 ) {
-  expect(verification.userId).toStrictEqual(valid.userId);
-  expect(verification.fiscalYearId).toStrictEqual(2);
-  expect(verification.name).toStrictEqual(valid.name);
-  expect(verification.date).toStrictEqual(valid.date);
-  expect(verification.internalName).toStrictEqual(valid.internalName);
-  expect(verification.description).toStrictEqual(valid.description);
-  expect(verification.files).toStrictEqual(valid.files);
-  expect(verification.type).toEqual(valid.type);
+  expect(verification.userId).toStrictEqual(valid.userId)
+  expect(verification.fiscalYearId).toStrictEqual(2)
+  expect(verification.name).toStrictEqual(valid.name)
+  expect(verification.date).toStrictEqual(valid.date)
+  expect(verification.internalName).toStrictEqual(valid.internalName)
+  expect(verification.description).toStrictEqual(valid.description)
+  expect(verification.files).toStrictEqual(valid.files)
+  expect(verification.type).toEqual(valid.type)
   expect(verification.transactions.length).toStrictEqual(
     valid.transactions.length
-  );
+  )
 
   for (const transaction of valid.transactions) {
     expect(verification.transactions).toContainEqual(
       expect.objectContaining(transaction)
-    );
+    )
   }
 }
 
@@ -75,17 +75,17 @@ interface InputData {
 }
 
 function createInput(data: InputData = {}): VerificationNewInput {
-  let amount = 10;
-  if (typeof data.amount === "number") {
-    amount = data.amount;
+  let amount = 10
+  if (typeof data.amount === 'number') {
+    amount = data.amount
   }
 
   return {
     userId: data.userId ? data.userId : 1,
     verification: {
-      name: data.name ? data.name : "test",
+      name: data.name ? data.name : 'test',
       description: data.description,
-      date: data.date ? data.date : "2020-03-14",
+      date: data.date ? data.date : '2020-03-14',
       accountFrom: data.accountFrom
         ? data.accountFrom
         : Accounts.BANK_ACCOUNT.number,
@@ -94,45 +94,45 @@ function createInput(data: InputData = {}): VerificationNewInput {
       currencyCode: data.currencyCode ? data.currencyCode : LOCAL_CODE.name,
       type: data.type ? data.type : Verification.Types.PAYMENT_DIRECT_OUT,
     },
-  };
+  }
 }
 
-describe("New Verification #cold #use-case", () => {
-  let interactor: VerificationNewInteractor;
-  let inputData: InputData;
-  let output: Promise<VerificationNewOutput>;
+describe('New Verification #cold #use-case', () => {
+  let interactor: VerificationNewInteractor
+  let inputData: InputData
+  let output: Promise<VerificationNewOutput>
 
   beforeAll(() => {
     interactor = new VerificationNewInteractor(
       new VerificationRepositoryTest()
-    );
-  });
+    )
+  })
 
   beforeEach(() => {
-    inputData = {};
-  });
+    inputData = {}
+  })
 
-  it("Minimum valid input", async () => {
-    const input = createInput();
-    output = interactor.execute(input);
-    const valid = validFromInput(input);
+  it('Minimum valid input', async () => {
+    const input = createInput()
+    output = interactor.execute(input)
+    const valid = validFromInput(input)
 
-    expect.assertions(MIN_ASSERTIONS + valid.transactions.length);
+    expect.assertions(MIN_ASSERTIONS + valid.transactions.length)
     await output.then((verification) => {
-      testEquality(verification, valid);
-    });
-  });
+      testEquality(verification, valid)
+    })
+  })
 
-  it("Full valid input with abroad expense", async () => {
-    inputData.internalName = "MY_NAME";
-    inputData.description = "This is my description";
-    inputData.currencyCode = "USD";
+  it('Full valid input with abroad expense', async () => {
+    inputData.internalName = 'MY_NAME'
+    inputData.description = 'This is my description'
+    inputData.currencyCode = 'USD'
 
-    inputData.accountFrom = Accounts.INVOICE_IN.number;
-    inputData.accountTo = Accounts.EXPENSE_ABROAD.number;
+    inputData.accountFrom = Accounts.INVOICE_IN.number
+    inputData.accountTo = Accounts.EXPENSE_ABROAD.number
 
-    const input = createInput(inputData);
-    const valid = validFromInput(input);
+    const input = createInput(inputData)
+    const valid = validFromInput(input)
     valid.transactions = [
       {
         accountNumber: Accounts.INVOICE_IN.number,
@@ -174,25 +174,25 @@ describe("New Verification #cold #use-case", () => {
           exchangeRate: EXCHANGE_RATE,
         }),
       },
-    ];
+    ]
 
-    output = interactor.execute(input);
+    output = interactor.execute(input)
 
-    expect.assertions(MIN_ASSERTIONS + valid.transactions.length);
+    expect.assertions(MIN_ASSERTIONS + valid.transactions.length)
     await output.then((verification) => {
-      testEquality(verification, valid);
-    });
-  });
+      testEquality(verification, valid)
+    })
+  })
 
-  it("Invalid input", async () => {
-    expect.assertions(2);
+  it('Invalid input', async () => {
+    expect.assertions(2)
 
-    inputData.accountFrom = 2000;
-    inputData.date = "22";
-    inputData.amount = 0;
+    inputData.accountFrom = 2000
+    inputData.date = '22'
+    inputData.amount = 0
 
-    let input = createInput(inputData);
-    output = interactor.execute(input);
+    let input = createInput(inputData)
+    output = interactor.execute(input)
 
     await expect(output).rejects.toEqual({
       errors: [
@@ -201,16 +201,16 @@ describe("New Verification #cold #use-case", () => {
           data: `${inputData.accountFrom}`,
         },
       ],
-    });
+    })
 
-    inputData.accountFrom = Accounts.BANK_ACCOUNT.number;
-    input = createInput(inputData);
-    output = interactor.execute(input);
+    inputData.accountFrom = Accounts.BANK_ACCOUNT.number
+    input = createInput(inputData)
+    output = interactor.execute(input)
     await expect(output).rejects.toEqual({
       errors: [
         { type: OutputError.Types.dateFormatInvalid, data: inputData.date },
         { type: OutputError.Types.amountIsZero },
       ],
-    });
-  });
-});
+    })
+  })
+})

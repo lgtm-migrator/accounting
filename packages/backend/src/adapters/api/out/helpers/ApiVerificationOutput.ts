@@ -1,7 +1,7 @@
-import { Verification } from "../../../../app/core/entities/Verification";
-import { Id } from "../../../../app/core/definitions/Id";
-import { ApiTransactionOutput } from "./ApiTransactionOutput";
-import { Immutable } from "../../../../app/core/definitions/Immutable";
+import { Verification } from '../../../../app/core/entities/Verification'
+import { Id } from '../../../../app/core/definitions/Id'
+import { ApiTransactionOutput } from './ApiTransactionOutput'
+import { Immutable } from '../../../../app/core/definitions/Immutable'
 
 export interface ApiVerificationOutput {
   readonly id: Id;
@@ -25,12 +25,12 @@ export namespace ApiVerificationOutput {
     const transactions = verification.transactions.reduce(
       (array, transaction) => {
         const apiTransaction =
-          ApiTransactionOutput.fromTransaction(transaction);
-        array.push(apiTransaction);
-        return array;
+          ApiTransactionOutput.fromTransaction(transaction)
+        array.push(apiTransaction)
+        return array
       },
       new Array<ApiTransactionOutput>()
-    );
+    )
     return {
       id: verification.id!,
       name: verification.name,
@@ -44,6 +44,6 @@ export namespace ApiVerificationOutput {
       invoiceId: verification.invoiceId,
       paymentId: verification.paymentId,
       transactions: transactions,
-    };
+    }
   }
 }

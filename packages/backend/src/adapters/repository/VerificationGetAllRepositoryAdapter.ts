@@ -1,6 +1,6 @@
-import { BaseAdapter } from "./BaseAdapter";
-import { Id } from "../../app/core/definitions/Id";
-import { Verification } from "../../app/core/entities/Verification";
+import { BaseAdapter } from './BaseAdapter'
+import { Id } from '../../app/core/definitions/Id'
+import { Verification } from '../../app/core/entities/Verification'
 
 export class VerificationGetAllRepositoryAdapter extends BaseAdapter {
   /**
@@ -9,6 +9,6 @@ export class VerificationGetAllRepositoryAdapter extends BaseAdapter {
    * @param fiscalYearId the id of the fiscal year to get the verifications for
    */
   getVerifications(userId: Id, fiscalYearId: Id): Promise<Verification[]> {
-    return BaseAdapter.dbGateway.getVerifications(userId, fiscalYearId);
+    return BaseAdapter.dbGateway.getVerifications(userId, fiscalYearId)
   }
 }

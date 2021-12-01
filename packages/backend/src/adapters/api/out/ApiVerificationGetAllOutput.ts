@@ -1,6 +1,6 @@
-import { ApiVerificationOutput } from "./helpers/ApiVerificationOutput";
-import { VerificationGetAllOutput } from "../../../app/verification/get-all/VerificationGetAllOutput";
-import { Immutable } from "../../../app/core/definitions/Immutable";
+import { ApiVerificationOutput } from './helpers/ApiVerificationOutput'
+import { VerificationGetAllOutput } from '../../../app/verification/get-all/VerificationGetAllOutput'
+import { Immutable } from '../../../app/core/definitions/Immutable'
 
 export interface ApiVerificationGetAllOutput {
   readonly verifications: Immutable<ApiVerificationOutput[]>;
@@ -13,13 +13,13 @@ export namespace ApiVerificationGetAllOutput {
     const apiVerifications = interactorOutput.verifications.reduce(
       (array, verification) => {
         const apiVerification =
-          ApiVerificationOutput.fromVerification(verification);
-        array.push(apiVerification);
-        return array;
+          ApiVerificationOutput.fromVerification(verification)
+        array.push(apiVerification)
+        return array
       },
       new Array<Immutable<ApiVerificationOutput>>()
-    );
+    )
 
-    return { verifications: apiVerifications };
+    return { verifications: apiVerifications }
   }
 }

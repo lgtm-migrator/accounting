@@ -1,10 +1,10 @@
-import { Verification } from "./Verification";
-import { Currency } from "./Currency";
-import { OutputError } from "../definitions/OutputError";
-import { Consts } from "../definitions/Consts";
-import "../definitions/String";
-import { Parser } from "./Parser";
-import { Account } from "./Account";
+import { Verification } from './Verification'
+import { Currency } from './Currency'
+import { OutputError } from '../definitions/OutputError'
+import { Consts } from '../definitions/Consts'
+import '../definitions/String'
+import { Parser } from './Parser'
+import { Account } from './Account'
 
 interface VerificationInfo {
   name: string;
@@ -40,48 +40,48 @@ export namespace ParserSingle {
  * Used for parsing text getting all the valuable information from that text
  */
 export class ParserSingle extends Parser implements ParserSingle.Option {
-  verification: VerificationInfo;
-  matcher: MatcherInfo;
+  verification: VerificationInfo
+  matcher: MatcherInfo
 
   constructor(data: ParserSingle.Option) {
-    super(data, Parser.Types.single);
-    this.verification = data.verification;
-    this.matcher = data.matcher;
+    super(data, Parser.Types.single)
+    this.verification = data.verification
+    this.matcher = data.matcher
   }
 
   /**
    * Validate the parser
    */
   validate(): OutputError.Info[] {
-    const errors = super.validate();
+    const errors = super.validate()
 
     // Verification name
     if (this.verification.name.length < Consts.NAME_LENGTH_MIN) {
-      errors.push({ type: OutputError.Types.nameTooShort });
+      errors.push({ type: OutputError.Types.nameTooShort })
     }
 
     // Verification internal name
     if (this.verification.internalName.length < Consts.NAME_LENGTH_MIN) {
-      errors.push({ type: OutputError.Types.internalNameTooShort });
+      errors.push({ type: OutputError.Types.internalNameTooShort })
     }
 
     // Verification type
     if (this.verification.type == Verification.Types.INVALID) {
-      errors.push({ type: OutputError.Types.verificationTypeInvalid });
+      errors.push({ type: OutputError.Types.verificationTypeInvalid })
     }
 
     // Account From
-    Account.validateNumber(this.verification.accountFrom, errors);
+    Account.validateNumber(this.verification.accountFrom, errors)
 
     // Account To
-    Account.validateNumber(this.verification.accountTo, errors);
+    Account.validateNumber(this.verification.accountTo, errors)
 
     // Matcher
-    ParserSingle.validateMatcher(this.matcher.date, "date", errors);
-    ParserSingle.validateMatcher(this.matcher.currencyCode, "code", errors);
-    ParserSingle.validateMatcher(this.matcher.amount, "total", errors);
+    ParserSingle.validateMatcher(this.matcher.date, 'date', errors)
+    ParserSingle.validateMatcher(this.matcher.currencyCode, 'code', errors)
+    ParserSingle.validateMatcher(this.matcher.amount, 'total', errors)
 
-    return errors;
+    return errors
   }
 
   /**
@@ -100,90 +100,90 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
         errors.push({
           type: OutputError.Types.parserMatcherReplacementMissing,
           data: name,
-        });
+        })
       } else if (matcher.replacement && !matcher.replace) {
         errors.push({
           type: OutputError.Types.parserMatcherReplaceMissing,
           data: name,
-        });
+        })
       }
     } else if (matcher.replacement) {
       if (matcher.replace) {
         errors.push({
           type: OutputError.Types.parserMatcherFindMissing,
           data: name,
-        });
+        })
       }
     } else {
-      errors.push({ type: OutputError.Types.parserMatcherInvalid, data: name });
+      errors.push({ type: OutputError.Types.parserMatcherInvalid, data: name })
     }
   }
 
   parse(text: string): Parser.VerificationInfo[] {
-    const errors: OutputError.Info[] = [];
-    let date!: string;
-    let amount!: number;
-    let code!: Currency.Codes;
+    const errors: OutputError.Info[] = []
+    let date!: string
+    let amount!: number
+    let code!: Currency.Codes
 
     try {
-      date = this.parseDate(text);
+      date = this.parseDate(text)
     } catch (exception) {
-      Parser.addInvalidInputErrors(exception, errors);
+      Parser.addInvalidInputErrors(exception, errors)
     }
     try {
-      amount = this.parseAmount(text);
+      amount = this.parseAmount(text)
     } catch (exception) {
-      Parser.addInvalidInputErrors(exception, errors);
+      Parser.addInvalidInputErrors(exception, errors)
     }
     try {
-      code = this.parseCurrencyCode(text);
+      code = this.parseCurrencyCode(text)
     } catch (exception) {
-      Parser.addInvalidInputErrors(exception, errors);
+      Parser.addInvalidInputErrors(exception, errors)
     }
 
     if (errors.length > 0) {
-      throw new OutputError(errors);
+      throw new OutputError(errors)
     }
 
-    const verificationInfo: Parser.VerificationInfo[] = [];
+    const verificationInfo: Parser.VerificationInfo[] = []
 
     verificationInfo.push({
       ...this.verification,
       date: date,
       amount: amount,
       code: code,
-    });
+    })
 
-    return verificationInfo;
+    return verificationInfo
   }
 
   private parseDate(text: string): string {
-    let date = ParserSingle.match(text, this.matcher.date);
-    return Parser.fixDate(date);
+    const date = ParserSingle.match(text, this.matcher.date)
+    return Parser.fixDate(date)
   }
 
   private parseCurrencyCode(text: string): Currency.Codes {
-    const codeString = ParserSingle.match(text, this.matcher.currencyCode);
+    const codeString = ParserSingle.match(text, this.matcher.currencyCode)
 
     if (codeString.length > 0) {
-      const code = Currency.Codes.fromString(codeString);
+      const code = Currency.Codes.fromString(codeString)
 
       if (!code) {
         throw OutputError.create(
           OutputError.Types.parserCurrencyCodeInvalid,
           codeString
-        );
+        )
       }
 
-      return code;
+      return code
     }
 
-    throw OutputError.create(OutputError.Types.parserCurrencyCodeInvalid);
+    throw OutputError.create(OutputError.Types.parserCurrencyCodeInvalid)
   }
 
   private parseAmount(text: string): number {
-    const total = ParserSingle.match(text, this.matcher.amount);
-    return ParserSingle.fixAmount(total);
+    const total = ParserSingle.match(text, this.matcher.amount)
+    return ParserSingle.fixAmount(total)
   }
 
   /**
@@ -199,29 +199,29 @@ export class ParserSingle extends Parser implements ParserSingle.Option {
     findAndReplaceInfo: FindAndReplaceInfo
   ): string {
     if (findAndReplaceInfo.find) {
-      const matched = text.match(findAndReplaceInfo.find);
+      const matched = text.match(findAndReplaceInfo.find)
 
       if (!matched) {
         throw OutputError.create(
           OutputError.Types.parserPatternNotFound,
           String(findAndReplaceInfo.find)
-        );
+        )
       }
-      let value = matched[0];
+      let value = matched[0]
 
       if (findAndReplaceInfo.replace && findAndReplaceInfo.replacement) {
         value = value.replace(
           findAndReplaceInfo.replace,
           findAndReplaceInfo.replacement
-        );
+        )
       }
-      return value;
+      return value
     }
     // Only a replacement, use this value directly
     else if (findAndReplaceInfo.replacement) {
-      return findAndReplaceInfo.replacement;
+      return findAndReplaceInfo.replacement
     }
 
-    throw OutputError.create(OutputError.Types.parserMatcherInvalid);
+    throw OutputError.create(OutputError.Types.parserMatcherInvalid)
   }
 }

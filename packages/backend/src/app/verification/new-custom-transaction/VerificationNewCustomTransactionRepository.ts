@@ -1,4 +1,3 @@
-import { VerificationNewBaseRepository } from "../VerificationNewBaseRepository";
+import { VerificationNewBaseRepository } from '../VerificationNewBaseRepository'
 
-export interface VerificationNewCustomTransactionRepository
-  extends VerificationNewBaseRepository {}
+export type VerificationNewCustomTransactionRepository = VerificationNewBaseRepository

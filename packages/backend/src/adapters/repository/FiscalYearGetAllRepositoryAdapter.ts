@@ -1,6 +1,6 @@
-import { BaseAdapter } from "./BaseAdapter";
-import { Id } from "../../app/core/definitions/Id";
-import { FiscalYear } from "../../app/core/entities/FiscalYear";
+import { BaseAdapter } from './BaseAdapter'
+import { Id } from '../../app/core/definitions/Id'
+import { FiscalYear } from '../../app/core/entities/FiscalYear'
 
 export class FiscalYearGetAllRepositoryAdapter extends BaseAdapter {
   /**
@@ -9,6 +9,6 @@ export class FiscalYearGetAllRepositoryAdapter extends BaseAdapter {
    * @return all the user's fiscal years
    */
   getFiscalYears(userId: Id): Promise<FiscalYear[]> {
-    return BaseAdapter.dbGateway.getFiscalYears(userId);
+    return BaseAdapter.dbGateway.getFiscalYears(userId)
   }
 }

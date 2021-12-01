@@ -1,5 +1,5 @@
-import { Repository } from "../../core/definitions/Repository";
-import { User } from "../../core/entities/User";
+import { Repository } from '../../core/definitions/Repository'
+import { User } from '../../core/entities/User'
 
 export interface UserGetByKeyRepository extends Repository {
   /**

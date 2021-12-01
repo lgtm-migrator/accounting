@@ -1,14 +1,14 @@
-import { Interactor } from "../../core/definitions/Interactor";
-import { VerificationNewInput } from "./VerificationNewInput";
-import { VerificationNewOutput } from "./VerificationNewOutput";
-import { VerificationNewRepository } from "./VerificationNewRepository";
-import { Transaction } from "../../core/entities/Transaction";
-import { Currency } from "../../core/entities/Currency";
-import { Verification } from "../../core/entities/Verification";
-import { OutputError } from "../../core/definitions/OutputError";
-import { InternalError } from "../../core/definitions/InternalError";
-import { TransactionFactory } from "../TransactionFactory";
-import { Id } from "../../core/definitions/Id";
+import { Interactor } from '../../core/definitions/Interactor'
+import { VerificationNewInput } from './VerificationNewInput'
+import { VerificationNewOutput } from './VerificationNewOutput'
+import { VerificationNewRepository } from './VerificationNewRepository'
+import { Transaction } from '../../core/entities/Transaction'
+import { Currency } from '../../core/entities/Currency'
+import { Verification } from '../../core/entities/Verification'
+import { OutputError } from '../../core/definitions/OutputError'
+import { InternalError } from '../../core/definitions/InternalError'
+import { TransactionFactory } from '../TransactionFactory'
+import { Id } from '../../core/definitions/Id'
 
 /**
  * Creates a valid verification from a new direct payment
@@ -18,10 +18,10 @@ export class VerificationNewInteractor extends Interactor<
   VerificationNewOutput,
   VerificationNewRepository
 > {
-  localCurrencyCode?: Currency.Codes;
+  localCurrencyCode?: Currency.Codes
 
   constructor(repository: VerificationNewRepository) {
-    super(repository);
+    super(repository)
   }
 
   /**
@@ -31,50 +31,50 @@ export class VerificationNewInteractor extends Interactor<
    * @throws {OutputError} when the input data is invalid. See the errors property for what was invalid
    */
   async execute(input: VerificationNewInput): Promise<VerificationNewOutput> {
-    this.input = input;
+    this.input = input
 
     const code = Currency.Codes.fromString(
       this.input.verification.currencyCode
-    );
+    )
     if (!code) {
       throw OutputError.create(
         OutputError.Types.currencyCodeInvalid,
         input.verification.currencyCode
-      );
+      )
     }
 
-    const localCurrencyPromise = this.repository.getLocalCurrency(input.userId);
+    const localCurrencyPromise = this.repository.getLocalCurrency(input.userId)
     const accountFromPromise = this.repository.getAccountDetails(
       input.userId,
       input.verification.accountFrom
-    );
+    )
     const accountToPromise = this.repository.getAccountDetails(
       input.userId,
       input.verification.accountTo
-    );
+    )
     const fiscalYearIdPromise = this.repository.getFiscalYear(
       input.userId,
       input.verification.date
-    );
+    )
     const promises = Promise.all([
       localCurrencyPromise,
       accountFromPromise,
       accountToPromise,
-    ]);
+    ])
 
     return promises
       .then(async ([localCurrencyCode, accountFrom, accountTo]) => {
         let exchangeRatePromise: Promise<number | undefined> =
-          Promise.resolve(undefined);
+          Promise.resolve(undefined)
         if (code != localCurrencyCode) {
           exchangeRatePromise = this.repository.getExchangeRate(
             this.input.verification.date,
             code,
             localCurrencyCode
-          );
+          )
         }
 
-        const exchangeRate = await exchangeRatePromise;
+        const exchangeRate = await exchangeRatePromise
         const transactionPromises = TransactionFactory.createTransactions({
           userId: this.input.userId,
           amount: this.input.verification.amount,
@@ -83,23 +83,23 @@ export class VerificationNewInteractor extends Interactor<
           exchangeRate: exchangeRate,
           accountFrom: accountFrom,
           accountTo: accountTo,
-        });
+        })
 
-        return Promise.all([transactionPromises, fiscalYearIdPromise]);
+        return Promise.all([transactionPromises, fiscalYearIdPromise])
       })
       .then(async ([transactions, fiscalYearId]) => {
-        return this.createVerification(transactions, fiscalYearId);
+        return this.createVerification(transactions, fiscalYearId)
       })
       .catch((reason) => {
         if (reason instanceof InternalError) {
           throw OutputError.create(
             OutputError.Types.internalError,
             String(reason.error)
-          );
+          )
         }
 
-        throw reason;
-      });
+        throw reason
+      })
   }
 
   /**
@@ -112,7 +112,7 @@ export class VerificationNewInteractor extends Interactor<
     transactions: Transaction[],
     fiscalYearId: Id
   ): Promise<Verification> {
-    let type = Verification.Types.fromString(this.input.verification.type);
+    const type = Verification.Types.fromString(this.input.verification.type)
 
     const verification = new Verification({
       userId: this.input.userId,
@@ -123,13 +123,13 @@ export class VerificationNewInteractor extends Interactor<
       type: type,
       description: this.input.verification.description,
       transactions: transactions,
-    });
+    })
 
-    const errors = verification.validate();
+    const errors = verification.validate()
     if (errors.length > 0) {
-      throw new OutputError(errors);
+      throw new OutputError(errors)
     }
 
-    return Promise.resolve(verification);
+    return Promise.resolve(verification)
   }
 }

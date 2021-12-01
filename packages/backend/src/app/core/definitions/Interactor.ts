@@ -1,17 +1,17 @@
-import { Input } from "./Input";
-import { Output } from "./Output";
-import { Repository } from "./Repository";
+import { Input } from './Input'
+import { Output } from './Output'
+import { Repository } from './Repository'
 
 export abstract class Interactor<
   InputType extends Input,
   OutputType extends Output,
   RepoType extends Repository
 > {
-  protected repository: RepoType;
-  protected input!: InputType;
+  protected repository: RepoType
+  protected input!: InputType
 
   public constructor(repository: RepoType) {
-    this.repository = repository;
+    this.repository = repository
   }
 
   /**

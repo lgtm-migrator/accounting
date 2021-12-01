@@ -1,6 +1,6 @@
-import { Id } from "../../../app/core/definitions/Id";
-import { UserGetByKeyOutput } from "../../../app/user/get-by-key/UserGetByKeyOutput";
-import { Immutable } from "../../../app/core/definitions/Immutable";
+import { Id } from '../../../app/core/definitions/Id'
+import { UserGetByKeyOutput } from '../../../app/user/get-by-key/UserGetByKeyOutput'
+import { Immutable } from '../../../app/core/definitions/Immutable'
 
 export interface ApiUserGetByKeyOutput {
   readonly userId: Id;
@@ -20,6 +20,6 @@ export namespace ApiUserGetByKeyOutput {
       firstName: interactorOutput.user.firstName,
       lastName: interactorOutput.user.lastName,
       localCurrencyCode: interactorOutput.user.localCurrencyCode.name,
-    };
+    }
   }
 }
